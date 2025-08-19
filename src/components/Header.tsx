@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Menu, X, Shield, Phone } from 'lucide-react';
+import React, { useState } from "react";
+import { Menu, X, Shield, Phone } from "lucide-react";
+import Logo from "../assets/LogoChrist.png";
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,34 +11,57 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <div className="flex items-center space-x-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Shield className="w-8 h-8 text-white" />
+            <div>
+              <img
+                src={Logo}
+                alt="Logo Christ Le Bon Berger"
+                className="w-20 h-20 object-contain"
+              />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-800">Christ Le Bon Berger</h1>
-              <p className="text-sm text-emerald-600 font-medium">Aux Écoute et Réconfort</p>
+              <h1 className="text-2xl font-bold text-slate-800">
+                Christ Le Bon Berger
+              </h1>
+              <p className="text-sm text-emerald-600 font-medium">
+                Aux Écoute et Réconfort
+              </p>
             </div>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex space-x-8">
-            <a href="/about" className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group">
+            <a
+              href="/about"
+              className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group"
+            >
               À propos
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="/actions" className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group">
+            <a
+              href="/actions"
+              className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group"
+            >
               Nos Actions
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="/team" className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group">
+            <a
+              href="/team"
+              className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group"
+            >
               Notre Équipe
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="/contact" className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group">
+            <a
+              href="/contact"
+              className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group"
+            >
               Contact
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="/mediatheque" className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group">
+            <a
+              href="/mediatheque"
+              className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group"
+            >
               Médiathèque
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span>
             </a>
@@ -60,7 +84,11 @@ const Header: React.FC = () => {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
 
@@ -68,22 +96,40 @@ const Header: React.FC = () => {
         {isMenuOpen && (
           <div className="lg:hidden pb-4 border-t border-gray-100 mt-4 pt-4">
             <div className="flex flex-col space-y-4">
-              <a href="/about" className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2">
+              <a
+                href="/about"
+                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
+              >
                 À propos
               </a>
-              <a href="/actions" className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2">
+              <a
+                href="/actions"
+                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
+              >
                 Nos Actions
               </a>
-              <a href="/team" className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2">
+              <a
+                href="/team"
+                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
+              >
                 Notre Équipe
               </a>
-              <a href="#news" className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2">
+              <a
+                href="#news"
+                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
+              >
                 Actualités
               </a>
-              <a href="/contact" className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2">
+              <a
+                href="/contact"
+                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
+              >
                 Contact
               </a>
-              <a href="/mediatheque" className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2">
+              <a
+                href="/mediatheque"
+                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
+              >
                 Médiathèque
               </a>
               <div className="flex flex-col space-y-3 pt-4">
