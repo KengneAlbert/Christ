@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Hero from './components/Hero';
+import TrustBanner from './components/TrustBanner';
 import Statistics from './components/Statistics';
 import Actions from './components/Actions';
 import Team from './components/Team';
@@ -17,6 +18,7 @@ import ActionsPage from './pages/ActionsPage';
 const HomePage = () => (
   <>
     <Hero />
+    <TrustBanner />
     <Statistics />
     <Actions />
     <Team />

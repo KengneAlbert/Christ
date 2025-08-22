@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Heart } from 'lucide-react';
+import { ArrowRight, Heart, Shield, Lock, Phone, Clock } from 'lucide-react';
 
 const Hero: React.FC = () => {
   return (
@@ -54,16 +54,52 @@ const Hero: React.FC = () => {
         {/* Trust Indicators */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
           <div className="text-center">
-            <div className="text-3xl font-bold text-emerald-600 mb-2">24/7</div>
-            <div className="text-slate-600">Écoute disponible</div>
+            <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-8 h-8 text-emerald-600" />
+            </div>
+            <div className="text-2xl font-bold text-emerald-600 mb-2">24/7</div>
+            <div className="text-slate-600 font-medium">Écoute disponible</div>
+            <div className="text-sm text-slate-500 mt-1">Jour et nuit, nous sommes là</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-emerald-600 mb-2">100%</div>
-            <div className="text-slate-600">Confidentiel</div>
+            <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-emerald-600" />
+            </div>
+            <div className="text-2xl font-bold text-emerald-600 mb-2">100%</div>
+            <div className="text-slate-600 font-medium">Confidentiel</div>
+            <div className="text-sm text-slate-500 mt-1">Vos informations protégées</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-emerald-600 mb-2">Gratuit</div>
-            <div className="text-slate-600">Accompagnement</div>
+            <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Heart className="w-8 h-8 text-emerald-600" />
+            </div>
+            <div className="text-2xl font-bold text-emerald-600 mb-2">Gratuit</div>
+            <div className="text-slate-600 font-medium">Accompagnement</div>
+            <div className="text-sm text-slate-500 mt-1">Sans frais, sans jugement</div>
+          </div>
+        </div>
+
+        {/* Safety Notice */}
+        <div className="mt-12 bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-emerald-100 max-w-4xl mx-auto">
+          <div className="flex items-start space-x-4">
+            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Shield className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-slate-800 mb-2">Votre sécurité avant tout</h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                Si vous êtes en danger ou surveillé(e), quittez immédiatement ce site. Utilisez un ordinateur sûr ou un téléphone que votre partenaire ne peut pas vérifier.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300 flex items-center space-x-2">
+                  <Phone className="w-4 h-4" />
+                  <span>Urgence: 17 ou 15</span>
+                </button>
+                <button className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300">
+                  Effacer l'historique
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
