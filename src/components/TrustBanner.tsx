@@ -7,25 +7,29 @@ const TrustBanner: React.FC = () => {
       icon: Shield,
       title: 'Professionnels formés',
       description: 'Équipe spécialisée dans l\'accompagnement des victimes',
-      color: 'from-emerald-500 to-teal-600'
+      color: 'from-emerald-500 to-teal-600',
+      image: 'https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400'
     },
     {
       icon: Users,
       title: 'Communauté bienveillante',
       description: 'Plus de 500 personnes accompagnées avec succès',
-      color: 'from-blue-500 to-indigo-600'
+      color: 'from-blue-500 to-indigo-600',
+      image: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=400'
     },
     {
       icon: Award,
       title: 'Reconnue officiellement',
       description: 'Association agréée et partenaire institutionnel',
-      color: 'from-purple-500 to-pink-600'
+      color: 'from-purple-500 to-pink-600',
+      image: 'https://images.pexels.com/photos/4226769/pexels-photo-4226769.jpeg?auto=compress&cs=tinysrgb&w=400'
     },
     {
       icon: Lock,
       title: 'Données sécurisées',
       description: 'Protocoles de sécurité renforcés pour votre protection',
-      color: 'from-orange-500 to-red-600'
+      color: 'from-orange-500 to-red-600',
+      image: 'https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=400'
     }
   ];
 
@@ -72,9 +76,16 @@ const TrustBanner: React.FC = () => {
           {trustElements.map((element, index) => (
             <div 
               key={index}
-              className="group bg-gradient-to-br from-slate-50 to-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105 border border-slate-100"
+              className={`group bg-gradient-to-br from-slate-50 to-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105 border border-slate-100 animate-slide-up delay-${index * 100}`}
             >
-              <div className={`w-14 h-14 bg-gradient-to-r ${element.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+              <div className="mb-4">
+                <img 
+                  src={element.image}
+                  alt={element.title}
+                  className="w-full h-32 object-cover rounded-xl shadow-md group-hover:shadow-lg transition-shadow duration-300"
+                />
+              </div>
+              <div className={`w-14 h-14 bg-gradient-to-r ${element.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg animate-float delay-${index * 200}`}>
                 <element.icon className="w-7 h-7 text-white" />
               </div>
               <h3 className="text-lg font-bold text-slate-800 mb-3">{element.title}</h3>
@@ -84,7 +95,7 @@ const TrustBanner: React.FC = () => {
         </div>
 
         {/* Testimonials */}
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-8 md:p-12 border border-emerald-100">
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-8 md:p-12 border border-emerald-100 animate-slide-up delay-400">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-slate-800 mb-4">Témoignages anonymes</h3>
             <p className="text-slate-600 max-w-2xl mx-auto">
@@ -96,15 +107,19 @@ const TrustBanner: React.FC = () => {
             {testimonials.map((testimonial, index) => (
               <div 
                 key={index}
-                className="bg-white rounded-2xl p-6 shadow-lg border border-white/50"
+                className={`bg-white rounded-2xl p-6 shadow-lg border border-white/50 hover:shadow-xl hover:transform hover:scale-105 transition-all duration-300 animate-slide-up delay-${500 + index * 100}`}
               >
+                <div className="mb-4">
+                  <img 
+                    src="https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=400"
+                    alt="Témoignage anonyme"
+                    className="w-16 h-16 rounded-full object-cover mx-auto shadow-lg border-4 border-emerald-100"
+                  />
+                </div>
                 <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
-                    <Heart className="w-5 h-5 text-emerald-600" />
-                  </div>
                   <div className="flex space-x-1">
                     {[...Array(5)].map((_, i) => (
-                      <CheckCircle key={i} className="w-4 h-4 text-emerald-500" />
+                      <CheckCircle key={i} className={`w-4 h-4 text-emerald-500 animate-bounce-gentle delay-${i * 100}`} />
                     ))}
                   </div>
                 </div>
@@ -121,9 +136,17 @@ const TrustBanner: React.FC = () => {
         </div>
 
         {/* Safety Reminder */}
-        <div className="mt-16 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-8 border border-red-100">
-          <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+        <div className="mt-16 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-8 border border-red-100 animate-slide-up delay-600 hover:shadow-lg transition-shadow duration-300">
+          <div className="grid lg:grid-cols-3 gap-8 items-start">
+            <div className="lg:col-span-1">
+              <img 
+                src="https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=600"
+                alt="Sécurité et protection des données"
+                className="w-full h-48 object-cover rounded-2xl shadow-lg"
+              />
+            </div>
+            <div className="lg:col-span-2 flex items-start space-x-4">
+            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0 animate-pulse-gentle">
               <Shield className="w-6 h-6 text-red-600" />
             </div>
             <div className="flex-1">
@@ -148,6 +171,7 @@ const TrustBanner: React.FC = () => {
                   </ul>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
