@@ -23,7 +23,7 @@ const CookieConsent: React.FC = () => {
     const cookieConsent = localStorage.getItem('cookie-consent');
     if (!cookieConsent) {
       // Délai pour laisser la page se charger
-      setTimeout(() => setShowBanner(true), 2000);
+      setTimeout(() => setShowBanner(true), 5000);
     } else {
       // Charger les préférences sauvegardées
       const savedPreferences = JSON.parse(cookieConsent);
@@ -137,62 +137,64 @@ const CookieConsent: React.FC = () => {
 
   return (
     <>
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" />
-      
       {/* Cookie Banner */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="fixed bottom-6 right-6 z-50 max-w-sm">
+        <div className="animate-slide-up">
           {!showSettings ? (
             /* Banner principal */
-            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 md:p-8">
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/50 p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
                   <Cookie className="w-6 h-6 text-white" />
                 </div>
-                
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-slate-800 mb-3">
-                    Respect de votre vie privée
-                  </h3>
-                  <p className="text-slate-600 leading-relaxed mb-6">
-                    Nous utilisons des cookies pour améliorer votre expérience sur notre site, analyser le trafic et personnaliser le contenu. 
-                    Vos données sont traitées de manière confidentielle et sécurisée, conformément au RGPD.
-                  </p>
-                  
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <button
-                      onClick={handleAcceptAll}
-                      className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
-                    >
-                      Accepter tous les cookies
-                    </button>
-                    <button
-                      onClick={handleRejectAll}
-                      className="border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white hover:border-slate-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300"
-                    >
-                      Refuser tout
-                    </button>
-                    <button
-                      onClick={() => setShowSettings(true)}
-                      className="text-slate-600 hover:text-slate-800 px-6 py-3 rounded-xl font-medium transition-colors duration-300 flex items-center space-x-2"
-                    >
-                      <Settings className="w-4 h-4" />
-                      <span>Personnaliser</span>
-                    </button>
-                  </div>
+                <button
+                  onClick={handleRejectAll}
+                  className="w-8 h-8 text-slate-400 hover:text-slate-600 transition-colors duration-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              
+              <h3 className="text-lg font-bold text-slate-800 mb-2">
+                🍪 Cookies
+              </h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                Nous utilisons des cookies pour améliorer votre expérience. Vos données sont sécurisées et conformes au RGPD.
+              </p>
+              
+              <div className="space-y-2">
+                <button
+                  onClick={handleAcceptAll}
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-4 py-2.5 rounded-xl font-medium transition-all duration-300 text-sm"
+                >
+                  Accepter tous
+                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleRejectAll}
+                    className="flex-1 border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm"
+                  >
+                    Refuser
+                  </button>
+                  <button
+                    onClick={() => setShowSettings(true)}
+                    className="flex-1 text-slate-600 hover:text-slate-800 px-4 py-2 rounded-lg font-medium transition-colors duration-300 text-sm flex items-center justify-center space-x-1"
+                  >
+                    <Settings className="w-3 h-3" />
+                    <span>Options</span>
+                  </button>
                 </div>
               </div>
             </div>
           ) : (
             /* Panneau de paramètres détaillés */
-            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-h-[80vh] overflow-hidden">
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/50 max-h-[70vh] overflow-hidden w-80">
               {/* Header */}
               <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Settings className="w-6 h-6" />
-                    <h3 className="text-xl font-bold">Paramètres des cookies</h3>
+                    <h3 className="text-lg font-bold">Paramètres</h3>
                   </div>
                   <button
                     onClick={() => setShowSettings(false)}
@@ -201,31 +203,31 @@ const CookieConsent: React.FC = () => {
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <p className="text-white/90 mt-2">
+                <p className="text-white/90 mt-2 text-sm">
                   Choisissez les types de cookies que vous souhaitez autoriser
                 </p>
               </div>
 
               {/* Content */}
-              <div className="p-6 max-h-96 overflow-y-auto">
+              <div className="p-4 max-h-64 overflow-y-auto">
                 <div className="space-y-6">
                   {cookieTypes.map((type) => {
                     const Icon = type.icon;
                     return (
-                      <div key={type.key} className="border border-slate-200 rounded-xl p-4">
+                      <div key={type.key} className="border border-slate-200 rounded-lg p-3">
                         <div className="flex items-start space-x-4">
-                          <div className={`w-12 h-12 ${type.bgColor} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                            <Icon className={`w-6 h-6 ${type.color}`} />
+                          <div className={`w-8 h-8 ${type.bgColor} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                            <Icon className={`w-4 h-4 ${type.color}`} />
                           </div>
                           
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="text-lg font-semibold text-slate-800">
+                              <h4 className="text-sm font-semibold text-slate-800">
                                 {type.title}
                               </h4>
                               <div className="flex items-center">
                                 {type.required ? (
-                                  <span className="text-sm text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">
+                                  <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
                                     Obligatoire
                                   </span>
                                 ) : (
@@ -236,12 +238,12 @@ const CookieConsent: React.FC = () => {
                                       onChange={() => handlePreferenceChange(type.key)}
                                       className="sr-only peer"
                                     />
-                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                                   </label>
                                 )}
                               </div>
                             </div>
-                            <p className="text-slate-600 text-sm leading-relaxed">
+                            <p className="text-slate-600 text-xs leading-relaxed">
                               {type.description}
                             </p>
                           </div>
@@ -253,34 +255,21 @@ const CookieConsent: React.FC = () => {
               </div>
 
               {/* Footer */}
-              <div className="border-t border-slate-200 p-6 bg-slate-50">
-                <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <div className="border-t border-slate-200 p-4 bg-slate-50/50">
+                <div className="flex gap-2">
                   <button
                     onClick={() => setShowSettings(false)}
-                    className="text-slate-600 hover:text-slate-800 px-6 py-3 rounded-xl font-medium transition-colors duration-300"
+                    className="flex-1 text-slate-600 hover:text-slate-800 px-4 py-2 rounded-lg font-medium transition-colors duration-300 text-sm"
                   >
                     Annuler
                   </button>
                   <button
                     onClick={handleSavePreferences}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2"
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm flex items-center justify-center space-x-1"
                   >
-                    <Check className="w-4 h-4" />
-                    <span>Sauvegarder mes préférences</span>
+                    <Check className="w-3 h-3" />
+                    <span>Sauvegarder</span>
                   </button>
-                </div>
-                
-                <div className="mt-4 text-center">
-                  <p className="text-xs text-slate-500">
-                    En sauvegardant vos préférences, vous acceptez notre{' '}
-                    <a href="/privacy" className="text-emerald-600 hover:text-emerald-700 underline">
-                      politique de confidentialité
-                    </a>
-                    {' '}et nos{' '}
-                    <a href="/cookies" className="text-emerald-600 hover:text-emerald-700 underline">
-                      conditions d'utilisation des cookies
-                    </a>
-                  </p>
                 </div>
               </div>
             </div>
