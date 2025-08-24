@@ -1,9 +1,9 @@
 import emailjs from '@emailjs/browser';
 
 // Configuration EmailJS
-const EMAILJS_SERVICE_ID = 'service_your_service_id'; // À remplacer par votre Service ID
-const EMAILJS_TEMPLATE_ID = 'template_your_template_id'; // À remplacer par votre Template ID
-const EMAILJS_PUBLIC_KEY = 'your_public_key'; // À remplacer par votre Public Key
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
 // Interface pour les données du formulaire
 export interface ContactFormData {
