@@ -14,6 +14,7 @@ import ContactPage from './pages/ContactPage';
 import MediathequePage from './pages/MediathequePage';
 import TeamPage from './pages/TeamPage';
 import ActionsPage from './pages/ActionsPage';
+import ChatBot from './components/ChatBot';
 
 const HomePage = () => (
   <>
@@ -43,6 +44,7 @@ function App() {
           </Routes>
         </main>
         <Footer />
+        <ChatBot />
       </div>
     </Router>
   );
