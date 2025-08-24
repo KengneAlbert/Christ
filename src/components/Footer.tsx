@@ -221,7 +221,7 @@ const Footer: React.FC = () => {
                 Politique de confidentialité
               </a>
               <a
-                href="#"
+                href="/cookies"
                 className="text-slate-400 hover:text-emerald-300 transition-colors duration-300"
               >
                 Cookies

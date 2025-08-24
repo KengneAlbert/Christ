@@ -16,6 +16,8 @@ import TeamPage from './pages/TeamPage';
 import ActionsPage from './pages/ActionsPage';
 import ChatBot from './components/ChatBot';
 import NewsletterAdminPage from './pages/NewsletterAdminPage';
+import CookieConsent from './components/CookieConsent';
+import CookiePolicyPage from './pages/CookiePolicyPage';
 
 const HomePage = () => (
   <>
@@ -43,10 +45,12 @@ function App() {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/mediatheque" element={<MediathequePage />} />
             <Route path="/admin/newsletter" element={<NewsletterAdminPage />} />
+            <Route path="/cookies" element={<CookiePolicyPage />} />
           </Routes>
         </main>
         <Footer />
         <ChatBot />
+        <CookieConsent />
       </div>
     </Router>
   );
