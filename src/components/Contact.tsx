@@ -170,7 +170,6 @@ const Contact: React.FC = () => {
                 <p className="text-slate-600">Tous les échanges sont strictement confidentiels</p>
               </div>
 
-              <form className="space-y-6">
               <form className="space-y-6" onSubmit={handleSubmit}>
                 {/* Message de statut */}
                 {submitStatus === 'success' && (
@@ -270,7 +269,6 @@ const Contact: React.FC = () => {
                 <button 
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-3"
                   className={`w-full ${
                     isSubmitting 
                       ? 'bg-slate-400 cursor-not-allowed' 
