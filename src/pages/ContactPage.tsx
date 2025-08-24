@@ -1,7 +1,61 @@
 import React from 'react';
+import { useState } from 'react';
 import { Phone, Mail, MapPin, Clock, MessageCircle, Shield, AlertTriangle, Heart, Send } from 'lucide-react';
+import { sendContactEmail, ContactFormData } from '../services/emailService';
 
 const ContactPage: React.FC = () => {
+  const [formData, setFormData] = useState<ContactFormData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    subject: 'Demande d\'aide',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.firstName || !formData.email || !formData.message) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      const success = await sendContactEmail(formData);
+      
+      if (success) {
+        setSubmitStatus('success');
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          subject: 'Demande d\'aide',
+          message: ''
+        });
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const emergencyNumbers = [
     {
       number: '3919',
@@ -145,11 +199,37 @@ const ContactPage: React.FC = () => {
               </div>
 
               <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                {/* Messages de statut */}
+                {submitStatus === 'success' && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800">
+                    <div className="flex items-center space-x-2">
+                      <Shield className="w-5 h-5" />
+                      <span className="font-medium">Message envoyé avec succès !</span>
+                    </div>
+                    <p className="text-sm mt-1">Notre équipe vous contactera dans les plus brefs délais.</p>
+                  </div>
+                )}
+                
+                {submitStatus === 'error' && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
+                    <div className="flex items-center space-x-2">
+                      <AlertTriangle className="w-5 h-5" />
+                      <span className="font-medium">Erreur lors de l'envoi</span>
+                    </div>
+                    <p className="text-sm mt-1">Veuillez réessayer ou nous appeler au 07 81 32 44 74</p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Prénom</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Prénom *</label>
                     <input 
                       type="text" 
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      required
                       className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
                       placeholder="Votre prénom"
                     />
@@ -158,6 +238,9 @@ const ContactPage: React.FC = () => {
                     <label className="block text-sm font-medium text-slate-700 mb-2">Nom (optionnel)</label>
                     <input 
                       type="text" 
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
                       className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
                       placeholder="Votre nom"
                     />
@@ -165,9 +248,13 @@ const ContactPage: React.FC = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email *</label>
                   <input 
                     type="email" 
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
                     className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
                     placeholder="votre@email.com"
                   />
@@ -175,19 +262,29 @@ const ContactPage: React.FC = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Sujet</label>
-                  <select className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300">
+                  <select 
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
+                  >
                     <option>Demande d'aide</option>
                     <option>Information générale</option>
                     <option>Bénévolat</option>
                     <option>Témoignage</option>
+                    <option>Urgence</option>
                     <option>Autre</option>
                   </select>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Message</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Message *</label>
                   <textarea 
                     rows={6}
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    required
                     className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 resize-none"
                     placeholder="Décrivez votre situation ou votre demande..."
                   ></textarea>
@@ -200,10 +297,25 @@ const ContactPage: React.FC = () => {
                 
                 <button 
                   type="submit"
+                  disabled={isSubmitting}
                   className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-3"
+                  className={`w-full ${
+                    isSubmitting 
+                      ? 'bg-slate-400 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105'
+                  } text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center space-x-3`}
                 >
-                  <Send className="w-5 h-5" />
-                  <span>Envoyer le message</span>
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Envoi en cours...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5" />
+                      <span>Envoyer le message</span>
+                    </>
+                  )}
                 </button>
               </form>
             </div>
