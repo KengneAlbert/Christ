@@ -1,5 +1,6 @@
 import React from 'react';
 import { Quote, ExternalLink, Calendar, Newspaper } from 'lucide-react';
+import NewsletterSubscription from './NewsletterSubscription';
 
 const News: React.FC = () => {
   const newsItems = [
@@ -105,16 +106,7 @@ const News: React.FC = () => {
             <p className="text-slate-600 mb-6 leading-relaxed">
               Abonnez-vous à notre newsletter pour recevoir les dernières actualités et informations importantes sur la lutte contre les violences conjugales.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-              <input 
-                type="email" 
-                placeholder="Votre adresse email"
-                className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              />
-              <button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
-                S'abonner
-              </button>
-            </div>
+            <NewsletterSubscription variant="inline" className="max-w-2xl mx-auto" />
           </div>
         </div>
       </div>

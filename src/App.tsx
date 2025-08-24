@@ -15,6 +15,7 @@ import MediathequePage from './pages/MediathequePage';
 import TeamPage from './pages/TeamPage';
 import ActionsPage from './pages/ActionsPage';
 import ChatBot from './components/ChatBot';
+import NewsletterAdminPage from './pages/NewsletterAdminPage';
 
 const HomePage = () => (
   <>
@@ -41,6 +42,7 @@ function App() {
             <Route path="/team" element={<TeamPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/mediatheque" element={<MediathequePage />} />
+            <Route path="/admin/newsletter" element={<NewsletterAdminPage />} />
           </Routes>
         </main>
         <Footer />
