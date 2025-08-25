@@ -10,7 +10,7 @@ const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <div className="flex items-center space-x-4">
+          <a href="/" className="flex items-center space-x-4 hover:opacity-80 transition-opacity duration-300">
             <div>
               <img
                 src={Logo}
@@ -26,7 +26,7 @@ const Header: React.FC = () => {
                 Aux Écoute et Réconfort
               </p>
             </div>
-          </div>
+          </a>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex space-x-8">
