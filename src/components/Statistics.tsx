@@ -93,6 +93,19 @@ const Statistics: React.FC = () => {
               <strong className="text-slate-800">Chaque statistique représente une personne</strong> qui a besoin d'aide et de soutien. 
               Notre association s'engage à être présente pour chacune d\'entre elles, sans exception.
             </p>
+            <div className="mt-6 pt-4 border-t border-emerald-200">
+              <p className="text-sm text-slate-600">
+                <strong>Source :</strong>{' '}
+                <a 
+                  href="https://www.vie-publique.fr/en-bref/291834-violences-conjugales-en-2022-86-de-femmes-victimes"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-600 hover:text-emerald-700 underline transition-colors duration-300"
+                >
+                  Vie Publique - Violences conjugales en 2022
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </div>
