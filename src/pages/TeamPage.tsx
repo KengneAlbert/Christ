@@ -1,5 +1,6 @@
 import React from 'react';
 import { User, Mail, Phone, Heart, Shield, Users, Award, Calendar, MapPin } from 'lucide-react';
+import Fondatrice from "../assets/fondatrice.jpg";
 
 const TeamPage: React.FC = () => {
   const teamMembers = [
@@ -10,7 +11,7 @@ const TeamPage: React.FC = () => {
       expertise: ['Leadership', 'Accompagnement', 'Témoignage'],
       color: 'from-emerald-500 to-teal-600',
       bgColor: 'from-emerald-50 to-teal-50',
-      image: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=400'
+      image: Fondatrice,
     },
     {
       name: 'Christelle YOUETO',

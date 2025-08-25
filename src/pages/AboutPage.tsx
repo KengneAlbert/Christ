@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight, Phone, Heart, Shield } from 'lucide-react';
+import Fondatrice from "../assets/fondatrice.jpg";
 
 const AboutPage: React.FC = () => {
   return (
@@ -73,7 +74,7 @@ const AboutPage: React.FC = () => {
             <div className="relative">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <img 
-                  src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=800"
+                  src={Fondatrice}
                   alt="Fondatrice de l'association"
                   className="w-full h-96 object-cover"
                 />
