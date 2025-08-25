@@ -140,12 +140,27 @@ const Hero: React.FC = () => {
                 Si vous êtes en danger ou surveillé(e), quittez immédiatement ce site. Utilisez un ordinateur sûr ou un téléphone que votre partenaire ne peut pas vérifier.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
-                <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 hover:scale-105 hover:shadow-lg animate-pulse-gentle">
+                <a 
+                  href="tel:17"
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 hover:scale-105 hover:shadow-lg animate-pulse-gentle"
+                >
                   <Phone className="w-4 h-4" />
-                  <span>Urgence: 17 ou 15</span>
-                </button>
-                <button className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                  Effacer l'historique
+                  <span>Cliquez pour appeler: 17</span>
+                </a>
+                <button 
+                  onClick={() => {
+                    if (confirm('Voulez-vous effacer votre historique de navigation ? Cette action supprimera toutes les traces de votre visite sur ce site.')) {
+                      // Effacer l'historique (méthode compatible navigateurs)
+                      if (window.history && window.history.replaceState) {
+                        window.history.replaceState(null, '', window.location.href);
+                      }
+                      // Rediriger vers une page neutre
+                      window.location.href = 'https://www.google.com';
+                    }
+                  }}
+                  className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  Cliquez pour effacer l'historique
                 </button>
               </div>
             </div>
