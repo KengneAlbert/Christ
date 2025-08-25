@@ -80,10 +80,13 @@ const Actions: React.FC = () => {
                 ))}
               </ul>
 
-              <button className="group/btn flex items-center space-x-2 text-emerald-400 hover:text-emerald-300 font-medium transition-colors duration-300">
+              <a 
+                href="/mediatheque"
+                className="group/btn flex items-center space-x-2 text-emerald-400 hover:text-emerald-300 font-medium transition-colors duration-300"
+              >
                 <span>En savoir plus</span>
                 <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-300" />
-              </button>
+              </a>
             </div>
           ))}
         </div>
