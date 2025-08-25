@@ -208,12 +208,18 @@ const TeamPage: React.FC = () => {
               Vous souhaitez contribuer à notre cause ? Nous recherchons toujours des bénévoles passionnés pour nous aider dans notre mission d'accompagnement et de soutien.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <a 
+                href="/contact#contact-form"
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
                 Devenir bénévole
-              </button>
-              <button className="border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white hover:border-slate-700 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105">
+              </a>
+              <a 
+                href="/actions"
+                className="border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white hover:border-slate-700 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105"
+              >
                 En savoir plus
-              </button>
+              </a>
             </div>
           </div>
         </div>
