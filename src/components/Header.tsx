@@ -1,9 +1,17 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Menu, X, Shield, Phone } from "lucide-react";
 import Logo from "../assets/LogoChrist.png";
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const isActivePage = (path: string) => {
+    if (path === "/" && location.pathname === "/") return true;
+    if (path !== "/" && location.pathname.startsWith(path)) return true;
+    return false;
+  };
 
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-emerald-100">
@@ -32,38 +40,68 @@ const Header: React.FC = () => {
           <nav className="hidden lg:flex space-x-8">
             <a
               href="/about"
-              className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group"
+              className={`transition-colors duration-300 font-medium relative group ${
+                isActivePage("/about") 
+                  ? "text-emerald-600" 
+                  : "text-slate-700 hover:text-emerald-600"
+              }`}
             >
               À propos
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span>
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all duration-300 ${
+                isActivePage("/about") ? "w-full" : "w-0 group-hover:w-full"
+              }`}></span>
             </a>
             <a
               href="/actions"
-              className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group"
+              className={`transition-colors duration-300 font-medium relative group ${
+                isActivePage("/actions") 
+                  ? "text-emerald-600" 
+                  : "text-slate-700 hover:text-emerald-600"
+              }`}
             >
               Nos Actions
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span>
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all duration-300 ${
+                isActivePage("/actions") ? "w-full" : "w-0 group-hover:w-full"
+              }`}></span>
             </a>
             <a
               href="/team"
-              className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group"
+              className={`transition-colors duration-300 font-medium relative group ${
+                isActivePage("/team") 
+                  ? "text-emerald-600" 
+                  : "text-slate-700 hover:text-emerald-600"
+              }`}
             >
               Notre Équipe
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span>
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all duration-300 ${
+                isActivePage("/team") ? "w-full" : "w-0 group-hover:w-full"
+              }`}></span>
             </a>
             <a
               href="/contact"
-              className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group"
+              className={`transition-colors duration-300 font-medium relative group ${
+                isActivePage("/contact") 
+                  ? "text-emerald-600" 
+                  : "text-slate-700 hover:text-emerald-600"
+              }`}
             >
               Contact
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span>
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all duration-300 ${
+                isActivePage("/contact") ? "w-full" : "w-0 group-hover:w-full"
+              }`}></span>
             </a>
             <a
               href="/mediatheque"
-              className="text-slate-700 hover:text-emerald-600 transition-colors duration-300 font-medium relative group"
+              className={`transition-colors duration-300 font-medium relative group ${
+                isActivePage("/mediatheque") 
+                  ? "text-emerald-600" 
+                  : "text-slate-700 hover:text-emerald-600"
+              }`}
             >
               Médiathèque
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all duration-300 group-hover:w-full"></span>
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all duration-300 ${
+                isActivePage("/mediatheque") ? "w-full" : "w-0 group-hover:w-full"
+              }`}></span>
             </a>
           </nav>
 
@@ -98,37 +136,51 @@ const Header: React.FC = () => {
             <div className="flex flex-col space-y-4">
               <a
                 href="/about"
-                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
+                className={`transition-colors duration-200 py-2 ${
+                  isActivePage("/about") 
+                    ? "text-emerald-600 font-semibold" 
+                    : "text-slate-700 hover:text-emerald-600"
+                }`}
               >
                 À propos
               </a>
               <a
                 href="/actions"
-                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
+                className={`transition-colors duration-200 py-2 ${
+                  isActivePage("/actions") 
+                    ? "text-emerald-600 font-semibold" 
+                    : "text-slate-700 hover:text-emerald-600"
+                }`}
               >
                 Nos Actions
               </a>
               <a
                 href="/team"
-                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
+                className={`transition-colors duration-200 py-2 ${
+                  isActivePage("/team") 
+                    ? "text-emerald-600 font-semibold" 
+                    : "text-slate-700 hover:text-emerald-600"
+                }`}
               >
                 Notre Équipe
               </a>
               <a
-                href="#news"
-                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
-              >
-                Actualités
-              </a>
-              <a
                 href="/contact"
-                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
+                className={`transition-colors duration-200 py-2 ${
+                  isActivePage("/contact") 
+                    ? "text-emerald-600 font-semibold" 
+                    : "text-slate-700 hover:text-emerald-600"
+                }`}
               >
                 Contact
               </a>
               <a
                 href="/mediatheque"
-                className="text-slate-700 hover:text-emerald-600 transition-colors duration-200 py-2"
+                className={`transition-colors duration-200 py-2 ${
+                  isActivePage("/mediatheque") 
+                    ? "text-emerald-600 font-semibold" 
+                    : "text-slate-700 hover:text-emerald-600"
+                }`}
               >
                 Médiathèque
               </a>
