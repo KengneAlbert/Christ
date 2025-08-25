@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import TrustBanner from './components/TrustBanner';
@@ -33,7 +33,7 @@ const HomePage = () => (
 
 function App() {
   return (
-    <Router>
+    <Router basename="/">
       <div className="min-h-screen">
         <Header />
         <main>
@@ -46,6 +46,8 @@ function App() {
             <Route path="/mediatheque" element={<MediathequePage />} />
             <Route path="/admin/newsletter" element={<NewsletterAdminPage />} />
             <Route path="/cookies" element={<CookiePolicyPage />} />
+            {/* Redirection pour les anciennes URLs ou erreurs */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
         <Footer />

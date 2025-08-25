@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christ Le Bon Berger - Redirection</title>
+    <script>
+        // Redirection automatique pour les SPA
+        const path = window.location.pathname;
+        const search = window.location.search;
+        const hash = window.location.hash;
+        
+        // Rediriger vers index.html avec le chemin dans les paramètres
+        window.location.replace('/index.html' + (path === '/' ? '' : '?p=' + path) + search + hash);
+    </script>
+</head>
+<body>
+    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+        <h1>Redirection en cours...</h1>
+        <p>Si vous n'êtes pas redirigé automatiquement, <a href="/">cliquez ici</a>.</p>
+    </div>
+</body>
+</html>
