@@ -14,7 +14,8 @@ const ActionsPage: React.FC = () => {
         'Soutien personnalisé'
       ],
       color: 'from-emerald-500 to-teal-600',
-      bgColor: 'from-emerald-50 to-teal-50'
+      bgColor: 'from-emerald-50 to-teal-50',
+      image: 'https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=800'
     },
     {
       icon: Users,
@@ -27,7 +28,8 @@ const ActionsPage: React.FC = () => {
         'Animateurs qualifiés'
       ],
       color: 'from-blue-500 to-indigo-600',
-      bgColor: 'from-blue-50 to-indigo-50'
+      bgColor: 'from-blue-50 to-indigo-50',
+      image: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=800'
     },
     {
       icon: Compass,
@@ -40,7 +42,8 @@ const ActionsPage: React.FC = () => {
         'Outils concrets et soutien adapté'
       ],
       color: 'from-purple-500 to-pink-600',
-      bgColor: 'from-purple-50 to-pink-50'
+      bgColor: 'from-purple-50 to-pink-50',
+      image: 'https://images.pexels.com/photos/5699456/pexels-photo-5699456.jpeg?auto=compress&cs=tinysrgb&w=800'
     }
   ];
 
@@ -128,17 +131,24 @@ const ActionsPage: React.FC = () => {
                     ))}
                   </div>
 
-                  <button className="group bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-3">
+                  <a 
+                    href="/mediatheque"
+                    className="group bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-3"
+                  >
                     <span>En savoir plus</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-                  </button>
+                  </a>
                 </div>
 
                 {/* Illustration */}
                 <div className={`relative ${index % 2 === 1 ? 'lg:col-start-1' : ''}`}>
                   <div className={`bg-gradient-to-br ${action.bgColor} rounded-3xl p-8 shadow-xl`}>
-                    <div className="h-64 bg-white/50 rounded-2xl flex items-center justify-center">
-                      <action.icon className={`w-24 h-24 bg-gradient-to-r ${action.color} bg-clip-text text-transparent`} />
+                    <div className="h-64 bg-white/50 rounded-2xl overflow-hidden">
+                      <img 
+                        src={action.image}
+                        alt={action.title}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   </div>
                   
