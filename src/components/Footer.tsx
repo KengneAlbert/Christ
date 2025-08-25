@@ -9,6 +9,8 @@ import {
   Instagram,
   Heart,
   ExternalLink,
+  Linkedin,
+  Youtube,
 } from "lucide-react";
 import Logo from "../assets/LogoChrist.png";
 
@@ -106,22 +108,36 @@ const Footer: React.FC = () => {
 
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://www.facebook.com/permalink.php?story_fbid=pfbid025go4Kiaq1MYgqX8omSdCtNBcgy54NgdjefomAkfP4bpfGXdS4uJwh5AVRD8MjorWl&id=61573609049917"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center hover:bg-emerald-600 transition-colors duration-300 shadow-lg"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://www.linkedin.com/company/christ-le-bon-berger"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center hover:bg-blue-500 transition-colors duration-300 shadow-lg"
               >
-                <Twitter className="w-5 h-5" />
+                <Linkedin className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/clbb.association/?igsh=bWx5dnBzazBqdWdu#"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center hover:bg-pink-600 transition-colors duration-300 shadow-lg"
               >
                 <Instagram className="w-5 h-5" />
+              </a>
+              <a
+                href="https://www.youtube.com/@clbb-association-l-amour-gagne"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center hover:bg-red-600 transition-colors duration-300 shadow-lg"
+              >
+                <Youtube className="w-5 h-5" />
               </a>
             </div>
           </div>
