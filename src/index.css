@@ -306,3 +306,4 @@
 /* Animations de chargement */
 .loading-dots::after {
   content: '';
+}
