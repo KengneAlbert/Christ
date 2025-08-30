@@ -40,66 +40,66 @@ const Header: React.FC = () => {
           <nav className="hidden lg:flex space-x-8">
             <a
               href="/about"
-              className={`transition-colors duration-300 font-medium relative group ${
+              className={`transition-all duration-300 font-medium relative group hover:transform hover:scale-105 ${
                 isActivePage("/about") 
                   ? "text-emerald-600" 
                   : "text-slate-700 hover:text-emerald-600"
               }`}
             >
               À propos
-              <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all duration-300 ${
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300 ${
                 isActivePage("/about") ? "w-full" : "w-0 group-hover:w-full"
               }`}></span>
             </a>
             <a
               href="/actions"
-              className={`transition-colors duration-300 font-medium relative group ${
+              className={`transition-all duration-300 font-medium relative group hover:transform hover:scale-105 ${
                 isActivePage("/actions") 
                   ? "text-emerald-600" 
                   : "text-slate-700 hover:text-emerald-600"
               }`}
             >
               Nos Actions
-              <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all duration-300 ${
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300 ${
                 isActivePage("/actions") ? "w-full" : "w-0 group-hover:w-full"
               }`}></span>
             </a>
             <a
               href="/team"
-              className={`transition-colors duration-300 font-medium relative group ${
+              className={`transition-all duration-300 font-medium relative group hover:transform hover:scale-105 ${
                 isActivePage("/team") 
                   ? "text-emerald-600" 
                   : "text-slate-700 hover:text-emerald-600"
               }`}
             >
               Notre Équipe
-              <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all duration-300 ${
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300 ${
                 isActivePage("/team") ? "w-full" : "w-0 group-hover:w-full"
               }`}></span>
             </a>
             <a
               href="/contact"
-              className={`transition-colors duration-300 font-medium relative group ${
+              className={`transition-all duration-300 font-medium relative group hover:transform hover:scale-105 ${
                 isActivePage("/contact") 
                   ? "text-emerald-600" 
                   : "text-slate-700 hover:text-emerald-600"
               }`}
             >
               Contact
-              <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all duration-300 ${
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300 ${
                 isActivePage("/contact") ? "w-full" : "w-0 group-hover:w-full"
               }`}></span>
             </a>
             <a
               href="/mediatheque"
-              className={`transition-colors duration-300 font-medium relative group ${
+              className={`transition-all duration-300 font-medium relative group hover:transform hover:scale-105 ${
                 isActivePage("/mediatheque") 
                   ? "text-emerald-600" 
                   : "text-slate-700 hover:text-emerald-600"
               }`}
             >
               Médiathèque
-              <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all duration-300 ${
+              <span className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300 ${
                 isActivePage("/mediatheque") ? "w-full" : "w-0 group-hover:w-full"
               }`}></span>
             </a>
@@ -107,36 +107,36 @@ const Header: React.FC = () => {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
-            <button className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <button className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg animate-heartbeat">
               <Phone className="w-4 h-4" />
               <span>Urgence</span>
             </button>
-            <button className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <button className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg hover-glow">
               Faire un don
             </button>
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-110 hover:rotate-3"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
             {isMenuOpen ? (
-              <X className="w-6 h-6" />
+              <X className="w-6 h-6 animate-rotate-in" />
             ) : (
-              <Menu className="w-6 h-6" />
+              <Menu className="w-6 h-6 animate-scale-in" />
             )}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="lg:hidden pb-4 border-t border-gray-100 mt-4 pt-4">
+          <div className="lg:hidden pb-4 border-t border-gray-100 mt-4 pt-4 animate-slide-up">
             <div className="flex flex-col space-y-4">
               <a
                 href="/about"
-                className={`transition-colors duration-200 py-2 ${
+                className={`transition-all duration-300 py-2 hover:transform hover:translateX-2 animate-slide-in-left delay-100 ${
                   isActivePage("/about") 
                     ? "text-emerald-600 font-semibold" 
                     : "text-slate-700 hover:text-emerald-600"
@@ -146,7 +146,7 @@ const Header: React.FC = () => {
               </a>
               <a
                 href="/actions"
-                className={`transition-colors duration-200 py-2 ${
+                className={`transition-all duration-300 py-2 hover:transform hover:translateX-2 animate-slide-in-left delay-200 ${
                   isActivePage("/actions") 
                     ? "text-emerald-600 font-semibold" 
                     : "text-slate-700 hover:text-emerald-600"
@@ -156,7 +156,7 @@ const Header: React.FC = () => {
               </a>
               <a
                 href="/team"
-                className={`transition-colors duration-200 py-2 ${
+                className={`transition-all duration-300 py-2 hover:transform hover:translateX-2 animate-slide-in-left delay-300 ${
                   isActivePage("/team") 
                     ? "text-emerald-600 font-semibold" 
                     : "text-slate-700 hover:text-emerald-600"
@@ -166,7 +166,7 @@ const Header: React.FC = () => {
               </a>
               <a
                 href="/contact"
-                className={`transition-colors duration-200 py-2 ${
+                className={`transition-all duration-300 py-2 hover:transform hover:translateX-2 animate-slide-in-left delay-400 ${
                   isActivePage("/contact") 
                     ? "text-emerald-600 font-semibold" 
                     : "text-slate-700 hover:text-emerald-600"
@@ -176,7 +176,7 @@ const Header: React.FC = () => {
               </a>
               <a
                 href="/mediatheque"
-                className={`transition-colors duration-200 py-2 ${
+                className={`transition-all duration-300 py-2 hover:transform hover:translateX-2 animate-slide-in-left delay-500 ${
                   isActivePage("/mediatheque") 
                     ? "text-emerald-600 font-semibold" 
                     : "text-slate-700 hover:text-emerald-600"
@@ -184,12 +184,12 @@ const Header: React.FC = () => {
               >
                 Médiathèque
               </a>
-              <div className="flex flex-col space-y-3 pt-4">
-                <button className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl font-medium">
+              <div className="flex flex-col space-y-3 pt-4 animate-slide-in-left delay-600">
+                <button className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg animate-heartbeat">
                   <Phone className="w-4 h-4" />
                   <span>Urgence</span>
                 </button>
-                <button className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-xl font-medium">
+                <button className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover-glow">
                   Faire un don
                 </button>
               </div>

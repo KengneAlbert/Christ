@@ -143,21 +143,21 @@ const ChatBot: React.FC = () => {
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-16 h-16 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 flex items-center justify-center ${
+          className={`w-16 h-16 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 hover:rotate-3 flex items-center justify-center hover-glow ${
             isOpen 
               ? 'bg-red-500 hover:bg-red-600' 
-              : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 animate-pulse'
+              : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 animate-heartbeat'
           }`}
         >
           {isOpen ? (
-            <X className="w-6 h-6 text-white" />
+            <X className="w-6 h-6 text-white animate-rotate-in" />
           ) : (
-            <MessageCircle className="w-6 h-6 text-white" />
+            <MessageCircle className="w-6 h-6 text-white animate-bounce-gentle" />
           )}
         </button>
         
         {!isOpen && (
-          <div className="absolute -top-12 right-0 bg-slate-800 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 animate-fade-in delay-1000 pointer-events-none">
+          <div className="absolute -top-12 right-0 bg-slate-800 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 animate-fade-in delay-1000 pointer-events-none hover-lift">
             Besoin d'aide ? Cliquez ici
             <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
           </div>
@@ -166,10 +166,10 @@ const ChatBot: React.FC = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 flex flex-col animate-slide-up">
+        <div className="fixed bottom-24 right-6 w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 flex flex-col animate-slide-up hover-lift">
           {/* Header */}
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 rounded-t-2xl flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 rounded-t-2xl flex items-center space-x-3 animate-slide-in-left">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center animate-bounce-gentle delay-300">
               <Bot className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">
@@ -177,29 +177,29 @@ const ChatBot: React.FC = () => {
               <p className="text-white/80 text-sm">En ligne • Confidentiel</p>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-heartbeat"></div>
               <Shield className="w-5 h-5 text-white/80" />
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 animate-fade-in delay-200">
             {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}>
+              <div key={message.id} className={`flex ${message.isBot ? 'justify-start' : 'justify-end'} animate-slide-up`}>
                 <div className={`max-w-[80%] ${message.isBot ? 'order-2' : 'order-1'}`}>
                   <div className={`flex items-start space-x-2 ${message.isBot ? '' : 'flex-row-reverse space-x-reverse'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 hover:scale-110 transition-transform duration-300 ${
                       message.isBot 
                         ? 'bg-gradient-to-r from-emerald-500 to-teal-600' 
                         : 'bg-slate-600'
                     }`}>
                       {message.isBot ? (
-                        <Bot className="w-4 h-4 text-white" />
+                        <Bot className="w-4 h-4 text-white animate-bounce-gentle" />
                       ) : (
                         <User className="w-4 h-4 text-white" />
                       )}
                     </div>
-                    <div className={`rounded-2xl px-4 py-3 ${
+                    <div className={`rounded-2xl px-4 py-3 hover:shadow-lg transition-shadow duration-300 ${
                       message.isBot 
                         ? 'bg-white border border-slate-200 text-slate-800' 
                         : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white'
@@ -213,12 +213,12 @@ const ChatBot: React.FC = () => {
                   
                   {/* Options */}
                   {message.options && (
-                    <div className="mt-3 space-y-2 ml-10">
+                    <div className="mt-3 space-y-2 ml-10 animate-slide-up delay-300">
                       {message.options.map((option, index) => (
                         <button
                           key={index}
                           onClick={() => handleOptionClick(option)}
-                          className="block w-full text-left px-3 py-2 bg-white border border-emerald-200 rounded-lg text-sm text-slate-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors duration-200"
+                          className={`block w-full text-left px-3 py-2 bg-white border border-emerald-200 rounded-lg text-sm text-slate-700 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-300 hover:scale-105 hover:shadow-md animate-slide-in-left delay-${index * 100}`}
                         >
                           {option}
                         </button>
@@ -231,9 +231,9 @@ const ChatBot: React.FC = () => {
             
             {/* Typing Indicator */}
             {isTyping && (
-              <div className="flex justify-start">
+              <div className="flex justify-start animate-slide-up">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center animate-bounce-gentle">
                     <Bot className="w-4 h-4 text-white" />
                   </div>
                   <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3">
@@ -251,7 +251,7 @@ const ChatBot: React.FC = () => {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-slate-200 bg-white rounded-b-2xl">
+          <div className="p-4 border-t border-slate-200 bg-white rounded-b-2xl animate-slide-in-right delay-400">
             <div className="flex items-center space-x-2">
               <input
                 type="text"
@@ -259,36 +259,36 @@ const ChatBot: React.FC = () => {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Tapez votre message..."
-                className="flex-1 px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                className="flex-1 px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm focus-ring"
               />
               <button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim()}
-                className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl flex items-center justify-center transition-all duration-200"
+                className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:rotate-3 hover-glow"
               >
-                <Send className="w-4 h-4 text-white" />
+                <Send className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform duration-300" />
               </button>
             </div>
             
             {/* Quick Actions */}
-            <div className="flex items-center justify-center space-x-4 mt-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-center space-x-4 mt-3 pt-3 border-t border-slate-100 animate-slide-up delay-500">
               <button
                 onClick={() => handleOptionClick("J'ai besoin d'aide urgente")}
-                className="flex items-center space-x-1 text-red-600 hover:text-red-700 text-xs transition-colors duration-200"
+                className="flex items-center space-x-1 text-red-600 hover:text-red-700 text-xs transition-all duration-300 hover:scale-110 hover:animate-shake"
               >
                 <AlertTriangle className="w-3 h-3" />
                 <span>Urgence</span>
               </button>
               <button
                 onClick={() => handleOptionClick("Je veux parler à quelqu'un")}
-                className="flex items-center space-x-1 text-emerald-600 hover:text-emerald-700 text-xs transition-colors duration-200"
+                className="flex items-center space-x-1 text-emerald-600 hover:text-emerald-700 text-xs transition-all duration-300 hover:scale-110"
               >
                 <Phone className="w-3 h-3" />
                 <span>Appeler</span>
               </button>
               <button
                 onClick={() => handleOptionClick("Numéros d'urgence")}
-                className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 text-xs transition-colors duration-200"
+                className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 text-xs transition-all duration-300 hover:scale-110 hover:animate-heartbeat"
               >
                 <Heart className="w-3 h-3" />
                 <span>Aide</span>

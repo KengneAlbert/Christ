@@ -269,10 +269,10 @@ const Contact: React.FC = () => {
                 <button 
                   type="submit"
                   disabled={isSubmitting}
-                  className={`w-full ${
+                  className={`w-full focus-ring ${
                     isSubmitting 
                       ? 'bg-slate-400 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105'
+                      : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 hover-glow'
                   } text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center space-x-3`}
                 >
                   {isSubmitting ? (
@@ -282,7 +282,7 @@ const Contact: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <Send className="w-5 h-5" />
+                      <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                       <span>Envoyer le message</span>
                     </>
                   )}
@@ -294,9 +294,9 @@ const Contact: React.FC = () => {
 
         {/* Final CTA */}
         <div className="mt-20 text-center">
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-12 shadow-xl text-white">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-12 shadow-xl text-white hover-lift animate-slide-up delay-600">
             <div className="flex items-center justify-center space-x-3 mb-6">
-              <Heart className="w-8 h-8" />
+              <Heart className="w-8 h-8 animate-heartbeat" />
               <h3 className="text-3xl md:text-4xl font-bold">
                 Vous n'êtes pas seul(e)
               </h3>
@@ -307,13 +307,13 @@ const Contact: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a 
                 href="tel:0781324474"
-                className="bg-white text-emerald-600 px-8 py-4 rounded-xl font-semibold hover:bg-slate-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                className="bg-white text-emerald-600 px-8 py-4 rounded-xl font-semibold hover:bg-slate-50 transition-all duration-300 transform hover:scale-105 shadow-lg hover-lift animate-slide-in-left delay-800"
               >
                 Appelez maintenant
               </a>
               <a 
                 href="/contact"
-                className="border-2 border-white text-white hover:bg-white hover:text-emerald-600 px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
+                className="border-2 border-white text-white hover:bg-white hover:text-emerald-600 px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover-lift animate-slide-in-right delay-900"
               >
                 Plus d'informations
               </a>

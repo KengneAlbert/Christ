@@ -66,29 +66,29 @@ const Statistics: React.FC = () => {
           {stats.map((stat, index) => (
             <div 
               key={index} 
-              className={`group bg-gradient-to-br ${stat.bgColor} rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-105 border border-white/50 ${
+              className={`group bg-gradient-to-br ${stat.bgColor} rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-105 border border-white/50 hover-tilt animate-scale-in delay-${index * 200} ${
                 index === 2 && 'md:col-span-2 lg:col-span-1 md:mx-auto md:max-w-sm lg:max-w-none lg:mx-0'
               }`}
             >
-              <div className={`w-12 h-12 md:w-16 md:h-16 bg-white/80 rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+              <div className={`w-12 h-12 md:w-16 md:h-16 bg-white/80 rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg animate-bounce-gentle delay-${index * 300}`}>
                 <stat.icon className={`w-6 h-6 md:w-8 md:h-8 ${stat.iconColor}`} />
               </div>
               
-              <div className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300`}>
+              <div className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-3 md:mb-4 group-hover:scale-110 group-hover:animate-wiggle transition-all duration-300`}>
                 {stat.percentage}
               </div>
               
-              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-slate-800 mb-3 md:mb-4 leading-tight">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-slate-800 mb-3 md:mb-4 leading-tight group-hover:text-emerald-600 transition-colors duration-300">
                 {stat.label}
               </h3>
               
-              <div className={`w-full h-2 bg-gradient-to-r ${stat.color} rounded-full opacity-20 group-hover:opacity-40 transition-opacity duration-300`}></div>
+              <div className={`w-full h-2 bg-gradient-to-r ${stat.color} rounded-full opacity-20 group-hover:opacity-60 transition-all duration-300 group-hover:animate-glow`}></div>
             </div>
           ))}
         </div>
 
         <div className="mt-12 md:mt-16 text-center">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-xl border border-emerald-100 max-w-4xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-xl border border-emerald-100 max-w-4xl mx-auto hover-lift animate-slide-up delay-800">
             <p className="text-base md:text-lg text-slate-700 leading-relaxed">
               <strong className="text-slate-800">Chaque statistique représente une personne</strong> qui a besoin d'aide et de soutien. 
               Notre association s'engage à être présente pour chacune d\'entre elles, sans exception.
@@ -100,7 +100,7 @@ const Statistics: React.FC = () => {
                   href="https://www.vie-publique.fr/en-bref/291834-violences-conjugales-en-2022-86-de-femmes-victimes"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-emerald-600 hover:text-emerald-700 underline transition-colors duration-300"
+                  className="text-emerald-600 hover:text-emerald-700 underline transition-all duration-300 hover:scale-105"
                 >
                   Vie Publique - Violences conjugales en 2022
                 </a>

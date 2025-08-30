@@ -166,10 +166,10 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full ${
+              className={`w-full focus-ring ${
                 isSubmitting 
                   ? 'bg-slate-400 cursor-not-allowed' 
-                  : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105'
+                  : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 hover-glow'
               } text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center space-x-3`}
             >
               {isSubmitting ? (
@@ -179,7 +179,7 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
                 </>
               ) : (
                 <>
-                  <Mail className="w-5 h-5" />
+                  <Mail className="w-5 h-5 group-hover:animate-wiggle" />
                   <span>S'abonner à la newsletter</span>
                 </>
               )}

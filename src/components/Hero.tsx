@@ -53,85 +53,91 @@ const Hero: React.FC = () => {
 
         <h1 className="text-5xl md:text-7xl font-bold text-slate-800 mb-8 leading-tight animate-slide-up">
           L'association lutte contre les{' '}
-          <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+          <span className="text-gradient-animate">
             violences conjugales
           </span>
         </h1>
         
-        <blockquote className="text-2xl md:text-3xl mb-12 italic font-light leading-relaxed text-slate-600 max-w-4xl mx-auto animate-slide-up delay-200">
+        <blockquote className="text-2xl md:text-3xl mb-12 italic font-light leading-relaxed text-slate-600 max-w-4xl mx-auto animate-slide-up delay-200 hover:text-slate-800 transition-colors duration-500">
           « La souffrance ne fait pas de distinction et il ne faut pas croire que cela n'arrive qu'aux autres! »
         </blockquote>
         
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-slide-up delay-300">
-          <button className="group bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-xl flex items-center space-x-3 animate-pulse-gentle">
+          <a 
+            href="/contact"
+            className="group bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-xl flex items-center space-x-3 animate-pulse-gentle hover-glow"
+          >
             <span>CONTACTEZ-NOUS!</span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-          </button>
-          <button className="border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white hover:border-slate-700 px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 group-hover:scale-110 transition-all duration-300" />
+          </a>
+          <a 
+            href="/about"
+            className="border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white hover:border-slate-700 px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover-lift"
+          >
             En savoir plus
-          </button>
+          </a>
         </div>
 
         {/* Trust Indicators */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto animate-slide-up delay-400">
-          <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
+          <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 hover-tilt animate-scale-in delay-500">
             <div className="mb-4 relative">
               <img 
                 src="https://images.pexels.com/photos/7176026/pexels-photo-7176026.jpeg?auto=compress&cs=tinysrgb&w=400"
                 alt="Écoute disponible 24/7"
-                className="w-20 h-20 rounded-2xl object-cover mx-auto shadow-lg"
+                className="w-20 h-20 rounded-2xl object-cover mx-auto shadow-lg group-hover:shadow-xl transition-shadow duration-300"
               />
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg animate-bounce-gentle delay-800">
                 <Clock className="w-4 h-4 text-white" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-emerald-600 mb-2">24/7</div>
+            <div className="text-2xl font-bold text-emerald-600 mb-2 group-hover:animate-wiggle">24/7</div>
             <div className="text-slate-600 font-medium">Écoute disponible</div>
             <div className="text-sm text-slate-500 mt-1">Jour et nuit, nous sommes là</div>
           </div>
-          <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
+          <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 hover-tilt animate-scale-in delay-700">
             <div className="mb-4 relative">
               <img 
                 src="https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=400"
                 alt="Confidentialité garantie"
-                className="w-20 h-20 rounded-2xl object-cover mx-auto shadow-lg"
+                className="w-20 h-20 rounded-2xl object-cover mx-auto shadow-lg group-hover:shadow-xl transition-shadow duration-300"
               />
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg animate-bounce-gentle delay-900">
                 <Lock className="w-4 h-4 text-white" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-emerald-600 mb-2">100%</div>
+            <div className="text-2xl font-bold text-emerald-600 mb-2 group-hover:animate-wiggle">100%</div>
             <div className="text-slate-600 font-medium">Confidentiel</div>
             <div className="text-sm text-slate-500 mt-1">Vos informations protégées</div>
           </div>
-          <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
+          <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 hover-tilt animate-scale-in delay-900">
             <div className="mb-4 relative">
               <img 
                 src="https://images.pexels.com/photos/6646918/pexels-photo-6646918.jpeg?auto=compress&cs=tinysrgb&w=400"
                 alt="Accompagnement gratuit"
-                className="w-20 h-20 rounded-2xl object-cover mx-auto shadow-lg"
+                className="w-20 h-20 rounded-2xl object-cover mx-auto shadow-lg group-hover:shadow-xl transition-shadow duration-300"
               />
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg animate-bounce-gentle delay-1200">
                 <Heart className="w-4 h-4 text-white" />
               </div>
             </div>
-            <div className="text-2xl font-bold text-emerald-600 mb-2">Gratuit</div>
+            <div className="text-2xl font-bold text-emerald-600 mb-2 group-hover:animate-wiggle">Gratuit</div>
             <div className="text-slate-600 font-medium">Accompagnement</div>
             <div className="text-sm text-slate-500 mt-1">Sans frais, sans jugement</div>
           </div>
         </div>
 
         {/* Safety Notice */}
-        <div className="mt-12 bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-emerald-100 max-w-4xl mx-auto animate-slide-up delay-500 hover:shadow-2xl transition-shadow duration-300">
+        <div className="mt-12 bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-emerald-100 max-w-4xl mx-auto animate-slide-up delay-500 hover:shadow-2xl transition-all duration-300 hover-lift">
           <div className="flex items-start space-x-4">
             <div className="hidden md:block flex-shrink-0">
               <img 
                 src="https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=300"
                 alt="Sécurité et protection"
-                className="w-24 h-24 rounded-xl object-cover shadow-lg"
+                className="w-24 h-24 rounded-xl object-cover shadow-lg hover:shadow-xl transition-shadow duration-300"
               />
             </div>
-            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0 animate-pulse-gentle">
+            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0 animate-pulse-gentle hover:animate-heartbeat">
               <Shield className="w-6 h-6 text-emerald-600" />
             </div>
             <div className="flex-1">
@@ -142,7 +148,7 @@ const Hero: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-3">
                 <a 
                   href="tel:17"
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 hover:scale-105 hover:shadow-lg animate-pulse-gentle"
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 hover:scale-105 hover:shadow-lg animate-pulse-gentle hover:animate-shake"
                 >
                   <Phone className="w-4 h-4" />
                   <span>Cliquez pour appeler: 17</span>
@@ -158,7 +164,7 @@ const Hero: React.FC = () => {
                       window.location.href = 'https://www.google.com';
                     }
                   }}
-                  className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                  className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover-lift"
                 >
                   Cliquez pour effacer l'historique
                 </button>

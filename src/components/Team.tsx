@@ -44,7 +44,7 @@ const Team: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Left Content */}
-          <div>
+          <div className="animate-slide-in-left">
             <div className="inline-flex items-center space-x-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
               <User className="w-4 h-4" />
               <span>Nos experts</span>
@@ -52,7 +52,7 @@ const Team: React.FC = () => {
             <h2 className="text-5xl md:text-6xl font-bold text-slate-800 mb-8">
               Notre équipe
             </h2>
-            <div className="w-24 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 mb-8 rounded-full"></div>
+            <div className="w-24 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 mb-8 rounded-full animate-glow"></div>
             
             <div className="prose prose-lg text-slate-600 leading-relaxed space-y-6">
               <p>
@@ -63,9 +63,9 @@ const Team: React.FC = () => {
               </p>
             </div>
 
-            <div className="mt-8 bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-emerald-100">
+            <div className="mt-8 bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-emerald-100 hover-lift animate-scale-in delay-600">
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center animate-heartbeat">
                   <Phone className="w-6 h-6 text-emerald-600" />
                 </div>
                 <div>
@@ -77,17 +77,17 @@ const Team: React.FC = () => {
           </div>
 
           {/* Right Content - Team Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-slide-in-right">
             {teamMembers.map((member, index) => (
               <div 
                 key={index} 
-                className={`group bg-gradient-to-br ${member.bgColor} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105 text-center border border-white/50`}
+                className={`group bg-gradient-to-br ${member.bgColor} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105 text-center border border-white/50 hover-tilt animate-scale-in delay-${index * 200}`}
               >
-                <div className={`w-24 h-24 bg-gradient-to-r ${member.color} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                <div className={`w-24 h-24 bg-gradient-to-r ${member.color} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg animate-bounce-gentle delay-${index * 300}`}>
                   <User className="w-12 h-12 text-white" />
                 </div>
                 
-                <h3 className="text-xl font-bold text-slate-800 mb-2">
+                <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors duration-300">
                   {member.name}
                 </h3>
                 
@@ -99,7 +99,7 @@ const Team: React.FC = () => {
                   {member.description}
                 </p>
 
-                <button className="group/btn flex items-center justify-center space-x-2 text-slate-600 hover:text-slate-800 mx-auto transition-colors duration-300">
+                <button className="group/btn flex items-center justify-center space-x-2 text-slate-600 hover:text-slate-800 mx-auto transition-all duration-300 hover:scale-110">
                   <Mail className="w-4 h-4" />
                   <span className="text-sm">Contacter</span>
                 </button>
@@ -110,7 +110,7 @@ const Team: React.FC = () => {
 
         {/* Call to Action */}
         <div className="text-center">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-12 shadow-xl border border-white/50 max-w-4xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-12 shadow-xl border border-white/50 max-w-4xl mx-auto hover-lift animate-slide-up delay-800">
             <h3 className="text-3xl font-bold text-slate-800 mb-6">
               Rejoignez notre mission
             </h3>
@@ -118,12 +118,18 @@ const Team: React.FC = () => {
               Vous souhaitez contribuer à notre cause ? Nous recherchons toujours des bénévoles passionnés pour nous aider dans notre mission.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <a 
+                href="/contact#contact-form"
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover-glow animate-slide-in-left delay-1000"
+              >
                 Devenir bénévole
-              </button>
-              <button className="border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white hover:border-slate-700 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105">
+              </a>
+              <a 
+                href="/actions"
+                className="border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white hover:border-slate-700 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover-lift animate-slide-in-right delay-1200"
+              >
                 En savoir plus
-              </button>
+              </a>
             </div>
           </div>
         </div>
