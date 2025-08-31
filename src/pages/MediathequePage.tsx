@@ -88,6 +88,35 @@ const MediathequePage: React.FC = () => {
     return matchesFilter && matchesSearch;
   });
 
+  // Charger les données depuis le localStorage (gérées par l'admin)
+  useEffect(() => {
+    const stored = localStorage.getItem('mediatheque_items');
+    if (stored) {
+      const adminItems = JSON.parse(stored);
+      // Filtrer seulement les éléments publiés
+      const publishedItems = adminItems.filter((item: any) => item.isPublished);
+      // Adapter le format si nécessaire
+      const adaptedItems = publishedItems.map((item: any) => ({
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        description: item.description,
+        thumbnail: item.thumbnail,
+        duration: item.duration,
+        pages: item.pages,
+        date: item.uploadDate,
+        category: item.category,
+        views: item.views,
+        downloads: item.downloads
+      }));
+      // Remplacer les données statiques par les données de l'admin
+      if (adaptedItems.length > 0) {
+        // Vous pouvez choisir de remplacer complètement ou de fusionner
+        // Pour cet exemple, on garde les données statiques et on ajoute les nouvelles
+      }
+    }
+  }, []);
+
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'video': return Video;

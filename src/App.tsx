@@ -18,6 +18,7 @@ import ChatBot from './components/ChatBot';
 import NewsletterAdminPage from './pages/NewsletterAdminPage';
 import CookieConsent from './components/CookieConsent';
 import CookiePolicyPage from './pages/CookiePolicyPage';
+import MediathequeAdminPage from './pages/MediathequeAdminPage';
 
 const HomePage = () => (
   <>
@@ -46,6 +47,7 @@ function App() {
             <Route path="/mediatheque" element={<MediathequePage />} />
             <Route path="/admin/newsletter" element={<NewsletterAdminPage />} />
             <Route path="/cookies" element={<CookiePolicyPage />} />
+            <Route path="/admin/mediatheque" element={<MediathequeAdminPage />} />
             {/* Redirection pour les anciennes URLs ou erreurs */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
