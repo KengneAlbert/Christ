@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, Download, FileText, Image, Video, Music, Search, Filter, Calendar, Eye } from 'lucide-react';
 
 const MediathequePage: React.FC = () => {
