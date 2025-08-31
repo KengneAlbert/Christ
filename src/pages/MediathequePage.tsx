@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Download, FileText, Image, Video, Music, Search, Filter, Calendar, Eye, X, ExternalLink, Volume2, Pause, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Download, FileText, Image, Video, Music, Search, Filter, Calendar, Eye, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface MediaItem {
   id: number;
@@ -21,9 +22,7 @@ interface MediaItem {
 const MediathequePage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const navigate = useNavigate();
 
   const mediaItems: MediaItem[] = [
     {
@@ -135,13 +134,13 @@ const MediathequePage: React.FC = () => {
   };
 
   const handleMediaClick = (item: MediaItem) => {
-    setSelectedMedia(item);
-    setShowModal(true);
-    
     // Incrémenter les vues (simulation)
     if (item.views !== undefined) {
       item.views += 1;
     }
+    
+    // Naviguer vers la page de consultation
+    navigate(`/mediatheque/${item.id}`);
   };
 
   const handleDownload = (item: MediaItem) => {
@@ -159,141 +158,6 @@ const MediathequePage: React.FC = () => {
       if (item.downloads !== undefined) {
         item.downloads += 1;
       }
-    }
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedMedia(null);
-    setIsPlaying(false);
-  };
-
-  const renderMediaViewer = () => {
-    if (!selectedMedia) return null;
-
-    switch (selectedMedia.type) {
-      case 'video':
-        return (
-          <div className="w-full">
-            {selectedMedia.youtubeId ? (
-              <div className="relative w-full h-0 pb-[56.25%] mb-6">
-                <iframe
-                  src={`https://www.youtube.com/embed/${selectedMedia.youtubeId}?autoplay=1`}
-                  title={selectedMedia.title}
-                  className="absolute top-0 left-0 w-full h-full rounded-xl"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            ) : selectedMedia.url ? (
-              <div className="mb-6">
-                <video
-                  src={selectedMedia.url}
-                  controls
-                  autoPlay
-                  className="w-full rounded-xl shadow-lg"
-                  poster={selectedMedia.thumbnail}
-                >
-                  Votre navigateur ne supporte pas la lecture vidéo.
-                </video>
-              </div>
-            ) : (
-              <div className="w-full h-64 bg-slate-100 rounded-xl flex items-center justify-center mb-6">
-                <p className="text-slate-500">Vidéo non disponible</p>
-              </div>
-            )}
-          </div>
-        );
-
-      case 'audio':
-        return (
-          <div className="w-full mb-6">
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-8 border border-purple-100">
-              <div className="flex items-center space-x-4 mb-6">
-                <img 
-                  src={selectedMedia.thumbnail}
-                  alt={selectedMedia.title}
-                  className="w-20 h-20 rounded-xl object-cover shadow-lg"
-                />
-                <div>
-                  <h4 className="text-lg font-bold text-slate-800">{selectedMedia.title}</h4>
-                  <p className="text-slate-600">Durée: {selectedMedia.duration}</p>
-                </div>
-              </div>
-              
-              {selectedMedia.url ? (
-                <audio
-                  src={selectedMedia.url}
-                  controls
-                  className="w-full"
-                  autoPlay
-                >
-                  Votre navigateur ne supporte pas la lecture audio.
-                </audio>
-              ) : (
-                <div className="bg-white rounded-lg p-4 text-center">
-                  <Volume2 className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                  <p className="text-slate-500">Audio non disponible</p>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-      case 'document':
-        return (
-          <div className="w-full mb-6">
-            {selectedMedia.url ? (
-              <div className="bg-slate-50 rounded-xl p-4">
-                <iframe
-                  src={`${selectedMedia.url}#toolbar=1&navpanes=1&scrollbar=1`}
-                  title={selectedMedia.title}
-                  className="w-full h-96 rounded-lg border border-slate-200"
-                  frameBorder="0"
-                />
-                <div className="mt-4 text-center">
-                  <button
-                    onClick={() => handleDownload(selectedMedia)}
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 mx-auto"
-                  >
-                    <Download className="w-5 h-5" />
-                    <span>Télécharger le PDF</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="w-full h-64 bg-slate-100 rounded-xl flex items-center justify-center">
-                <div className="text-center">
-                  <FileText className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-                  <p className="text-slate-500">Document non disponible</p>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-
-      case 'image':
-        return (
-          <div className="w-full mb-6">
-            <div className="relative">
-              <img 
-                src={selectedMedia.url || selectedMedia.thumbnail}
-                alt={selectedMedia.title}
-                className="w-full max-h-96 object-contain rounded-xl shadow-lg bg-slate-50"
-              />
-              <button
-                onClick={() => handleDownload(selectedMedia)}
-                className="absolute top-4 right-4 bg-black/70 hover:bg-black/90 text-white p-2 rounded-lg transition-colors duration-300"
-              >
-                <Download className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
     }
   };
 
@@ -591,106 +455,6 @@ const MediathequePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Modal de consultation */}
-      {showModal && selectedMedia && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-teal-50">
-              <div className="flex items-center space-x-4">
-                <div className={`w-12 h-12 bg-gradient-to-r ${getTypeColor(selectedMedia.type)} rounded-xl flex items-center justify-center shadow-lg animate-bounce-gentle`}>
-                  {React.createElement(getTypeIcon(selectedMedia.type), { className: "w-6 h-6 text-white" })}
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-800">{selectedMedia.title}</h2>
-                  <div className="flex items-center space-x-4 text-sm text-slate-600">
-                    <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded">
-                      {selectedMedia.category}
-                    </span>
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{new Date(selectedMedia.date).toLocaleDateString('fr-FR')}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={closeModal}
-                className="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:rotate-90"
-              >
-                <X className="w-5 h-5 text-slate-600" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6">
-              {/* Media Viewer */}
-              {renderMediaViewer()}
-
-              {/* Description */}
-              <div className="bg-slate-50 rounded-xl p-6 mb-6">
-                <h3 className="text-lg font-bold text-slate-800 mb-3">Description</h3>
-                <p className="text-slate-600 leading-relaxed">{selectedMedia.description}</p>
-              </div>
-
-              {/* Stats and Actions */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <div className="flex items-center space-x-6 text-sm text-slate-500">
-                  {selectedMedia.views && (
-                    <div className="flex items-center space-x-1">
-                      <Eye className="w-4 h-4" />
-                      <span>{selectedMedia.views} vues</span>
-                    </div>
-                  )}
-                  {selectedMedia.downloads && (
-                    <div className="flex items-center space-x-1">
-                      <Download className="w-4 h-4" />
-                      <span>{selectedMedia.downloads} téléchargements</span>
-                    </div>
-                  )}
-                  {selectedMedia.duration && (
-                    <div className="flex items-center space-x-1">
-                      <Play className="w-4 h-4" />
-                      <span>{selectedMedia.duration}</span>
-                    </div>
-                  )}
-                  {selectedMedia.pages && (
-                    <div className="flex items-center space-x-1">
-                      <FileText className="w-4 h-4" />
-                      <span>{selectedMedia.pages} pages</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-3">
-                  {selectedMedia.url && (selectedMedia.type === 'document' || selectedMedia.type === 'image' || selectedMedia.type === 'audio') && (
-                    <button
-                      onClick={() => handleDownload(selectedMedia)}
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 hover-glow"
-                    >
-                      <Download className="w-5 h-5" />
-                      <span>Télécharger</span>
-                    </button>
-                  )}
-                  
-                  {selectedMedia.youtubeId && (
-                    <a
-                      href={`https://www.youtube.com/watch?v=${selectedMedia.youtubeId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 hover-glow"
-                    >
-                      <ExternalLink className="w-5 h-5" />
-                      <span>Voir sur YouTube</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Call to Action */}
       <section className="py-20 bg-gradient-to-r from-emerald-500 to-teal-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -718,6 +482,85 @@ const MediathequePage: React.FC = () => {
       </section>
     </div>
   );
+};
+
+// Fonction utilitaire pour trouver un média par ID
+export const findMediaById = (id: string): MediaItem | null => {
+  const mediaItems: MediaItem[] = [
+    {
+      id: 1,
+      type: 'video',
+      title: 'Témoignage de Marie - Sortir du cycle de la violence',
+      description: 'Un témoignage poignant sur le parcours de reconstruction après des violences conjugales. Marie partage son expérience et les étapes qui l\'ont menée vers la liberté.',
+      thumbnail: 'https://images.pexels.com/photos/7176026/pexels-photo-7176026.jpeg?auto=compress&cs=tinysrgb&w=400',
+      duration: '12:34',
+      date: '2024-01-15',
+      category: 'Témoignages',
+      views: 1250,
+      youtubeId: 'dQw4w9WgXcQ'
+    },
+    {
+      id: 2,
+      type: 'document',
+      title: 'Guide pratique - Reconnaître les signes de violence',
+      description: 'Document complet pour identifier les différents types de violences conjugales : physiques, psychologiques, économiques et sexuelles. Inclut des conseils pratiques et des ressources.',
+      thumbnail: 'https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=400',
+      pages: 24,
+      date: '2024-01-10',
+      category: 'Guides',
+      downloads: 890,
+      url: 'https://www.pdf24.org/pdf/sample.pdf'
+    },
+    {
+      id: 3,
+      type: 'audio',
+      title: 'Podcast - Reconstruire sa confiance en soi',
+      description: 'Épisode dédié aux techniques pour retrouver l\'estime de soi après un traumatisme. Avec des conseils pratiques et des exercices de développement personnel.',
+      thumbnail: 'https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400',
+      duration: '28:45',
+      date: '2024-01-08',
+      category: 'Podcasts',
+      views: 675,
+      url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav'
+    },
+    {
+      id: 4,
+      type: 'video',
+      title: 'Conférence - Les droits des victimes',
+      description: 'Présentation complète des droits légaux et des recours disponibles pour les victimes de violences conjugales. Animée par notre avocate Florence NOUMO.',
+      thumbnail: 'https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=400',
+      duration: '45:12',
+      date: '2024-01-05',
+      category: 'Formations',
+      views: 2100,
+      youtubeId: 'dQw4w9WgXcQ'
+    },
+    {
+      id: 5,
+      type: 'document',
+      title: 'Brochure - Numéros d\'urgence et contacts utiles',
+      description: 'Liste complète des numéros d\'urgence et organisations d\'aide disponibles en France. Document à imprimer et garder à portée de main.',
+      thumbnail: 'https://images.pexels.com/photos/4226769/pexels-photo-4226769.jpeg?auto=compress&cs=tinysrgb&w=400',
+      pages: 8,
+      date: '2024-01-03',
+      category: 'Ressources',
+      downloads: 1500,
+      url: 'https://www.pdf24.org/pdf/sample.pdf'
+    },
+    {
+      id: 6,
+      type: 'image',
+      title: 'Infographie - Statistiques sur les violences conjugales',
+      description: 'Données visuelles sur l\'ampleur des violences conjugales en France et dans le monde. Chiffres officiels 2024.',
+      thumbnail: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpg?auto=compress&cs=tinysrgb&w=400',
+      date: '2024-01-01',
+      category: 'Statistiques',
+      views: 980,
+      url: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpg?auto=compress&cs=tinysrgb&w=1200'
+    }
+  ];
+
+  return mediaItems.find(item => item.id.toString() === id) || null;
 };
 
 export default MediathequePage;

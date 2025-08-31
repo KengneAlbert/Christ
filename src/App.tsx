@@ -12,6 +12,7 @@ import Footer from './components/Footer';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import MediathequePage from './pages/MediathequePage';
+import MediaViewerPage from './pages/MediaViewerPage';
 import TeamPage from './pages/TeamPage';
 import ActionsPage from './pages/ActionsPage';
 import ChatBot from './components/ChatBot';
@@ -45,6 +46,7 @@ function App() {
             <Route path="/team" element={<TeamPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/mediatheque" element={<MediathequePage />} />
+            <Route path="/mediatheque/:id" element={<MediaViewerPage />} />
             <Route path="/admin/newsletter" element={<NewsletterAdminPage />} />
             <Route path="/cookies" element={<CookiePolicyPage />} />
             <Route path="/admin/mediatheque" element={<MediathequeAdminPage />} />
