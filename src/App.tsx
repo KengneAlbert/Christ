@@ -20,6 +20,7 @@ import NewsletterAdminPage from './pages/NewsletterAdminPage';
 import CookieConsent from './components/CookieConsent';
 import CookiePolicyPage from './pages/CookiePolicyPage';
 import MediathequeAdminPage from './pages/MediathequeAdminPage';
+import AdminDashboard from './pages/AdminDashboard';
 
 const HomePage = () => (
   <>
@@ -50,6 +51,7 @@ function App() {
             <Route path="/admin/newsletter" element={<NewsletterAdminPage />} />
             <Route path="/cookies" element={<CookiePolicyPage />} />
             <Route path="/admin/mediatheque" element={<MediathequeAdminPage />} />
+            <Route path="/admin" element={<AdminDashboard><div className="p-6"><h1 className="text-3xl font-bold text-slate-800">Tableau de bord</h1><p className="text-slate-600 mt-2">Bienvenue dans l'interface d'administration</p></div></AdminDashboard>} />
             {/* Redirection pour les anciennes URLs ou erreurs */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
