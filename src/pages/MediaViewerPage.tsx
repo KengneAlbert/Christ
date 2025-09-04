@@ -17,41 +17,103 @@ import {
   Clock,
   User
 } from 'lucide-react';
-import { findMediaById } from './MediathequePage';
+import { supabase } from '../lib/supabase';
+
+interface MediaItem {
+  id: string;
+  type: 'video' | 'document' | 'audio' | 'image';
+  title: string;
+  description: string;
+  thumbnail_url: string | null;
+  file_url: string | null;
+  youtube_id: string | null;
+  file_name: string | null;
+  file_size: number | null;
+  duration: string | null;
+  pages: number | null;
+  created_at: string;
+  updated_at: string;
+  is_published: boolean;
+  views_count: number;
+  downloads_count: number;
+  category: string;
+}
 
 const MediaViewerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [media, setMedia] = useState<any>(null);
+  const [media, setMedia] = useState<MediaItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      const foundMedia = findMediaById(id);
-      if (foundMedia) {
-        setMedia(foundMedia);
-        // Incrémenter les vues
-        if (foundMedia.views !== undefined) {
-          foundMedia.views += 1;
-        }
-      }
-      setIsLoading(false);
-    }
+    loadMedia();
   }, [id]);
 
+  const loadMedia = async () => {
+    if (!id) {
+      setError('ID du média manquant');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Charger le média depuis la base de données
+      const { data, error: fetchError } = await supabase
+        .from('media_items')
+        .select('*')
+        .eq('id', id)
+        .eq('is_published', true)
+        .single();
+
+      if (fetchError) {
+        if (fetchError.code === 'PGRST116') {
+          setError('Média introuvable');
+        } else {
+          throw fetchError;
+        }
+        return;
+      }
+
+      setMedia(data);
+
+      // Incrémenter les vues
+      await supabase
+        .from('media_items')
+        .update({ views_count: data.views_count + 1 })
+        .eq('id', id);
+
+    } catch (err: any) {
+      console.error('Erreur chargement média:', err);
+      setError('Erreur lors du chargement du média');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleDownload = () => {
-    if (media?.url) {
+    if (media?.file_url) {
       const link = document.createElement('a');
-      link.href = media.url;
-      link.download = media.fileName || `${media.title}.${media.type === 'document' ? 'pdf' : media.type === 'audio' ? 'mp3' : 'jpg'}`;
+      link.href = media.file_url;
+      link.download = media.file_name || `${media.title}.${media.type === 'document' ? 'pdf' : media.type === 'audio' ? 'mp3' : 'jpg'}`;
       link.target = '_blank';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      if (media.downloads !== undefined) {
-        media.downloads += 1;
+      // Incrémenter les téléchargements
+      if (media.id) {
+        supabase
+          .from('media_items')
+          .update({ downloads_count: media.downloads_count + 1 })
+          .eq('id', media.id)
+          .then(() => {
+            setMedia(prev => prev ? { ...prev, downloads_count: prev.downloads_count + 1 } : null);
+          });
       }
     }
   };
@@ -101,10 +163,10 @@ const MediaViewerPage: React.FC = () => {
       case 'video':
         return (
           <div className="w-full">
-            {media.youtubeId ? (
+            {media.youtube_id ? (
               <div className="relative w-full h-0 pb-[56.25%] mb-8 rounded-2xl overflow-hidden shadow-2xl">
                 <iframe
-                  src={`https://www.youtube.com/embed/${media.youtubeId}?autoplay=1&rel=0`}
+                  src={`https://www.youtube.com/embed/${media.youtube_id}?autoplay=1&rel=0`}
                   title={media.title}
                   className="absolute top-0 left-0 w-full h-full"
                   frameBorder="0"
@@ -112,14 +174,14 @@ const MediaViewerPage: React.FC = () => {
                   allowFullScreen
                 />
               </div>
-            ) : media.url ? (
+            ) : media.file_url ? (
               <div className="mb-8">
                 <video
-                  src={media.url}
+                  src={media.file_url}
                   controls
                   autoPlay
                   className="w-full rounded-2xl shadow-2xl"
-                  poster={media.thumbnail}
+                  poster={media.thumbnail_url || undefined}
                 >
                   Votre navigateur ne supporte pas la lecture vidéo.
                 </video>
@@ -141,7 +203,7 @@ const MediaViewerPage: React.FC = () => {
             <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-100 shadow-xl">
               <div className="flex items-center space-x-6 mb-8">
                 <img 
-                  src={media.thumbnail}
+                  src={media.thumbnail_url || 'https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400'}
                   alt={media.title}
                   className="w-32 h-32 rounded-2xl object-cover shadow-lg"
                 />
@@ -155,16 +217,16 @@ const MediaViewerPage: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-1">
                       <Eye className="w-4 h-4" />
-                      <span>{media.views} écoutes</span>
+                      <span>{media.views_count} écoutes</span>
                     </div>
                   </div>
                 </div>
               </div>
               
-              {media.url ? (
+              {media.file_url ? (
                 <div className="bg-white rounded-xl p-6 shadow-lg">
                   <audio
-                    src={media.url}
+                    src={media.file_url}
                     controls
                     className="w-full"
                     autoPlay
@@ -185,11 +247,11 @@ const MediaViewerPage: React.FC = () => {
       case 'document':
         return (
           <div className="w-full mb-8">
-            {media.url ? (
+            {media.file_url ? (
               <div className="bg-slate-50 rounded-2xl p-6 shadow-xl">
                 <div className="bg-white rounded-xl overflow-hidden shadow-lg">
                   <iframe
-                    src={`${media.url}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`}
+                    src={`${media.file_url}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`}
                     title={media.title}
                     className="w-full h-[600px] border-0"
                     frameBorder="0"
@@ -221,7 +283,7 @@ const MediaViewerPage: React.FC = () => {
           <div className="w-full mb-8">
             <div className="relative bg-slate-50 rounded-2xl p-6 shadow-xl">
               <img 
-                src={media.url || media.thumbnail}
+                src={media.file_url || media.thumbnail_url || ''}
                 alt={media.title}
                 className="w-full max-h-[600px] object-contain rounded-xl shadow-lg bg-white"
               />
@@ -251,15 +313,19 @@ const MediaViewerPage: React.FC = () => {
     );
   }
 
-  if (!media) {
+  if (error || !media) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <FileText className="w-12 h-12 text-slate-400" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-4">Média introuvable</h1>
-          <p className="text-slate-600 mb-8">Le média que vous recherchez n'existe pas ou a été supprimé.</p>
+          <h1 className="text-2xl font-bold text-slate-800 mb-4">
+            {error || 'Média introuvable'}
+          </h1>
+          <p className="text-slate-600 mb-8">
+            {error || 'Le média que vous recherchez n\'existe pas ou a été supprimé.'}
+          </p>
           <button
             onClick={() => navigate('/mediatheque')}
             className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
@@ -327,7 +393,7 @@ const MediaViewerPage: React.FC = () => {
                     <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium">
                       {media.category}
                     </span>
-                    {media.youtubeId && (
+                    {media.youtube_id && (
                       <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1">
                         <Youtube className="w-3 h-3" />
                         <span>YouTube</span>
@@ -344,22 +410,22 @@ const MediaViewerPage: React.FC = () => {
               <div className="flex flex-wrap items-center gap-6 text-sm text-slate-500 mb-8">
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4" />
-                  <span>Publié le {new Date(media.date).toLocaleDateString('fr-FR', { 
+                  <span>Publié le {new Date(media.created_at).toLocaleDateString('fr-FR', { 
                     year: 'numeric', 
                     month: 'long', 
                     day: 'numeric' 
                   })}</span>
                 </div>
-                {media.views && (
+                {media.views_count && (
                   <div className="flex items-center space-x-2">
                     <Eye className="w-4 h-4" />
-                    <span>{media.views} vues</span>
+                    <span>{media.views_count} vues</span>
                   </div>
                 )}
-                {media.downloads && (
+                {media.downloads_count && (
                   <div className="flex items-center space-x-2">
                     <Download className="w-4 h-4" />
-                    <span>{media.downloads} téléchargements</span>
+                    <span>{media.downloads_count} téléchargements</span>
                   </div>
                 )}
                 {media.duration && (
@@ -390,7 +456,7 @@ const MediaViewerPage: React.FC = () => {
 
             {/* Actions principales */}
             <div className="flex flex-wrap gap-4">
-              {media.url && (media.type === 'document' || media.type === 'image' || media.type === 'audio') && (
+              {media.file_url && (media.type === 'document' || media.type === 'image' || media.type === 'audio') && (
                 <button
                   onClick={handleDownload}
                   className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-3 hover-glow"
@@ -400,9 +466,9 @@ const MediaViewerPage: React.FC = () => {
                 </button>
               )}
               
-              {media.youtubeId && (
+              {media.youtube_id && (
                 <a
-                  href={`https://www.youtube.com/watch?v=${media.youtubeId}`}
+                  href={`https://www.youtube.com/watch?v=${media.youtube_id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-3 hover-glow"
@@ -452,7 +518,7 @@ const MediaViewerPage: React.FC = () => {
                   <div className="flex justify-between items-center py-2">
                     <span className="text-slate-600">Date de publication</span>
                     <span className="font-medium text-slate-800">
-                      {new Date(media.date).toLocaleDateString('fr-FR')}
+                      {new Date(media.created_at).toLocaleDateString('fr-FR')}
                     </span>
                   </div>
                 </div>
