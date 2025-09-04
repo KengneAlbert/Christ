@@ -1,102 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Download, FileText, Image, Video, Music, Search, Filter, Calendar, Eye, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 interface MediaItem {
-  id: number;
+  id: string;
   type: 'video' | 'document' | 'audio' | 'image';
   title: string;
   description: string;
-  thumbnail: string;
-  duration?: string;
-  pages?: number;
-  date: string;
+  thumbnail_url: string | null;
+  file_url: string | null;
+  youtube_id: string | null;
+  file_name: string | null;
+  file_size: number | null;
+  duration: string | null;
+  pages: number | null;
+  created_at: string;
+  updated_at: string;
+  is_published: boolean;
+  views_count: number;
+  downloads_count: number;
   category: string;
-  views?: number;
-  downloads?: number;
-  url?: string;
-  youtubeId?: string;
-  fileName?: string;
 }
 
 const MediathequePage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  const mediaItems: MediaItem[] = [
-    {
-      id: 1,
-      type: 'video',
-      title: 'Témoignage de Marie - Sortir du cycle de la violence',
-      description: 'Un témoignage poignant sur le parcours de reconstruction après des violences conjugales. Marie partage son expérience et les étapes qui l\'ont menée vers la liberté.',
-      thumbnail: 'https://images.pexels.com/photos/7176026/pexels-photo-7176026.jpeg?auto=compress&cs=tinysrgb&w=400',
-      duration: '12:34',
-      date: '2024-01-15',
-      category: 'Témoignages',
-      views: 1250,
-      youtubeId: 'dQw4w9WgXcQ' // Exemple d'ID YouTube
-    },
-    {
-      id: 2,
-      type: 'document',
-      title: 'Guide pratique - Reconnaître les signes de violence',
-      description: 'Document complet pour identifier les différents types de violences conjugales : physiques, psychologiques, économiques et sexuelles. Inclut des conseils pratiques et des ressources.',
-      thumbnail: 'https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=400',
-      pages: 24,
-      date: '2024-01-10',
-      category: 'Guides',
-      downloads: 890,
-      url: 'https://www.pdf24.org/pdf/sample.pdf' // Exemple de PDF
-    },
-    {
-      id: 3,
-      type: 'audio',
-      title: 'Podcast - Reconstruire sa confiance en soi',
-      description: 'Épisode dédié aux techniques pour retrouver l\'estime de soi après un traumatisme. Avec des conseils pratiques et des exercices de développement personnel.',
-      thumbnail: 'https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400',
-      duration: '28:45',
-      date: '2024-01-08',
-      category: 'Podcasts',
-      views: 675,
-      url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' // Exemple d'audio
-    },
-    {
-      id: 4,
-      type: 'video',
-      title: 'Conférence - Les droits des victimes',
-      description: 'Présentation complète des droits légaux et des recours disponibles pour les victimes de violences conjugales. Animée par notre avocate Florence NOUMO.',
-      thumbnail: 'https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=400',
-      duration: '45:12',
-      date: '2024-01-05',
-      category: 'Formations',
-      views: 2100,
-      youtubeId: 'dQw4w9WgXcQ' // Exemple d'ID YouTube
-    },
-    {
-      id: 5,
-      type: 'document',
-      title: 'Brochure - Numéros d\'urgence et contacts utiles',
-      description: 'Liste complète des numéros d\'urgence et organisations d\'aide disponibles en France. Document à imprimer et garder à portée de main.',
-      thumbnail: 'https://images.pexels.com/photos/4226769/pexels-photo-4226769.jpeg?auto=compress&cs=tinysrgb&w=400',
-      pages: 8,
-      date: '2024-01-03',
-      category: 'Ressources',
-      downloads: 1500,
-      url: 'https://www.pdf24.org/pdf/sample.pdf' // Exemple de PDF
-    },
-    {
-      id: 6,
-      type: 'image',
-      title: 'Infographie - Statistiques sur les violences conjugales',
-      description: 'Données visuelles sur l\'ampleur des violences conjugales en France et dans le monde. Chiffres officiels 2024.',
-      thumbnail: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpg?auto=compress&cs=tinysrgb&w=400',
-      date: '2024-01-01',
-      category: 'Statistiques',
-      views: 980,
-      url: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpg?auto=compress&cs=tinysrgb&w=1200'
-    }
-  ];
 
   const categories = [
     { id: 'all', name: 'Tout', icon: Filter },
@@ -106,10 +39,40 @@ const MediathequePage: React.FC = () => {
     { id: 'image', name: 'Images', icon: Image }
   ];
 
+  // Charger les données depuis Supabase
+  useEffect(() => {
+    loadMediaItems();
+  }, []);
+
+  const loadMediaItems = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from('media_items')
+        .select('*')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      setMediaItems(data || []);
+    } catch (err: any) {
+      console.error('Erreur chargement médiathèque:', err);
+      setError('Erreur lors du chargement des médias. Veuillez réessayer.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filteredItems = mediaItems.filter(item => {
     const matchesFilter = activeFilter === 'all' || item.type === activeFilter;
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase());
+                         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.category.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -133,62 +96,90 @@ const MediathequePage: React.FC = () => {
     }
   };
 
-  const handleMediaClick = (item: MediaItem) => {
-    // Incrémenter les vues (simulation)
-    if (item.views !== undefined) {
-      item.views += 1;
+  const handleMediaClick = async (item: MediaItem) => {
+    // Incrémenter les vues
+    try {
+      await supabase
+        .from('media_items')
+        .update({ views_count: item.views_count + 1 })
+        .eq('id', item.id);
+    } catch (error) {
+      console.error('Erreur mise à jour vues:', error);
     }
     
     // Naviguer vers la page de consultation
     navigate(`/mediatheque/${item.id}`);
   };
 
-  const handleDownload = (item: MediaItem) => {
-    if (item.url) {
+  const handleDownload = async (item: MediaItem) => {
+    if (item.file_url) {
+      // Incrémenter les téléchargements
+      try {
+        await supabase
+          .from('media_items')
+          .update({ downloads_count: item.downloads_count + 1 })
+          .eq('id', item.id);
+      } catch (error) {
+        console.error('Erreur mise à jour téléchargements:', error);
+      }
+
       // Créer un lien de téléchargement
       const link = document.createElement('a');
-      link.href = item.url;
-      link.download = item.fileName || `${item.title}.${item.type === 'document' ? 'pdf' : item.type === 'audio' ? 'mp3' : 'jpg'}`;
+      link.href = item.file_url;
+      link.download = item.file_name || `${item.title}.${item.type === 'document' ? 'pdf' : item.type === 'audio' ? 'mp3' : 'jpg'}`;
       link.target = '_blank';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      // Incrémenter les téléchargements (simulation)
-      if (item.downloads !== undefined) {
-        item.downloads += 1;
-      }
     }
   };
 
-  // Charger les données depuis le localStorage (gérées par l'admin)
-  useEffect(() => {
-    const stored = localStorage.getItem('mediatheque_items');
-    if (stored) {
-      const adminItems = JSON.parse(stored);
-      // Filtrer seulement les éléments publiés
-      const publishedItems = adminItems.filter((item: any) => item.isPublished);
-      // Adapter le format si nécessaire
-      const adaptedItems = publishedItems.map((item: any) => ({
-        id: item.id,
-        type: item.type,
-        title: item.title,
-        description: item.description,
-        thumbnail: item.thumbnail,
-        duration: item.duration,
-        pages: item.pages,
-        date: item.uploadDate,
-        category: item.category,
-        views: item.views,
-        downloads: item.downloads,
-        url: item.url,
-        youtubeId: item.youtubeId,
-        fileName: item.fileName
-      }));
-      // Vous pouvez choisir de remplacer complètement ou de fusionner
-      // Pour cet exemple, on garde les données statiques et on ajoute les nouvelles
-    }
-  }, []);
+  const getDefaultThumbnail = (type: string) => {
+    const defaultThumbnails = {
+      video: 'https://images.pexels.com/photos/7176026/pexels-photo-7176026.jpeg?auto=compress&cs=tinysrgb&w=400',
+      document: 'https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=400',
+      audio: 'https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400',
+      image: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpg?auto=compress&cs=tinysrgb&w=400'
+    };
+    return defaultThumbnails[type as keyof typeof defaultThumbnails];
+  };
+
+  const getThumbnailUrl = (item: MediaItem) => {
+    if (item.thumbnail_url) return item.thumbnail_url;
+    if (item.youtube_id) return `https://img.youtube.com/vi/${item.youtube_id}/maxresdefault.jpg`;
+    return getDefaultThumbnail(item.type);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 text-lg">Chargement de la médiathèque...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ExternalLink className="w-12 h-12 text-red-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800 mb-4">Erreur de chargement</h1>
+          <p className="text-slate-600 mb-8">{error}</p>
+          <button
+            onClick={loadMediaItems}
+            className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -272,7 +263,7 @@ const MediathequePage: React.FC = () => {
                   {/* Thumbnail */}
                   <div className="relative h-48 overflow-hidden">
                     <img 
-                      src={item.thumbnail}
+                      src={getThumbnailUrl(item)}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
@@ -310,7 +301,7 @@ const MediathequePage: React.FC = () => {
                       </span>
                       <div className="flex items-center space-x-1 text-sm text-slate-500">
                         <Calendar className="w-4 h-4" />
-                        <span>{new Date(item.date).toLocaleDateString('fr-FR')}</span>
+                        <span>{new Date(item.created_at).toLocaleDateString('fr-FR')}</span>
                       </div>
                     </div>
 
@@ -324,18 +315,18 @@ const MediathequePage: React.FC = () => {
 
                     {/* Stats */}
                     <div className="flex items-center justify-between text-sm text-slate-500 mb-4">
-                      {item.views && (
+                      <div className="flex items-center space-x-3">
                         <div className="flex items-center space-x-1">
                           <Eye className="w-4 h-4" />
-                          <span>{item.views} vues</span>
+                          <span>{item.views_count} vues</span>
                         </div>
-                      )}
-                      {item.downloads && (
-                        <div className="flex items-center space-x-1">
-                          <Download className="w-4 h-4" />
-                          <span>{item.downloads} téléchargements</span>
-                        </div>
-                      )}
+                        {item.downloads_count > 0 && (
+                          <div className="flex items-center space-x-1">
+                            <Download className="w-4 h-4" />
+                            <span>{item.downloads_count} téléchargements</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Action Buttons */}
@@ -360,7 +351,7 @@ const MediathequePage: React.FC = () => {
                         )}
                       </button>
                       
-                      {(item.type === 'document' || item.type === 'image' || item.type === 'audio') && (
+                      {(item.type === 'document' || item.type === 'image' || item.type === 'audio') && item.file_url && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -378,22 +369,28 @@ const MediathequePage: React.FC = () => {
             })}
           </div>
 
-          {filteredItems.length === 0 && (
+          {filteredItems.length === 0 && !isLoading && (
             <div className="text-center py-16 animate-fade-in">
               <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-gentle">
                 <Search className="w-12 h-12 text-slate-400" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-3">Aucune ressource trouvée</h3>
-              <p className="text-slate-600 mb-6">Essayez de modifier vos critères de recherche</p>
-              <button 
-                onClick={() => {
-                  setActiveFilter('all');
-                  setSearchTerm('');
-                }}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover-glow"
-              >
-                Réinitialiser les filtres
-              </button>
+              <p className="text-slate-600 mb-6">
+                {searchTerm || activeFilter !== 'all' 
+                  ? 'Essayez de modifier vos critères de recherche' 
+                  : 'Aucune ressource n\'est encore disponible'}
+              </p>
+              {(searchTerm || activeFilter !== 'all') && (
+                <button 
+                  onClick={() => {
+                    setActiveFilter('all');
+                    setSearchTerm('');
+                  }}
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover-glow"
+                >
+                  Réinitialiser les filtres
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -482,85 +479,6 @@ const MediathequePage: React.FC = () => {
       </section>
     </div>
   );
-};
-
-// Fonction utilitaire pour trouver un média par ID
-export const findMediaById = (id: string): MediaItem | null => {
-  const mediaItems: MediaItem[] = [
-    {
-      id: 1,
-      type: 'video',
-      title: 'Témoignage de Marie - Sortir du cycle de la violence',
-      description: 'Un témoignage poignant sur le parcours de reconstruction après des violences conjugales. Marie partage son expérience et les étapes qui l\'ont menée vers la liberté.',
-      thumbnail: 'https://images.pexels.com/photos/7176026/pexels-photo-7176026.jpeg?auto=compress&cs=tinysrgb&w=400',
-      duration: '12:34',
-      date: '2024-01-15',
-      category: 'Témoignages',
-      views: 1250,
-      youtubeId: 'dQw4w9WgXcQ'
-    },
-    {
-      id: 2,
-      type: 'document',
-      title: 'Guide pratique - Reconnaître les signes de violence',
-      description: 'Document complet pour identifier les différents types de violences conjugales : physiques, psychologiques, économiques et sexuelles. Inclut des conseils pratiques et des ressources.',
-      thumbnail: 'https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=400',
-      pages: 24,
-      date: '2024-01-10',
-      category: 'Guides',
-      downloads: 890,
-      url: 'https://www.pdf24.org/pdf/sample.pdf'
-    },
-    {
-      id: 3,
-      type: 'audio',
-      title: 'Podcast - Reconstruire sa confiance en soi',
-      description: 'Épisode dédié aux techniques pour retrouver l\'estime de soi après un traumatisme. Avec des conseils pratiques et des exercices de développement personnel.',
-      thumbnail: 'https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400',
-      duration: '28:45',
-      date: '2024-01-08',
-      category: 'Podcasts',
-      views: 675,
-      url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav'
-    },
-    {
-      id: 4,
-      type: 'video',
-      title: 'Conférence - Les droits des victimes',
-      description: 'Présentation complète des droits légaux et des recours disponibles pour les victimes de violences conjugales. Animée par notre avocate Florence NOUMO.',
-      thumbnail: 'https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=400',
-      duration: '45:12',
-      date: '2024-01-05',
-      category: 'Formations',
-      views: 2100,
-      youtubeId: 'dQw4w9WgXcQ'
-    },
-    {
-      id: 5,
-      type: 'document',
-      title: 'Brochure - Numéros d\'urgence et contacts utiles',
-      description: 'Liste complète des numéros d\'urgence et organisations d\'aide disponibles en France. Document à imprimer et garder à portée de main.',
-      thumbnail: 'https://images.pexels.com/photos/4226769/pexels-photo-4226769.jpeg?auto=compress&cs=tinysrgb&w=400',
-      pages: 8,
-      date: '2024-01-03',
-      category: 'Ressources',
-      downloads: 1500,
-      url: 'https://www.pdf24.org/pdf/sample.pdf'
-    },
-    {
-      id: 6,
-      type: 'image',
-      title: 'Infographie - Statistiques sur les violences conjugales',
-      description: 'Données visuelles sur l\'ampleur des violences conjugales en France et dans le monde. Chiffres officiels 2024.',
-      thumbnail: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpg?auto=compress&cs=tinysrgb&w=400',
-      date: '2024-01-01',
-      category: 'Statistiques',
-      views: 980,
-      url: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpg?auto=compress&cs=tinysrgb&w=1200'
-    }
-  ];
-
-  return mediaItems.find(item => item.id.toString() === id) || null;
 };
 
 export default MediathequePage;
