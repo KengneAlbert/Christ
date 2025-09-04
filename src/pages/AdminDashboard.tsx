@@ -22,7 +22,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ children }) => {
   }
 
   if (!user) {
-    return <AdminAuth onSuccess={() => window.location.reload()} />;
+    return <AdminAuth onSuccess={() => {}} />;
   }
 
   return <AdminLayout>{children}</AdminLayout>;

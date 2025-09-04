@@ -26,7 +26,7 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
       if (mode === 'login') {
         await signIn(email, password);
         setMessage({ type: 'success', text: 'Connexion réussie !' });
-        setTimeout(onSuccess, 1000);
+        // La redirection se fera automatiquement via onAuthStateChange
       } else if (mode === 'register') {
         if (password !== confirmPassword) {
           throw new Error('Les mots de passe ne correspondent pas');

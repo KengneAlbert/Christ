@@ -9,6 +9,7 @@ export const useAuth = () => {
   useEffect(() => {
     // Récupérer la session actuelle
     const getSession = async () => {
+      try {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
       setLoading(false);
@@ -20,13 +21,23 @@ export const useAuth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user ?? null);
-
+      } catch (error) {
+        console.error('Erreur récupération session:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+        setLoading(false);
+      }
         // Mettre à jour la dernière connexion
         if (event === 'SIGNED_IN' && session?.user) {
-          await supabase
-            .from('admin_users')
-            .update({ last_login: new Date().toISOString() })
-            .eq('id', session.user.id);
+          try {
+            await supabase
+              .from('admin_users')
+              .update({ last_login: new Date().toISOString() })
+              .eq('id', session.user.id);
+          } catch (error) {
+            console.error('Erreur mise à jour dernière connexion:', error);
+          }
         }
       }
     );
