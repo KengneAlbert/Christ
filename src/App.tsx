@@ -15,7 +15,6 @@ import MediathequePage from './pages/MediathequePage';
 import MediaViewerPage from './pages/MediaViewerPage';
 import TeamPage from './pages/TeamPage';
 import ActionsPage from './pages/ActionsPage';
-import ChatBot from './components/ChatBot';
 import NewsletterAdminPage from './pages/NewsletterAdminPage';
 import CookieConsent from './components/CookieConsent';
 import CookiePolicyPage from './pages/CookiePolicyPage';
@@ -57,7 +56,6 @@ function App() {
           </Routes>
         </main>
         <Footer />
-        <ChatBot />
         <CookieConsent />
       </div>
     </Router>
