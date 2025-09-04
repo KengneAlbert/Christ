@@ -73,6 +73,11 @@ const NewsletterAdminContent: React.FC = () => {
   }, []);
 
   const loadData = async () => {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // Charger les abonnés
       const { data: subscribersData, error: subscribersError } = await supabase

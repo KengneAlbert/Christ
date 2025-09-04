@@ -75,6 +75,11 @@ const MediathequeAdminContent: React.FC = () => {
   }, []);
 
   const loadMediaItems = async () => {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('media_items')

@@ -20,7 +20,6 @@ export const useAuth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user ?? null);
-        setLoading(false);
 
         // Mettre à jour la dernière connexion
         if (event === 'SIGNED_IN' && session?.user) {

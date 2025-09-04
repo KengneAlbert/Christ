@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import TrustBanner from './components/TrustBanner';
@@ -33,31 +34,40 @@ const HomePage = () => (
   </>
 );
 
+const AppContent = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  return (
+    <div className="min-h-screen">
+      {!isAdminRoute && <Header />}
+      <main>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/actions" element={<ActionsPage />} />
+          <Route path="/team" element={<TeamPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/mediatheque" element={<MediathequePage />} />
+          <Route path="/mediatheque/:id" element={<MediaViewerPage />} />
+          <Route path="/admin/newsletter" element={<NewsletterAdminPage />} />
+          <Route path="/cookies" element={<CookiePolicyPage />} />
+          <Route path="/admin/mediatheque" element={<MediathequeAdminPage />} />
+          <Route path="/admin" element={<AdminDashboard><div className="p-6"><h1 className="text-3xl font-bold text-slate-800">Tableau de bord</h1><p className="text-slate-600 mt-2">Bienvenue dans l'interface d'administration</p></div></AdminDashboard>} />
+          {/* Redirection pour les anciennes URLs ou erreurs */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && <CookieConsent />}
+    </div>
+  );
+};
+
 function App() {
   return (
     <Router basename="/">
-      <div className="min-h-screen">
-        <Header />
-        <main>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/actions" element={<ActionsPage />} />
-            <Route path="/team" element={<TeamPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/mediatheque" element={<MediathequePage />} />
-            <Route path="/mediatheque/:id" element={<MediaViewerPage />} />
-            <Route path="/admin/newsletter" element={<NewsletterAdminPage />} />
-            <Route path="/cookies" element={<CookiePolicyPage />} />
-            <Route path="/admin/mediatheque" element={<MediathequeAdminPage />} />
-            <Route path="/admin" element={<AdminDashboard><div className="p-6"><h1 className="text-3xl font-bold text-slate-800">Tableau de bord</h1><p className="text-slate-600 mt-2">Bienvenue dans l'interface d'administration</p></div></AdminDashboard>} />
-            {/* Redirection pour les anciennes URLs ou erreurs */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-        <Footer />
-        <CookieConsent />
-      </div>
+      <AppContent />
     </Router>
   );
 }
