@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Check, AlertCircle, Shield, Heart, Bell } from 'lucide-react';
+import { useCSRF, CSRFService } from '../services/csrfService';
+import { useValidation, ValidationService } from '../services/validationService';
 
 interface NewsletterSubscriptionProps {
   className?: string;
@@ -10,6 +12,8 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
   className = '', 
   variant = 'inline' 
 }) => {
+  const { token: csrfToken } = useCSRF();
+  const { errors, validateField, clearErrors, hasErrors } = useValidation();
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,7 +28,17 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email) {
+    // Validation des données
+    const emailValidation = ValidationService.validateEmail(email);
+    const nameValidation = firstName ? ValidationService.validateName(firstName, 'prénom') : { isValid: true, errors: [] };
+    
+    if (!emailValidation.isValid || !nameValidation.isValid) {
+      setStatus('error');
+      return;
+    }
+
+    // Vérification CSRF
+    if (!CSRFService.validateToken(csrfToken)) {
       setStatus('error');
       return;
     }
@@ -37,8 +51,8 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
       
       // Sauvegarder localement (en attendant une vraie base de données)
       const subscriber = {
-        email,
-        firstName,
+        email: ValidationService.sanitizeString(email, 254),
+        firstName: ValidationService.sanitizeString(firstName, 50),
         preferences,
         subscriptionDate: new Date().toISOString(),
         id: Date.now().toString()
@@ -95,6 +109,9 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Token CSRF caché */}
+            <input type="hidden" name="csrf_token" value={csrfToken} />
+
             {status === 'error' && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
                 <div className="flex items-center space-x-2">
@@ -113,10 +130,20 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
                 <input
                   type="text"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFirstName(value);
+                    if (value) validateField('firstName', value, { maxLength: 50 });
+                  }}
+                  maxLength={50}
                   className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
                   placeholder="Votre prénom"
                 />
+                {errors.firstName && (
+                  <div className="mt-1 text-sm text-red-600">
+                    {errors.firstName.map((error, i) => <div key={i}>{error}</div>)}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -125,11 +152,21 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setEmail(value);
+                    validateField('email', value, { required: true, maxLength: 254 });
+                  }}
+                  maxLength={254}
                   required
                   className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
                   placeholder="votre@email.com"
                 />
+                {errors.email && (
+                  <div className="mt-1 text-sm text-red-600">
+                    {errors.email.map((error, i) => <div key={i}>{error}</div>)}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -165,9 +202,9 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || hasErrors}
               className={`w-full focus-ring ${
-                isSubmitting 
+                isSubmitting || hasErrors
                   ? 'bg-slate-400 cursor-not-allowed' 
                   : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 hover-glow'
               } text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center space-x-3`}

@@ -2,8 +2,12 @@ import React from 'react';
 import { useState } from 'react';
 import { Phone, Mail, MapPin, Clock, MessageCircle, Shield, AlertTriangle, Heart, Send } from 'lucide-react';
 import { sendContactEmail, ContactFormData } from '../services/emailService';
+import { useCSRF, CSRFService } from '../services/csrfService';
+import { useValidation, ValidationService } from '../services/validationService';
 
 const ContactPage: React.FC = () => {
+  const { token: csrfToken } = useCSRF();
+  const { errors, validateField, clearErrors, hasErrors } = useValidation();
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: '',
     lastName: '',
@@ -16,6 +20,26 @@ const ContactPage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Validation en temps réel
+    switch (name) {
+      case 'firstName':
+        validateField('firstName', value, { required: true, maxLength: 50 });
+        break;
+      case 'lastName':
+        if (value) validateField('lastName', value, { maxLength: 50 });
+        break;
+      case 'email':
+        validateField('email', value, { required: true, maxLength: 254 });
+        break;
+      case 'subject':
+        validateField('subject', value, { required: true, minLength: 3, maxLength: 200 });
+        break;
+      case 'message':
+        validateField('message', value, { required: true, minLength: 10, maxLength: 5000 });
+        break;
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -25,8 +49,16 @@ const ContactPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.firstName || !formData.email || !formData.message) {
-      alert('Veuillez remplir tous les champs obligatoires');
+    // Validation complète du formulaire
+    const validationResult = ValidationService.validateContactForm(formData);
+    if (!validationResult.isValid) {
+      alert('Erreurs de validation:\n' + validationResult.errors.join('\n'));
+      return;
+    }
+
+    // Vérification CSRF
+    if (!CSRFService.validateToken(csrfToken)) {
+      alert('Token de sécurité invalide. Veuillez recharger la page.');
       return;
     }
 
@@ -199,6 +231,9 @@ const ContactPage: React.FC = () => {
               </div>
 
               <form className="space-y-6" onSubmit={handleSubmit}>
+                {/* Token CSRF caché */}
+                <input type="hidden" name="csrf_token" value={csrfToken} />
+
                 {/* Messages de statut */}
                 {submitStatus === 'success' && (
                   <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800">
@@ -228,10 +263,16 @@ const ContactPage: React.FC = () => {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleInputChange}
+                      maxLength={50}
                       required
                       className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
                       placeholder="Votre prénom"
                     />
+                    {errors.firstName && (
+                      <div className="mt-1 text-sm text-red-600">
+                        {errors.firstName.map((error, i) => <div key={i}>{error}</div>)}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Nom (optionnel)</label>
@@ -240,9 +281,15 @@ const ContactPage: React.FC = () => {
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleInputChange}
+                      maxLength={50}
                       className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
                       placeholder="Votre nom"
                     />
+                    {errors.lastName && (
+                      <div className="mt-1 text-sm text-red-600">
+                        {errors.lastName.map((error, i) => <div key={i}>{error}</div>)}
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -253,10 +300,16 @@ const ContactPage: React.FC = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
+                    maxLength={254}
                     required
                     className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
                     placeholder="votre@email.com"
                   />
+                  {errors.email && (
+                    <div className="mt-1 text-sm text-red-600">
+                      {errors.email.map((error, i) => <div key={i}>{error}</div>)}
+                    </div>
+                  )}
                 </div>
                 
                 <div>
@@ -274,6 +327,11 @@ const ContactPage: React.FC = () => {
                     <option>Urgence</option>
                     <option>Autre</option>
                   </select>
+                  {errors.subject && (
+                    <div className="mt-1 text-sm text-red-600">
+                      {errors.subject.map((error, i) => <div key={i}>{error}</div>)}
+                    </div>
+                  )}
                 </div>
                 
                 <div>
@@ -283,10 +341,19 @@ const ContactPage: React.FC = () => {
                     name="message"
                     value={formData.message}
                     onChange={handleInputChange}
+                    maxLength={5000}
                     required
                     className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 resize-none"
                     placeholder="Décrivez votre situation ou votre demande..."
                   ></textarea>
+                  {errors.message && (
+                    <div className="mt-1 text-sm text-red-600">
+                      {errors.message.map((error, i) => <div key={i}>{error}</div>)}
+                    </div>
+                  )}
+                  <div className="mt-1 text-xs text-slate-500">
+                    {formData.message.length}/5000 caractères
+                  </div>
                 </div>
                 
                 <div className="flex items-center space-x-3 text-sm text-slate-600">
@@ -296,9 +363,9 @@ const ContactPage: React.FC = () => {
                 
                 <button 
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || hasErrors}
                   className={`w-full ${
-                    isSubmitting 
+                    isSubmitting || hasErrors
                       ? 'bg-slate-400 cursor-not-allowed' 
                       : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105'
                   } text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center space-x-3`}
