@@ -1,3 +1,4 @@
+import React from 'react';
 // Service de validation renforcée des données
 import DOMPurify from 'dompurify';
 

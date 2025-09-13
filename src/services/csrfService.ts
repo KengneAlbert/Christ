@@ -1,3 +1,5 @@
+import React from 'react';
+
 // Service de gestion des tokens CSRF
 export class CSRFService {
   private static readonly TOKEN_KEY = 'csrf_token';
