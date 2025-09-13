@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { AuthSecurityService } from '../services/authSecurityService';
 
 interface AuthState {
   user: User | null;
@@ -83,6 +84,8 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
+    // Nettoyer la session sécurisée
+    AuthSecurityService.clearSession();
     const { error } = await supabase.auth.signOut();
     return { error };
   };
