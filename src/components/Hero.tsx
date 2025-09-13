@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight, Heart, Shield, Lock, Phone, Clock } from 'lucide-react';
+import { clearBrowsingHistory } from '../services/historyService';
 
 const Hero: React.FC = () => {
   return (
@@ -156,12 +157,7 @@ const Hero: React.FC = () => {
                 <button 
                   onClick={() => {
                     if (confirm('Voulez-vous effacer votre historique de navigation ? Cette action supprimera toutes les traces de votre visite sur ce site.')) {
-                      // Effacer l'historique (méthode compatible navigateurs)
-                      if (window.history && window.history.replaceState) {
-                        window.history.replaceState(null, '', window.location.href);
-                      }
-                      // Rediriger vers une page neutre
-                      window.location.href = 'https://www.google.com';
+                      clearBrowsingHistory();
                     }
                   }}
                   className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover-lift"
