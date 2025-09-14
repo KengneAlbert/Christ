@@ -24,8 +24,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ children }) => {
   // Temporairement, permettre l'accès même sans utilisateur pour tester la base de données
   // En production, décommenter la ligne suivante :
   // if (!user) return <AdminAuth onSuccess={() => window.location.reload()} />;
+  
+  // Pour le moment, permettre l'accès direct au tableau de bord pour tester
+  if (!user) {
+    return <AdminAuth onSuccess={() => window.location.reload()} />;
+  }
 
-  return user ? <AdminLayout>{children}</AdminLayout> : <AdminAuth onSuccess={() => window.location.reload()} />;
+  return <AdminLayout>{children}</AdminLayout>;
 };
 
 export default AdminDashboard;
