@@ -75,7 +75,6 @@ const MediathequeAdminContent: React.FC = () => {
   }, []);
 
   const loadMediaItems = async () => {
-
     try {
       setIsLoading(true);
       
@@ -86,14 +85,14 @@ const MediathequeAdminContent: React.FC = () => {
 
       if (error) {
         console.error('Erreur chargement médias:', error);
-        setMessage({ type: 'error', text: 'Erreur lors du chargement des médias' });
+        setMessage({ type: 'error', text: 'Impossible de charger les médias. Vérifiez la configuration Supabase.' });
         return;
       }
       
       setMediaItems(data || []);
     } catch (error) {
       console.error('Erreur chargement médias:', error);
-      setMessage({ type: 'error', text: 'Erreur lors du chargement des médias' });
+      setMessage({ type: 'error', text: 'Erreur de connexion à la base de données. Vérifiez votre configuration Supabase.' });
     } finally {
       setIsLoading(false);
     }

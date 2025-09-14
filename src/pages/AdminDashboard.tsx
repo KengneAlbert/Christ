@@ -21,11 +21,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ children }) => {
     );
   }
 
-  if (!user) {
-    return <AdminAuth onSuccess={() => {}} />;
-  }
+  // Temporairement, permettre l'accès même sans utilisateur pour tester la base de données
+  // En production, décommenter la ligne suivante :
+  // if (!user) return <AdminAuth onSuccess={() => window.location.reload()} />;
 
-  return <AdminLayout>{children}</AdminLayout>;
+  return user ? <AdminLayout>{children}</AdminLayout> : <AdminAuth onSuccess={() => window.location.reload()} />;
 };
 
 export default AdminDashboard;

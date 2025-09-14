@@ -73,7 +73,6 @@ const NewsletterAdminContent: React.FC = () => {
   }, []);
 
   const loadData = async () => {
-
     try {
       setIsLoading(true);
       
@@ -85,7 +84,7 @@ const NewsletterAdminContent: React.FC = () => {
 
       if (subscribersError) {
         console.error('Erreur chargement abonnés:', subscribersError);
-        // Continuer même en cas d'erreur pour éviter de bloquer l'interface
+        setMessage({ type: 'error', text: 'Impossible de charger les abonnés. Vérifiez la configuration Supabase.' });
       }
       setSubscribers(subscribersData || []);
 
@@ -97,13 +96,13 @@ const NewsletterAdminContent: React.FC = () => {
 
       if (newslettersError) {
         console.error('Erreur chargement newsletters:', newslettersError);
-        // Continuer même en cas d'erreur
+        setMessage({ type: 'error', text: 'Impossible de charger les newsletters. Vérifiez la configuration Supabase.' });
       }
       setNewsletters(newslettersData || []);
 
     } catch (error: any) {
       console.error('Erreur chargement données:', error);
-      setMessage({ type: 'error', text: 'Erreur lors du chargement des données' });
+      setMessage({ type: 'error', text: 'Erreur de connexion à la base de données. Vérifiez votre configuration Supabase.' });
     } finally {
       setIsLoading(false);
     }
