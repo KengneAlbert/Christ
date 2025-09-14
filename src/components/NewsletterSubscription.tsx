@@ -151,17 +151,11 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
                   onChange={(e) => {
                     const value = e.target.value;
                     setFirstName(value);
-                    if (value) validateField('firstName', value, { maxLength: 50 });
                   }}
                   maxLength={50}
                   className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
                   placeholder="Votre prénom"
                 />
-                {errors.firstName && (
-                  <div className="mt-1 text-sm text-red-600">
-                    {errors.firstName.map((error, i) => <div key={i}>{error}</div>)}
-                  </div>
-                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -173,18 +167,12 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
                   onChange={(e) => {
                     const value = e.target.value;
                     setEmail(value);
-                    validateField('email', value, { required: true, maxLength: 254 });
                   }}
                   maxLength={254}
                   required
                   className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
                   placeholder="votre@email.com"
                 />
-                {errors.email && (
-                  <div className="mt-1 text-sm text-red-600">
-                    {errors.email.map((error, i) => <div key={i}>{error}</div>)}
-                  </div>
-                )}
               </div>
             </div>
 
