@@ -48,6 +48,7 @@ interface MediaItem {
 }
 
 const MediathequeAdminContent: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'list' | 'stats'>('list');
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -84,14 +85,15 @@ const MediathequeAdminContent: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.warn('Erreur chargement médias:', error);
-        // Ne pas bloquer le chargement, continuer avec un tableau vide
+        console.error('Erreur chargement médias:', error);
+        setMessage({ type: 'error', text: `Erreur chargement médias: ${error.message}` });
+        return;
       }
       
       setMediaItems(data || []);
     } catch (error) {
-      console.warn('Erreur chargement médias:', error);
-      // Continuer même en cas d'erreur
+      console.error('Erreur chargement médias:', error);
+      setMessage({ type: 'error', text: 'Problème de connexion à la base de données' });
     } finally {
       setIsLoading(false);
     }

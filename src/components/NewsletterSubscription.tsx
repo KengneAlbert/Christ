@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Check, AlertCircle, Shield, Heart, Bell } from 'lucide-react';
-import { useCSRF, CSRFService } from '../services/csrfService';
-import { useValidation, ValidationService } from '../services/validationService';
+import { supabase } from '../lib/supabase';
 
 interface NewsletterSubscriptionProps {
   className?: string;
@@ -12,12 +11,11 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
   className = '', 
   variant = 'inline' 
 }) => {
-  const { token: csrfToken } = useCSRF();
-  const { errors, validateField, clearErrors, hasErrors } = useValidation();
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
   const [preferences, setPreferences] = useState({
     actualites: true,
     temoignages: true,
@@ -28,52 +26,75 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation des données
-    const emailValidation = ValidationService.validateEmail(email);
-    const nameValidation = firstName ? ValidationService.validateName(firstName, 'prénom') : { isValid: true, errors: [] };
-    
-    if (!emailValidation.isValid || !nameValidation.isValid) {
+    // Validation simple côté client
+    if (!email || !email.includes('@')) {
       setStatus('error');
+      setErrorMessage('Veuillez entrer une adresse email valide');
       return;
     }
-
-    // Vérification CSRF
-    if (!CSRFService.validateToken(csrfToken)) {
+    
+    if (firstName && firstName.length > 50) {
       setStatus('error');
+      setErrorMessage('Le prénom ne peut pas dépasser 50 caractères');
       return;
     }
 
     setIsSubmitting(true);
+    setStatus('idle');
+    setErrorMessage('');
     
     try {
-      // Simulation d'envoi - remplacer par l'appel API réel
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Sauvegarder localement (en attendant une vraie base de données)
-      const subscriber = {
-        email: ValidationService.sanitizeString(email, 254),
-        firstName: ValidationService.sanitizeString(firstName, 50),
-        preferences,
-        subscriptionDate: new Date().toISOString(),
-        id: Date.now().toString()
-      };
-      
-      const existingSubscribers = JSON.parse(localStorage.getItem('newsletter_subscribers') || '[]');
-      
-      // Vérifier si déjà abonné
-      if (existingSubscribers.some((sub: any) => sub.email === email)) {
-        throw new Error('Cette adresse email est déjà abonnée');
+      // Vérifier si l'email existe déjà
+      const { data: existingSubscriber, error: checkError } = await supabase
+        .from('newsletter_subscribers')
+        .select('id')
+        .eq('email', email.toLowerCase().trim())
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 = pas de résultat trouvé, c'est normal
+        console.error('Erreur vérification email:', checkError);
+        throw new Error('Erreur lors de la vérification. Veuillez réessayer.');
       }
-      
-      existingSubscribers.push(subscriber);
-      localStorage.setItem('newsletter_subscribers', JSON.stringify(existingSubscribers));
+
+      if (existingSubscriber) {
+        throw new Error('Cette adresse email est déjà abonnée à notre newsletter');
+      }
+
+      // Insérer le nouvel abonné
+      const { data, error: insertError } = await supabase
+        .from('newsletter_subscribers')
+        .insert({
+          email: email.toLowerCase().trim(),
+          first_name: firstName.trim() || null,
+          preferences: preferences,
+          is_active: true
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Erreur insertion abonné:', insertError);
+        if (insertError.code === '23505') {
+          throw new Error('Cette adresse email est déjà abonnée');
+        }
+        throw new Error('Erreur lors de l\'abonnement. Veuillez réessayer.');
+      }
       
       setStatus('success');
       setEmail('');
       setFirstName('');
+      setPreferences({
+        actualites: true,
+        temoignages: true,
+        evenements: true,
+        ressources: true
+      });
+      
     } catch (error) {
-      console.error('Erreur abonnement newsletter:', error);
+      console.error('Erreur abonnement:', error);
       setStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : 'Une erreur est survenue');
     } finally {
       setIsSubmitting(false);
     }
@@ -95,30 +116,16 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
           </div>
           <h3 className="text-2xl font-bold text-slate-800 mb-3">Restez informé(e)</h3>
           <p className="text-slate-600 leading-relaxed">
-            Recevez nos actualités, témoignages et ressources directement dans votre boîte mail
-          </p>
-        </div>
-
-        {status === 'success' ? (
+                    onChange={(e) => setEmail(e.target.value)}
           <div className="text-center py-8">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="w-8 h-8 text-green-600" />
             </div>
             <h4 className="text-xl font-bold text-green-800 mb-2">Merci pour votre abonnement !</h4>
-            <p className="text-green-700">Vous recevrez bientôt un email de confirmation.</p>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Token CSRF caché */}
-            <input type="hidden" name="csrf_token" value={csrfToken} />
-
-            {status === 'error' && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
-                <div className="flex items-center space-x-2">
-                  <AlertCircle className="w-5 h-5" />
-                  <span className="font-medium">Erreur lors de l'abonnement</span>
                 </div>
-                <p className="text-sm mt-1">Veuillez vérifier votre adresse email ou réessayer.</p>
+                <p className="text-sm mt-1">
+                  {errorMessage ? 'Veuillez corriger le problème et réessayer.' : 'Veuillez vérifier votre adresse email ou réessayer.'}
+                </p>
               </div>
             )}
 
@@ -202,11 +209,11 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
 
             <button
               type="submit"
-              disabled={isSubmitting || hasErrors}
-              className={`w-full focus-ring ${
-                isSubmitting || hasErrors
+              disabled={isSubmitting || !email}
+              className={`w-full ${
+                isSubmitting || !email
                   ? 'bg-slate-400 cursor-not-allowed' 
-                  : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 hover-glow'
+                  : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105'
               } text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center space-x-3`}
             >
               {isSubmitting ? (

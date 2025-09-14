@@ -52,6 +52,7 @@ interface Newsletter {
 }
 
 const NewsletterAdminContent: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'subscribers' | 'newsletters' | 'create' | 'stats'>('subscribers');
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
@@ -76,33 +77,45 @@ const NewsletterAdminContent: React.FC = () => {
       setIsLoading(true);
       setMessage(null);
       
-      // Charger les abonnés
-      const { data: subscribersData, error: subscribersError } = await supabase
-        .from('newsletter_subscribers')
-        .select('*')
-        .order('subscription_date', { ascending: false });
+      // Charger les abonnés avec gestion d'erreur
+      try {
+        const { data: subscribersData, error: subscribersError } = await supabase
+          .from('newsletter_subscribers')
+          .select('*')
+          .order('subscription_date', { ascending: false });
 
-      if (subscribersError) {
-        console.warn('Erreur chargement abonnés:', subscribersError);
-        // Ne pas bloquer le chargement, juste afficher un message
+        if (subscribersError) {
+          console.warn('Erreur chargement abonnés:', subscribersError);
+          setMessage({ type: 'error', text: 'Impossible de charger les abonnés. Vérifiez la configuration Supabase.' });
+        } else {
+          setSubscribers(subscribersData || []);
+        }
+      } catch (error) {
+        console.warn('Erreur connexion abonnés:', error);
+        setMessage({ type: 'error', text: 'Problème de connexion à la base de données pour les abonnés.' });
       }
-      setSubscribers(subscribersData || []);
 
-      // Charger les newsletters
-      const { data: newslettersData, error: newslettersError } = await supabase
-        .from('newsletters')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Charger les newsletters avec gestion d'erreur
+      try {
+        const { data: newslettersData, error: newslettersError } = await supabase
+          .from('newsletters')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (newslettersError) {
-        console.warn('Erreur chargement newsletters:', newslettersError);
-        // Ne pas bloquer le chargement, juste afficher un message
+        if (newslettersError) {
+          console.warn('Erreur chargement newsletters:', newslettersError);
+          setMessage({ type: 'error', text: 'Impossible de charger les newsletters. Vérifiez la configuration Supabase.' });
+        } else {
+          setNewsletters(newslettersData || []);
+        }
+      } catch (error) {
+        console.warn('Erreur connexion newsletters:', error);
+        setMessage({ type: 'error', text: 'Problème de connexion à la base de données pour les newsletters.' });
       }
-      setNewsletters(newslettersData || []);
 
     } catch (error: any) {
-      console.warn('Erreur chargement données:', error);
-      // Continuer même en cas d'erreur
+      console.error('Erreur générale chargement:', error);
+      setMessage({ type: 'error', text: 'Erreur générale de chargement des données.' });
     } finally {
       setIsLoading(false);
     }
@@ -136,8 +149,8 @@ const NewsletterAdminContent: React.FC = () => {
         });
 
       if (error) {
-        console.warn('Erreur création newsletter:', error);
-        setMessage({ type: 'error', text: 'Erreur lors de la création. Vérifiez la configuration Supabase.' });
+        console.error('Erreur création newsletter:', error);
+        setMessage({ type: 'error', text: `Erreur lors de la création: ${error.message}` });
         return;
       }
 
@@ -146,8 +159,8 @@ const NewsletterAdminContent: React.FC = () => {
       setActiveTab('newsletters');
       loadData();
     } catch (error: any) {
-      console.warn('Erreur handleCreateNewsletter:', error);
-      setMessage({ type: 'error', text: 'Erreur lors de la création' });
+      console.error('Erreur handleCreateNewsletter:', error);
+      setMessage({ type: 'error', text: `Erreur lors de la création: ${error.message}` });
     }
   };
 
