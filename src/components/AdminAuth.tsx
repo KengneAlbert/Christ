@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Shield, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { AuthSecurityService } from '../services/authSecurityService';
 
 interface AdminAuthProps {
   onSuccess: () => void;
@@ -21,13 +20,46 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
 
   const { signIn, signUp, resetPassword } = useAuth();
 
+  // Fonction de validation du mot de passe
+  const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (password.length < 12) {
+      errors.push('Le mot de passe doit contenir au moins 12 caractères');
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push('Le mot de passe doit contenir au moins une majuscule');
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push('Le mot de passe doit contenir au moins une minuscule');
+    }
+    if (!/\d/.test(password)) {
+      errors.push('Le mot de passe doit contenir au moins un chiffre');
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      errors.push('Le mot de passe doit contenir au moins un caractère spécial');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  };
+
   // Vérifier le verrouillage au chargement
   React.useEffect(() => {
     if (email) {
-      const locked = AuthSecurityService.isEmailLocked(email);
+      const attempts = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
+      const hourAgo = Date.now() - (60 * 60 * 1000);
+      const recentFailures = attempts.filter((attempt: any) => 
+        attempt.email === email && 
+        !attempt.success && 
+        attempt.timestamp > hourAgo
+      );
+      const locked = recentFailures.length >= 5;
       setIsLocked(locked);
       if (locked) {
-        setLockoutTime(AuthSecurityService.getLockoutTimeRemaining(email));
+        const oldestFailure = Math.min(...recentFailures.map((a: any) => a.timestamp));
+        const lockoutExpiry = oldestFailure + (60 * 60 * 1000); // 1 heure
+        const remaining = Math.max(0, Math.ceil((lockoutExpiry - Date.now()) / 1000 / 60));
+        setLockoutTime(remaining);
       }
     }
   }, [email]);
@@ -36,7 +68,23 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
   React.useEffect(() => {
     if (isLocked && lockoutTime > 0) {
       const timer = setInterval(() => {
-        const remaining = AuthSecurityService.getLockoutTimeRemaining(email);
+        const attempts = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
+        const hourAgo = Date.now() - (60 * 60 * 1000);
+        const recentFailures = attempts.filter((attempt: any) => 
+          attempt.email === email && 
+          !attempt.success && 
+          attempt.timestamp > hourAgo
+        );
+        
+        if (recentFailures.length === 0) {
+          setIsLocked(false);
+          setLockoutTime(0);
+          return;
+        }
+        
+        const oldestFailure = Math.min(...recentFailures.map((a: any) => a.timestamp));
+        const lockoutExpiry = oldestFailure + (60 * 60 * 1000);
+        const remaining = Math.max(0, Math.ceil((lockoutExpiry - Date.now()) / 1000 / 60));
         setLockoutTime(remaining);
         if (remaining === 0) {
           setIsLocked(false);
@@ -51,7 +99,7 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
   const handlePasswordChange = (value: string) => {
     setPassword(value);
     if (mode === 'register' && value) {
-      const validation = AuthSecurityService.validatePassword(value);
+      const validation = validatePassword(value);
       const score = Math.max(0, Math.min(4, 5 - validation.errors.length));
       setPasswordStrength({
         score,
@@ -64,11 +112,10 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
     e.preventDefault();
     
     // Vérifier le verrouillage
-    if (AuthSecurityService.isEmailLocked(email)) {
-      const remaining = AuthSecurityService.getLockoutTimeRemaining(email);
+    if (isLocked) {
       setMessage({ 
         type: 'error', 
-        text: `Compte temporairement verrouillé. Réessayez dans ${remaining} minutes.` 
+        text: `Compte temporairement verrouillé. Réessayez dans ${lockoutTime} minutes.` 
       });
       return;
     }
@@ -81,24 +128,21 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
         const { data, error } = await signIn(email, password);
         
         if (error) {
-          AuthSecurityService.recordLoginAttempt(email, false);
           throw error;
         }
         
         if (data?.user) {
-          AuthSecurityService.recordLoginAttempt(email, true);
-          AuthSecurityService.createSecureSession(data.user.id, email);
           setMessage({ type: 'success', text: 'Connexion réussie !' });
-          // Redirection immédiate après connexion réussie
+          // Redirection après connexion réussie
           setTimeout(() => {
             onSuccess();
-          }, 500);
+          }, 1000);
         } else {
           throw new Error('Erreur de connexion inconnue');
         }
       } else if (mode === 'register') {
         // Valider le mot de passe côté client
-        const passwordValidation = AuthSecurityService.validatePassword(password);
+        const passwordValidation = validatePassword(password);
         if (!passwordValidation.isValid) {
           throw new Error(passwordValidation.errors.join('\n'));
         }

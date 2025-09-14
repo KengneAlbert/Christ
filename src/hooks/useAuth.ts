@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { AuthSecurityService } from '../services/authSecurityService';
 
 interface AuthState {
   user: User | null;
@@ -66,12 +65,38 @@ export const useAuth = () => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Vérifier si l'email est verrouillé
+      if (typeof window !== 'undefined') {
+        const attempts = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
+        const hourAgo = Date.now() - (60 * 60 * 1000);
+        const recentFailures = attempts.filter((attempt: any) => 
+          attempt.email === email && 
+          !attempt.success && 
+          attempt.timestamp > hourAgo
+        );
+        
+        if (recentFailures.length >= 5) {
+          throw new Error('Trop de tentatives de connexion. Veuillez patienter 1 heure.');
+        }
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) {
+        // Enregistrer l'échec
+        if (typeof window !== 'undefined') {
+          const attempts = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
+          attempts.push({
+            email,
+            timestamp: Date.now(),
+            success: false
+          });
+          localStorage.setItem('auth_attempts', JSON.stringify(attempts));
+        }
+        
         // Gérer les erreurs spécifiques de Supabase
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Email ou mot de passe incorrect');
@@ -84,6 +109,37 @@ export const useAuth = () => {
         }
       }
       
+      // Enregistrer le succès
+      if (data?.user && typeof window !== 'undefined') {
+        const attempts = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
+        attempts.push({
+          email,
+          timestamp: Date.now(),
+          success: true
+        });
+        localStorage.setItem('auth_attempts', JSON.stringify(attempts));
+        
+        // Créer ou mettre à jour l'utilisateur admin dans la base
+        try {
+          const { error: upsertError } = await supabase
+            .from('admin_users')
+            .upsert({
+              id: data.user.id,
+              email: data.user.email,
+              last_login: new Date().toISOString(),
+              is_active: true
+            }, {
+              onConflict: 'id'
+            });
+          
+          if (upsertError) {
+            console.warn('Erreur mise à jour admin_users:', upsertError);
+          }
+        } catch (dbError) {
+          console.warn('Erreur base de données admin:', dbError);
+        }
+      }
+      
       return { data, error: null };
     } catch (error: any) {
       return { data: null, error };
@@ -92,9 +148,40 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string) => {
     try {
-      // Vérifier d'abord si l'email est autorisé
-      if (!AuthSecurityService.isEmailAuthorizedForAdmin(email)) {
+      // Vérifier si l'email est autorisé pour l'inscription admin
+      const authorizedEmails = [
+        'admin@christlebonberger.fr',
+        'suzy.poka@christlebonberger.fr',
+        'christelle.youeto@christlebonberger.fr',
+        'florence.noumo@christlebonberger.fr',
+        'mariette.kom@christlebonberger.fr'
+      ];
+      
+      const authorizedDomains = ['christlebonberger.fr'];
+      const domain = email.split('@')[1]?.toLowerCase();
+      
+      const isAuthorized = authorizedEmails.includes(email.toLowerCase()) || 
+                          authorizedDomains.includes(domain);
+      
+      if (!isAuthorized) {
         throw new Error('Cette adresse email n\'est pas autorisée pour l\'inscription admin');
+      }
+      
+      // Validation du mot de passe
+      if (password.length < 12) {
+        throw new Error('Le mot de passe doit contenir au moins 12 caractères');
+      }
+      if (!/[A-Z]/.test(password)) {
+        throw new Error('Le mot de passe doit contenir au moins une majuscule');
+      }
+      if (!/[a-z]/.test(password)) {
+        throw new Error('Le mot de passe doit contenir au moins une minuscule');
+      }
+      if (!/\d/.test(password)) {
+        throw new Error('Le mot de passe doit contenir au moins un chiffre');
+      }
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        throw new Error('Le mot de passe doit contenir au moins un caractère spécial');
       }
       
       const { data, error } = await supabase.auth.signUp({
@@ -115,6 +202,25 @@ export const useAuth = () => {
         }
       }
       
+      // Créer l'entrée admin_users si l'inscription réussit
+      if (data?.user) {
+        try {
+          const { error: insertError } = await supabase
+            .from('admin_users')
+            .insert({
+              id: data.user.id,
+              email: data.user.email,
+              is_active: true
+            });
+          
+          if (insertError) {
+            console.warn('Erreur création admin_users:', insertError);
+          }
+        } catch (dbError) {
+          console.warn('Erreur base de données lors de l\'inscription:', dbError);
+        }
+      }
+      
       return { data, error: null };
     } catch (error: any) {
       return { data: null, error };
@@ -122,8 +228,10 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
-    // Nettoyer la session sécurisée
-    AuthSecurityService.clearSession();
+    // Nettoyer les données locales
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('auth_session');
+    }
     const { error } = await supabase.auth.signOut();
     return { error };
   };

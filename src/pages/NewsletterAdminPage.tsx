@@ -73,19 +73,20 @@ const NewsletterAdminContent: React.FC = () => {
   }, []);
 
   const loadData = async () => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
 
     try {
+      setIsLoading(true);
+      
       // Charger les abonnés
       const { data: subscribersData, error: subscribersError } = await supabase
         .from('newsletter_subscribers')
         .select('*')
         .order('subscription_date', { ascending: false });
 
-      if (subscribersError) throw subscribersError;
+      if (subscribersError) {
+        console.error('Erreur chargement abonnés:', subscribersError);
+        // Continuer même en cas d'erreur pour éviter de bloquer l'interface
+      }
       setSubscribers(subscribersData || []);
 
       // Charger les newsletters
@@ -94,7 +95,10 @@ const NewsletterAdminContent: React.FC = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (newslettersError) throw newslettersError;
+      if (newslettersError) {
+        console.error('Erreur chargement newsletters:', newslettersError);
+        // Continuer même en cas d'erreur
+      }
       setNewsletters(newslettersData || []);
 
     } catch (error: any) {
@@ -115,7 +119,7 @@ const NewsletterAdminContent: React.FC = () => {
   });
 
   const handleCreateNewsletter = async () => {
-    if (!newNewsletter.title || !newNewsletter.content || !user) {
+    if (!newNewsletter.title || !newNewsletter.content) {
       setMessage({ type: 'error', text: 'Veuillez remplir tous les champs' });
       return;
     }
@@ -129,16 +133,20 @@ const NewsletterAdminContent: React.FC = () => {
           category: newNewsletter.category,
           status: 'draft',
           recipients_count: 0,
-          created_by: user.id
+          created_by: user?.id || 'anonymous'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur création newsletter:', error);
+        throw new Error('Erreur lors de la création de la newsletter');
+      }
 
       setMessage({ type: 'success', text: 'Newsletter créée avec succès' });
       setNewNewsletter({ title: '', content: '', category: 'actualites' });
       setActiveTab('newsletters');
       loadData();
     } catch (error: any) {
+      console.error('Erreur handleCreateNewsletter:', error);
       setMessage({ type: 'error', text: 'Erreur lors de la création' });
     }
   };

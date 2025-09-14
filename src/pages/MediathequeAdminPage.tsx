@@ -75,18 +75,21 @@ const MediathequeAdminContent: React.FC = () => {
   }, []);
 
   const loadMediaItems = async () => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
 
     try {
+      setIsLoading(true);
+      
       const { data, error } = await supabase
         .from('media_items')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur chargement médias:', error);
+        setMessage({ type: 'error', text: 'Erreur lors du chargement des médias' });
+        return;
+      }
+      
       setMediaItems(data || []);
     } catch (error) {
       console.error('Erreur chargement médias:', error);
@@ -139,7 +142,7 @@ const MediathequeAdminContent: React.FC = () => {
     e.preventDefault();
     setMessage(null);
     
-    if (!formData.title || !formData.description || !user) {
+    if (!formData.title || !formData.description) {
       setMessage({ type: 'error', text: 'Veuillez remplir tous les champs obligatoires' });
       return;
     }
@@ -152,7 +155,7 @@ const MediathequeAdminContent: React.FC = () => {
         category: formData.category,
         duration: formData.duration || null,
         pages: formData.pages || null,
-        created_by: user.id,
+        created_by: user?.id || 'anonymous',
         updated_at: new Date().toISOString()
       };
 
