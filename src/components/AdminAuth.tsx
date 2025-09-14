@@ -83,6 +83,10 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
           AuthSecurityService.recordLoginAttempt(email, true);
           AuthSecurityService.createSecureSession('temp-id', email);
           setMessage({ type: 'success', text: 'Connexion réussie !' });
+          // Redirection après connexion réussie
+          setTimeout(() => {
+            onSuccess();
+          }, 1000);
         } catch (authError) {
           AuthSecurityService.recordLoginAttempt(email, false);
           throw authError;
