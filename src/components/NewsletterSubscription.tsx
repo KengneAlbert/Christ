@@ -116,16 +116,27 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
           </div>
           <h3 className="text-2xl font-bold text-slate-800 mb-3">Restez informé(e)</h3>
           <p className="text-slate-600 leading-relaxed">
-                    onChange={(e) => setEmail(e.target.value)}
+            Recevez nos dernières actualités, témoignages et ressources directement dans votre boîte mail.
+          </p>
+        </div>
+
+        {status === 'success' ? (
           <div className="text-center py-8">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="w-8 h-8 text-green-600" />
             </div>
             <h4 className="text-xl font-bold text-green-800 mb-2">Merci pour votre abonnement !</h4>
+            <p className="text-green-700">Vous recevrez bientôt nos actualités par email.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {status === 'error' && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start space-x-3">
+                <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-red-800 font-medium">Erreur lors de l'abonnement</p>
+                  <p className="text-red-700 text-sm mt-1">{errorMessage}</p>
                 </div>
-                <p className="text-sm mt-1">
-                  {errorMessage ? 'Veuillez corriger le problème et réessayer.' : 'Veuillez vérifier votre adresse email ou réessayer.'}
-                </p>
               </div>
             )}
 
