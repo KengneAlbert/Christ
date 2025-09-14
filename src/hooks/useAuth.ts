@@ -65,22 +65,60 @@ export const useAuth = () => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { data, error };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        // Gérer les erreurs spécifiques de Supabase
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Email ou mot de passe incorrect');
+        } else if (error.message.includes('Email not confirmed')) {
+          throw new Error('Veuillez confirmer votre email avant de vous connecter');
+        } else if (error.message.includes('Too many requests')) {
+          throw new Error('Trop de tentatives. Veuillez patienter avant de réessayer');
+        } else {
+          throw new Error('Erreur de connexion. Vérifiez votre configuration Supabase');
+        }
+      }
+      
+      return { data, error: null };
+    } catch (error: any) {
+      return { data: null, error };
+    }
   };
 
   const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/admin`,
-      },
-    });
-    return { data, error };
+    try {
+      // Vérifier d'abord si l'email est autorisé
+      if (!AuthSecurityService.isEmailAuthorizedForAdmin(email)) {
+        throw new Error('Cette adresse email n\'est pas autorisée pour l\'inscription admin');
+      }
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/admin`,
+        },
+      });
+      
+      if (error) {
+        if (error.message.includes('User already registered')) {
+          throw new Error('Un compte existe déjà avec cette adresse email');
+        } else if (error.message.includes('Password should be at least')) {
+          throw new Error('Le mot de passe ne respecte pas les critères de sécurité');
+        } else {
+          throw new Error('Erreur lors de la création du compte. Vérifiez votre configuration Supabase');
+        }
+      }
+      
+      return { data, error: null };
+    } catch (error: any) {
+      return { data: null, error };
+    }
   };
 
   const signOut = async () => {
@@ -91,10 +129,19 @@ export const useAuth = () => {
   };
 
   const resetPassword = async (email: string) => {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/admin`,
-    });
-    return { data, error };
+    try {
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/admin`,
+      });
+      
+      if (error) {
+        throw new Error('Erreur lors de l\'envoi de l\'email de réinitialisation');
+      }
+      
+      return { data, error: null };
+    } catch (error: any) {
+      return { data: null, error };
+    }
   };
 
   return {

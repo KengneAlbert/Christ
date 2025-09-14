@@ -78,42 +78,52 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
 
     try {
       if (mode === 'login') {
-        try {
-          await signIn(email, password);
-          AuthSecurityService.recordLoginAttempt(email, true);
-          AuthSecurityService.createSecureSession('temp-id', email);
-          setMessage({ type: 'success', text: 'Connexion réussie !' });
-          // Redirection après connexion réussie
-          setTimeout(() => {
-            onSuccess();
-          }, 1000);
-        } catch (authError) {
+        const { data, error } = await signIn(email, password);
+        
+        if (error) {
           AuthSecurityService.recordLoginAttempt(email, false);
-          throw authError;
-        }
-      } else if (mode === 'register') {
-        // Vérifier l'autorisation d'inscription
-        if (!AuthSecurityService.isEmailAuthorizedForAdmin(email)) {
-          throw new Error('Cette adresse email n\'est pas autorisée pour l\'inscription admin');
+          throw error;
         }
         
-        // Valider le mot de passe
+        if (data?.user) {
+          AuthSecurityService.recordLoginAttempt(email, true);
+          AuthSecurityService.createSecureSession(data.user.id, email);
+          setMessage({ type: 'success', text: 'Connexion réussie !' });
+          // Redirection immédiate après connexion réussie
+          setTimeout(() => {
+            onSuccess();
+          }, 500);
+        } else {
+          throw new Error('Erreur de connexion inconnue');
+        }
+      } else if (mode === 'register') {
+        // Valider le mot de passe côté client
         const passwordValidation = AuthSecurityService.validatePassword(password);
         if (!passwordValidation.isValid) {
-          throw new Error('Mot de passe non conforme:\n' + passwordValidation.errors.join('\n'));
+          throw new Error(passwordValidation.errors.join('\n'));
         }
         
         if (password !== confirmPassword) {
           throw new Error('Les mots de passe ne correspondent pas');
         }
         
-        await signUp(email, password);
+        const { data, error } = await signUp(email, password);
+        
+        if (error) {
+          throw error;
+        }
+        
         setMessage({ 
           type: 'success', 
           text: 'Compte créé ! Vérifiez votre email pour confirmer votre inscription.' 
         });
       } else if (mode === 'forgot') {
-        await resetPassword(email);
+        const { data, error } = await resetPassword(email);
+        
+        if (error) {
+          throw error;
+        }
+        
         setMessage({ 
           type: 'success', 
           text: 'Email de réinitialisation envoyé ! Vérifiez votre boîte mail.' 
@@ -122,7 +132,7 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
     } catch (error: any) {
       setMessage({ 
         type: 'error', 
-        text: error.message || 'Une erreur est survenue' 
+        text: error.message || 'Une erreur est survenue. Vérifiez votre configuration Supabase.' 
       });
     } finally {
       setIsLoading(false);
