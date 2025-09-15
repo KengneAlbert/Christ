@@ -20,12 +20,10 @@ import {
   Youtube,
   File,
   AlertCircle,
-  CheckCircle,
-  RefreshCw
+  CheckCircle
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { useMediaItems } from '../hooks/useOptimizedData';
-import { SupabaseOptimizedService } from '../services/supabaseOptimized';
 import AdminDashboard from './AdminDashboard';
 
 interface MediaItem {
@@ -51,21 +49,13 @@ interface MediaItem {
 
 const MediathequeAdminContent: React.FC = () => {
   const { user } = useAuth();
-  
-  // Utiliser le hook optimisé
-  const { 
-    data: mediaItems = [], 
-    loading: isLoading, 
-    error: loadingError, 
-    refresh: refreshMediaItems,
-    lastUpdated
-  } = useMediaItems(true); // Mode admin
-
   const [activeTab, setActiveTab] = useState<'list' | 'stats'>('list');
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'video' | 'document' | 'audio' | 'image'>('all');
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Formulaire d'ajout/édition
@@ -79,6 +69,115 @@ const MediathequeAdminContent: React.FC = () => {
     duration: '',
     pages: 0
   });
+
+  // Données de test pour éviter les chargements lents
+  const mockMediaItems: MediaItem[] = [
+    {
+      id: '1',
+      type: 'video',
+      title: 'Témoignage de Marie - Sortir de la violence conjugale',
+      description: 'Marie partage son parcours de reconstruction après avoir quitté une relation violente.',
+      category: 'Témoignages',
+      thumbnail_url: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=400',
+      file_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      youtube_id: 'dQw4w9WgXcQ',
+      file_name: null,
+      file_size: null,
+      duration: '12:34',
+      pages: null,
+      created_at: '2024-01-15T10:00:00Z',
+      updated_at: '2024-01-15T10:00:00Z',
+      is_published: true,
+      views_count: 245,
+      downloads_count: 0,
+      created_by: 'admin'
+    },
+    {
+      id: '2',
+      type: 'document',
+      title: 'Guide pratique - Vos droits en cas de violence conjugale',
+      description: 'Un guide complet qui explique vos droits et les démarches à entreprendre.',
+      category: 'Guides juridiques',
+      thumbnail_url: 'https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=400',
+      file_url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+      youtube_id: null,
+      file_name: 'guide_droits.pdf',
+      file_size: 2048000,
+      duration: null,
+      pages: 24,
+      created_at: '2024-01-20T14:00:00Z',
+      updated_at: '2024-01-20T14:00:00Z',
+      is_published: true,
+      views_count: 189,
+      downloads_count: 67,
+      created_by: 'admin'
+    },
+    {
+      id: '3',
+      type: 'audio',
+      title: 'Podcast - Reconstruire sa confiance en soi',
+      description: 'Un épisode dédié aux techniques pour retrouver confiance et estime de soi.',
+      category: 'Développement personnel',
+      thumbnail_url: 'https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400',
+      file_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+      youtube_id: null,
+      file_name: 'podcast_confiance.mp3',
+      file_size: 15728640,
+      duration: '25:18',
+      pages: null,
+      created_at: '2024-02-01T09:00:00Z',
+      updated_at: '2024-02-01T09:00:00Z',
+      is_published: true,
+      views_count: 156,
+      downloads_count: 23,
+      created_by: 'admin'
+    }
+  ];
+  useEffect(() => {
+    loadMediaItems();
+  }, []);
+
+  const loadMediaItems = async () => {
+    try {
+      setIsLoading(true);
+      setMessage(null);
+      
+      // Timeout pour éviter les chargements trop longs
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 3000)
+      );
+
+      try {
+        // Essayer de charger depuis Supabase avec timeout
+        const mediaPromise = supabase
+          .from('media_items')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        const { data, error } = await Promise.race([
+          mediaPromise,
+          timeoutPromise
+        ]) as any;
+
+        if (error) {
+          throw error;
+        }
+        
+        setMediaItems(data || []);
+      } catch (error) {
+        console.warn('Utilisation des données de test pour les médias:', error);
+        setMediaItems(mockMediaItems);
+        setMessage({ type: 'error', text: 'Connexion Supabase lente - Données de test affichées' });
+      }
+    } catch (error) {
+      console.error('Erreur chargement médias:', error);
+      // Fallback vers les données de test
+      setMediaItems(mockMediaItems);
+      setMessage({ type: 'error', text: 'Utilisation des données de test - Vérifiez la configuration Supabase' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const extractYouTubeId = (url: string): string | null => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -101,6 +200,24 @@ const MediathequeAdminContent: React.FC = () => {
     return defaultThumbnails[type as keyof typeof defaultThumbnails];
   };
 
+  const uploadFile = async (file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `media/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('media-files')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage
+      .from('media-files')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -118,7 +235,7 @@ const MediathequeAdminContent: React.FC = () => {
         category: formData.category,
         duration: formData.duration || null,
         pages: formData.pages || null,
-        created_by: user?.id || 'admin-user',
+        created_by: 'admin-user',
         updated_at: new Date().toISOString()
       };
 
@@ -137,9 +254,8 @@ const MediathequeAdminContent: React.FC = () => {
       
       // Gestion des fichiers uploadés
       else if (formData.file) {
-        // Pour l'instant, utiliser une URL de placeholder
-        // En production, implémenter l'upload vers Supabase Storage
-        mediaData.file_url = `https://placeholder.com/${formData.file.name}`;
+        const fileUrl = await uploadFile(formData.file);
+        mediaData.file_url = fileUrl;
         mediaData.file_name = formData.file.name;
         mediaData.file_size = formData.file.size;
         mediaData.thumbnail_url = generateThumbnail(formData.type);
@@ -150,22 +266,31 @@ const MediathequeAdminContent: React.FC = () => {
 
       if (editingItem) {
         // Mise à jour
-        await SupabaseOptimizedService.updateMediaItem(editingItem.id, mediaData);
+        const { error } = await supabase
+          .from('media_items')
+          .update(mediaData)
+          .eq('id', editingItem.id);
+
+        if (error) throw error;
         setMessage({ type: 'success', text: 'Média mis à jour avec succès' });
       } else {
         // Création
-        await SupabaseOptimizedService.addMediaItem({
-          ...mediaData,
-          is_published: true,
-          views_count: 0,
-          downloads_count: 0
-        });
+        const { error } = await supabase
+          .from('media_items')
+          .insert({
+            ...mediaData,
+            is_published: true,
+            views_count: 0,
+            downloads_count: 0
+          });
+
+        if (error) throw error;
         setMessage({ type: 'success', text: 'Média ajouté avec succès' });
       }
 
       resetForm();
       setShowModal(false);
-      refreshMediaItems();
+      loadMediaItems();
     } catch (error: any) {
       console.error('Erreur sauvegarde:', error);
       setMessage({ type: 'error', text: error.message || 'Erreur lors de la sauvegarde' });
@@ -205,10 +330,15 @@ const MediathequeAdminContent: React.FC = () => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) return;
 
     try {
-      await SupabaseOptimizedService.deleteMediaItem(id);
+      const { error } = await supabase
+        .from('media_items')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
       
       setMessage({ type: 'success', text: 'Média supprimé avec succès' });
-      refreshMediaItems();
+      loadMediaItems();
     } catch (error: any) {
       setMessage({ type: 'error', text: 'Erreur lors de la suppression' });
     }
@@ -216,16 +346,21 @@ const MediathequeAdminContent: React.FC = () => {
 
   const togglePublish = async (id: string, currentStatus: boolean) => {
     try {
-      await SupabaseOptimizedService.updateMediaItem(id, {
-        is_published: !currentStatus,
-        updated_at: new Date().toISOString()
-      });
+      const { error } = await supabase
+        .from('media_items')
+        .update({ 
+          is_published: !currentStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) throw error;
       
       setMessage({ 
         type: 'success', 
         text: `Média ${!currentStatus ? 'publié' : 'dépublié'} avec succès` 
       });
-      refreshMediaItems();
+      loadMediaItems();
     } catch (error: any) {
       setMessage({ type: 'error', text: 'Erreur lors de la modification' });
     }
@@ -279,47 +414,33 @@ const MediathequeAdminContent: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-800">Gestion Médiathèque</h1>
           <p className="text-slate-600 mt-2">Administration des ressources multimédia</p>
-          {lastUpdated && (
-            <p className="text-xs text-slate-500 mt-1">
-              Dernière mise à jour: {lastUpdated.toLocaleTimeString('fr-FR')}
-            </p>
-          )}
         </div>
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={refreshMediaItems}
-            className="flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span>Actualiser</span>
-          </button>
-          <button
-            onClick={() => {
-              resetForm();
-              setShowModal(true);
-            }}
-            className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 hover-glow"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Ajouter un média</span>
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            resetForm();
+            setShowModal(true);
+          }}
+          className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 hover-glow"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Ajouter un média</span>
+        </button>
       </div>
 
       {/* Messages */}
-      {(message || loadingError) && (
+      {message && (
         <div className={`mb-6 p-4 rounded-xl border animate-slide-down ${
-          message?.type === 'success' 
+          message.type === 'success' 
             ? 'bg-green-50 border-green-200 text-green-800' 
             : 'bg-red-50 border-red-200 text-red-800'
         }`}>
           <div className="flex items-center space-x-2">
-            {message?.type === 'success' ? (
+            {message.type === 'success' ? (
               <CheckCircle className="w-5 h-5" />
             ) : (
               <AlertCircle className="w-5 h-5" />
             )}
-            <span className="font-medium">{message?.text || loadingError}</span>
+            <span className="font-medium">{message.text}</span>
           </div>
         </div>
       )}
