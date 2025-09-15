@@ -25,6 +25,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import AdminDashboard from './AdminDashboard';
+import { StorageService } from '../services/storageService';
 
 interface MediaItem {
   id: string;
@@ -57,6 +58,12 @@ const MediathequeAdminContent: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Upload progress
+  const [uploadProgress, setUploadProgress] = useState<{ percentage: number; isUploading: boolean }>({
+    percentage: 0,
+    isUploading: false
+  });
 
   // Formulaire d'ajout/édition
   const [formData, setFormData] = useState({
@@ -118,24 +125,6 @@ const MediathequeAdminContent: React.FC = () => {
     return defaultThumbnails[type as keyof typeof defaultThumbnails];
   };
 
-  const uploadFile = async (file: File): Promise<string> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `media/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('media-files')
-      .upload(filePath, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data } = supabase.storage
-      .from('media-files')
-      .getPublicUrl(filePath);
-
-    return data.publicUrl;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -172,10 +161,29 @@ const MediathequeAdminContent: React.FC = () => {
       
       // Gestion des fichiers uploadés
       else if (formData.file) {
-        const fileUrl = await uploadFile(formData.file);
-        mediaData.file_url = fileUrl;
+        setUploadProgress({ percentage: 0, isUploading: true });
+        
+        const uploadResult = await StorageService.uploadFile(
+          formData.file, 
+          formData.type,
+          (progress) => {
+            setUploadProgress({ 
+              percentage: progress.percentage, 
+              isUploading: true 
+            });
+          }
+        );
+        
+        setUploadProgress({ percentage: 100, isUploading: false });
+        
+        if (!uploadResult.success) {
+          setMessage({ type: 'error', text: uploadResult.error || 'Erreur lors de l\'upload' });
+          return;
+        }
+        
+        mediaData.file_url = uploadResult.url;
         mediaData.file_name = formData.file.name;
-        mediaData.file_size = formData.file.size;
+        mediaData.file_size = uploadResult.metadata?.size || formData.file.size;
         mediaData.thumbnail_url = generateThumbnail(formData.type);
       } else {
         setMessage({ type: 'error', text: 'Veuillez fournir un fichier ou une URL YouTube' });
@@ -718,7 +726,7 @@ const MediathequeAdminContent: React.FC = () => {
                       placeholder="https://www.youtube.com/watch?v=..."
                     />
                   </div>
-                  <div className="text-center text-slate-500 text-sm">ou</div>
+                  <div className="text-center text-slate-500 text-sm font-medium">ou</div>
                 </div>
               )}
 
@@ -727,12 +735,17 @@ const MediathequeAdminContent: React.FC = () => {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   {formData.type === 'video' && formData.youtubeUrl ? 'Fichier (optionnel)' : 'Fichier *'}
                 </label>
-                <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-emerald-500 transition-colors duration-300 hover:bg-emerald-50/30">
+                <div className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-300 ${
+                  uploadProgress.isUploading 
+                    ? 'border-emerald-500 bg-emerald-50' 
+                    : 'border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/30'
+                }`}>
                   <input
                     type="file"
                     onChange={(e) => setFormData(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
                     className="hidden"
                     id="file-upload"
+                    disabled={uploadProgress.isUploading}
                     accept={
                       formData.type === 'video' ? 'video/*' :
                       formData.type === 'audio' ? 'audio/*' :
@@ -740,7 +753,7 @@ const MediathequeAdminContent: React.FC = () => {
                       '.pdf,.doc,.docx,.txt'
                     }
                   />
-                  <label htmlFor="file-upload" className="cursor-pointer">
+                  <label htmlFor="file-upload" className={uploadProgress.isUploading ? 'cursor-not-allowed' : 'cursor-pointer'}>
                     <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2 hover:scale-110 transition-transform duration-300" />
                     <p className="text-slate-600">
                       {formData.file ? formData.file.name : 'Cliquez pour sélectionner un fichier'}
@@ -752,6 +765,21 @@ const MediathequeAdminContent: React.FC = () => {
                        'Formats: PDF, DOC, DOCX, TXT'}
                     </p>
                   </label>
+                  
+                  {/* Progress Bar */}
+                  {uploadProgress.isUploading && (
+                    <div className="mt-4">
+                      <div className="w-full bg-slate-200 rounded-full h-2">
+                        <div 
+                          className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${uploadProgress.percentage}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-sm text-slate-600 mt-2">
+                        Upload en cours... {Math.round(uploadProgress.percentage)}%
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -788,16 +816,31 @@ const MediathequeAdminContent: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
+                  disabled={uploadProgress.isUploading}
                   className="px-6 py-3 text-slate-600 hover:text-slate-800 font-medium transition-colors duration-300 hover:scale-105 transform"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 hover-glow"
+                  disabled={uploadProgress.isUploading}
+                  className={`${
+                    uploadProgress.isUploading
+                      ? 'bg-slate-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 hover-glow'
+                  } text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center space-x-2`}
                 >
-                  <Save className="w-5 h-5" />
-                  <span>{editingItem ? 'Modifier' : 'Ajouter'}</span>
+                  {uploadProgress.isUploading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Upload...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-5 h-5" />
+                      <span>{editingItem ? 'Modifier' : 'Ajouter'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
