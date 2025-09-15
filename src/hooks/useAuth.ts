@@ -228,12 +228,34 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
-    // Nettoyer les données locales
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('auth_session');
+    try {
+      // Nettoyer les données locales AVANT la déconnexion Supabase
+      if (typeof window !== 'undefined') {
+        sessionStorage.clear();
+        localStorage.removeItem('auth_attempts');
+        localStorage.removeItem('auth_session');
+        localStorage.removeItem('cookie-consent');
+        
+        // Nettoyer le cache de l'application
+        const cacheKeys = Object.keys(localStorage).filter(key => 
+          key.startsWith('cache_') || key.startsWith('supabase.')
+        );
+        cacheKeys.forEach(key => localStorage.removeItem(key));
+      }
+      
+      // Déconnexion Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.warn('Erreur déconnexion Supabase:', error);
+        // Continuer quand même le processus de déconnexion
+      }
+      
+      return { error: null };
+    } catch (error: any) {
+      console.error('Erreur lors de la déconnexion:', error);
+      return { error };
     }
-    const { error } = await supabase.auth.signOut();
-    return { error };
   };
 
   const resetPassword = async (email: string) => {

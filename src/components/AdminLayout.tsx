@@ -14,20 +14,29 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
 
   const handleSignOut = async () => {
-    try {
-      // Nettoyer le cache local
-      if (typeof window !== 'undefined') {
-        sessionStorage.clear();
-        localStorage.removeItem('auth_attempts');
-        localStorage.removeItem('auth_session');
+    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+      try {
+        const { error } = await signOut();
+        
+        if (error) {
+          console.warn('Erreur déconnexion:', error);
+        }
+        
+        // Redirection forcée vers la page d'accueil
+        window.location.replace('/');
+        
+      } catch (error) {
+        console.error('Erreur critique déconnexion:', error);
+        
+        // Nettoyage manuel en cas d'erreur critique
+        if (typeof window !== 'undefined') {
+          sessionStorage.clear();
+          localStorage.clear();
+        }
+        
+        // Redirection forcée
+        window.location.replace('/');
       }
-      
-      await signOut();
-      navigate('/');
-    } catch (error) {
-      console.error('Erreur déconnexion:', error);
-      // Forcer la redirection même en cas d'erreur
-      window.location.href = '/';
     }
   };
 
