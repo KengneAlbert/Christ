@@ -68,82 +68,6 @@ const NewsletterAdminContent: React.FC = () => {
     category: 'actualites' as Newsletter['category']
   });
 
-  // Données de test pour éviter les chargements lents
-  const mockSubscribers: Subscriber[] = [
-    {
-      id: '1',
-      email: 'marie.dupont@example.com',
-      first_name: 'Marie',
-      last_name: 'Dupont',
-      subscription_date: '2024-01-15T10:00:00Z',
-      is_active: true,
-      preferences: {
-        actualites: true,
-        temoignages: true,
-        evenements: false,
-        ressources: true
-      }
-    },
-    {
-      id: '2',
-      email: 'sophie.martin@example.com',
-      first_name: 'Sophie',
-      last_name: 'Martin',
-      subscription_date: '2024-02-20T14:30:00Z',
-      is_active: true,
-      preferences: {
-        actualites: true,
-        temoignages: false,
-        evenements: true,
-        ressources: true
-      }
-    },
-    {
-      id: '3',
-      email: 'claire.bernard@example.com',
-      first_name: 'Claire',
-      last_name: 'Bernard',
-      subscription_date: '2024-03-10T09:15:00Z',
-      is_active: false,
-      preferences: {
-        actualites: false,
-        temoignages: true,
-        evenements: false,
-        ressources: false
-      }
-    }
-  ];
-
-  const mockNewsletters: Newsletter[] = [
-    {
-      id: '1',
-      title: 'Newsletter Janvier 2024 - Actualités importantes',
-      content: 'Découvrez les dernières actualités de notre association et les nouveaux services disponibles.',
-      html_content: null,
-      category: 'actualites',
-      status: 'sent',
-      scheduled_date: null,
-      sent_date: '2024-01-30T10:00:00Z',
-      recipients_count: 156,
-      created_at: '2024-01-25T10:00:00Z',
-      updated_at: '2024-01-30T10:00:00Z',
-      created_by: 'admin'
-    },
-    {
-      id: '2',
-      title: 'Témoignage inspirant - Le parcours de Marie',
-      content: 'Marie partage son histoire de reconstruction et d\'espoir après avoir surmonté les violences conjugales.',
-      html_content: null,
-      category: 'temoignages',
-      status: 'draft',
-      scheduled_date: null,
-      sent_date: null,
-      recipients_count: 0,
-      created_at: '2024-02-15T14:00:00Z',
-      updated_at: '2024-02-15T14:00:00Z',
-      created_by: 'admin'
-    }
-  ];
   useEffect(() => {
     loadData();
   }, []);
@@ -153,65 +77,33 @@ const NewsletterAdminContent: React.FC = () => {
       setIsLoading(true);
       setMessage(null);
       
-      // Timeout pour éviter les chargements trop longs
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 3000)
-      );
+      // Charger les abonnés
+      const { data: subscribersData, error: subscribersError } = await supabase
+        .from('newsletter_subscribers')
+        .select('*')
+        .order('subscription_date', { ascending: false });
 
-      try {
-        // Essayer de charger depuis Supabase avec timeout
-        const subscribersPromise = supabase
-          .from('newsletter_subscribers')
-          .select('*')
-          .order('subscription_date', { ascending: false });
-
-        const { data: subscribersData, error: subscribersError } = await Promise.race([
-          subscribersPromise,
-          timeoutPromise
-        ]) as any;
-
-        if (subscribersError) {
-          throw subscribersError;
-        }
-        
-        setSubscribers(subscribersData || []);
-      } catch (error) {
-        console.warn('Utilisation des données de test pour les abonnés:', error);
-        setSubscribers(mockSubscribers);
-        setMessage({ type: 'error', text: 'Connexion Supabase lente - Données de test affichées' });
+      if (subscribersError) {
+        throw subscribersError;
       }
+      
+      setSubscribers(subscribersData || []);
 
-      try {
-        // Essayer de charger les newsletters avec timeout
-        const newslettersPromise = supabase
-          .from('newsletters')
-          .select('*')
-          .order('created_at', { ascending: false });
+      // Charger les newsletters
+      const { data: newslettersData, error: newslettersError } = await supabase
+        .from('newsletters')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-        const { data: newslettersData, error: newslettersError } = await Promise.race([
-          newslettersPromise,
-          timeoutPromise
-        ]) as any;
-
-        if (newslettersError) {
-          throw newslettersError;
-        }
-        
-        setNewsletters(newslettersData || []);
-      } catch (error) {
-        console.warn('Utilisation des données de test pour les newsletters:', error);
-        setNewsletters(mockNewsletters);
-        if (!message) {
-          setMessage({ type: 'error', text: 'Connexion Supabase lente - Données de test affichées' });
-        }
+      if (newslettersError) {
+        throw newslettersError;
       }
+      
+      setNewsletters(newslettersData || []);
 
     } catch (error: any) {
-      console.error('Erreur générale chargement:', error);
-      // Utiliser les données de test en cas d'erreur générale
-      setSubscribers(mockSubscribers);
-      setNewsletters(mockNewsletters);
-      setMessage({ type: 'error', text: 'Utilisation des données de test - Vérifiez la configuration Supabase' });
+      console.error('Erreur chargement données:', error);
+      setMessage({ type: 'error', text: 'Erreur lors du chargement des données. Vérifiez la configuration Supabase.' });
     } finally {
       setIsLoading(false);
     }

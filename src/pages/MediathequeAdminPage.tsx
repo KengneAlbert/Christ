@@ -70,69 +70,6 @@ const MediathequeAdminContent: React.FC = () => {
     pages: 0
   });
 
-  // Données de test pour éviter les chargements lents
-  const mockMediaItems: MediaItem[] = [
-    {
-      id: '1',
-      type: 'video',
-      title: 'Témoignage de Marie - Sortir de la violence conjugale',
-      description: 'Marie partage son parcours de reconstruction après avoir quitté une relation violente.',
-      category: 'Témoignages',
-      thumbnail_url: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=400',
-      file_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-      youtube_id: 'dQw4w9WgXcQ',
-      file_name: null,
-      file_size: null,
-      duration: '12:34',
-      pages: null,
-      created_at: '2024-01-15T10:00:00Z',
-      updated_at: '2024-01-15T10:00:00Z',
-      is_published: true,
-      views_count: 245,
-      downloads_count: 0,
-      created_by: 'admin'
-    },
-    {
-      id: '2',
-      type: 'document',
-      title: 'Guide pratique - Vos droits en cas de violence conjugale',
-      description: 'Un guide complet qui explique vos droits et les démarches à entreprendre.',
-      category: 'Guides juridiques',
-      thumbnail_url: 'https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=400',
-      file_url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-      youtube_id: null,
-      file_name: 'guide_droits.pdf',
-      file_size: 2048000,
-      duration: null,
-      pages: 24,
-      created_at: '2024-01-20T14:00:00Z',
-      updated_at: '2024-01-20T14:00:00Z',
-      is_published: true,
-      views_count: 189,
-      downloads_count: 67,
-      created_by: 'admin'
-    },
-    {
-      id: '3',
-      type: 'audio',
-      title: 'Podcast - Reconstruire sa confiance en soi',
-      description: 'Un épisode dédié aux techniques pour retrouver confiance et estime de soi.',
-      category: 'Développement personnel',
-      thumbnail_url: 'https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400',
-      file_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
-      youtube_id: null,
-      file_name: 'podcast_confiance.mp3',
-      file_size: 15728640,
-      duration: '25:18',
-      pages: null,
-      created_at: '2024-02-01T09:00:00Z',
-      updated_at: '2024-02-01T09:00:00Z',
-      is_published: true,
-      views_count: 156,
-      downloads_count: 23,
-      created_by: 'admin'
-    }
-  ];
   useEffect(() => {
     loadMediaItems();
   }, []);
@@ -142,38 +79,19 @@ const MediathequeAdminContent: React.FC = () => {
       setIsLoading(true);
       setMessage(null);
       
-      // Timeout pour éviter les chargements trop longs
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 3000)
-      );
+      const { data, error } = await supabase
+        .from('media_items')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      try {
-        // Essayer de charger depuis Supabase avec timeout
-        const mediaPromise = supabase
-          .from('media_items')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        const { data, error } = await Promise.race([
-          mediaPromise,
-          timeoutPromise
-        ]) as any;
-
-        if (error) {
-          throw error;
-        }
-        
-        setMediaItems(data || []);
-      } catch (error) {
-        console.warn('Utilisation des données de test pour les médias:', error);
-        setMediaItems(mockMediaItems);
-        setMessage({ type: 'error', text: 'Connexion Supabase lente - Données de test affichées' });
+      if (error) {
+        throw error;
       }
+      
+      setMediaItems(data || []);
     } catch (error) {
       console.error('Erreur chargement médias:', error);
-      // Fallback vers les données de test
-      setMediaItems(mockMediaItems);
-      setMessage({ type: 'error', text: 'Utilisation des données de test - Vérifiez la configuration Supabase' });
+      setMessage({ type: 'error', text: 'Erreur lors du chargement des médias. Vérifiez la configuration Supabase.' });
     } finally {
       setIsLoading(false);
     }
