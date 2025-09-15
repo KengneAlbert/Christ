@@ -135,7 +135,7 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
           setMessage({ type: 'success', text: 'Connexion réussie !' });
           // Redirection après connexion réussie
           setTimeout(() => {
-            window.location.href = '/admin/mediatheque';
+            onSuccess();
           }, 1000);
         } else {
           throw new Error('Erreur de connexion inconnue');
