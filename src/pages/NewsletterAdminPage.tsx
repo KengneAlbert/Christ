@@ -15,10 +15,12 @@ import {
   AlertCircle,
   CheckCircle,
   Save,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useNewsletterSubscribers, useNewsletters, useStats } from '../hooks/useOptimizedData';
+import { SupabaseOptimizedService } from '../services/supabaseOptimized';
 import AdminDashboard from './AdminDashboard';
 
 interface Subscriber {
@@ -53,12 +55,32 @@ interface Newsletter {
 
 const NewsletterAdminContent: React.FC = () => {
   const { user } = useAuth();
+  
+  // Utiliser les hooks optimisés
+  const { 
+    data: subscribers = [], 
+    loading: subscribersLoading, 
+    error: subscribersError, 
+    refresh: refreshSubscribers,
+    lastUpdated: subscribersLastUpdated
+  } = useNewsletterSubscribers();
+  
+  const { 
+    data: newsletters = [], 
+    loading: newslettersLoading, 
+    error: newslettersError, 
+    refresh: refreshNewsletters 
+  } = useNewsletters();
+  
+  const { 
+    data: stats, 
+    loading: statsLoading, 
+    refresh: refreshStats 
+  } = useStats();
+
   const [activeTab, setActiveTab] = useState<'subscribers' | 'newsletters' | 'create' | 'stats'>('subscribers');
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
-  const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
-  const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Newsletter creation form
@@ -68,154 +90,7 @@ const NewsletterAdminContent: React.FC = () => {
     category: 'actualites' as Newsletter['category']
   });
 
-  // Données de test pour éviter les chargements lents
-  const mockSubscribers: Subscriber[] = [
-    {
-      id: '1',
-      email: 'marie.dupont@example.com',
-      first_name: 'Marie',
-      last_name: 'Dupont',
-      subscription_date: '2024-01-15T10:00:00Z',
-      is_active: true,
-      preferences: {
-        actualites: true,
-        temoignages: true,
-        evenements: false,
-        ressources: true
-      }
-    },
-    {
-      id: '2',
-      email: 'sophie.martin@example.com',
-      first_name: 'Sophie',
-      last_name: 'Martin',
-      subscription_date: '2024-02-20T14:30:00Z',
-      is_active: true,
-      preferences: {
-        actualites: true,
-        temoignages: false,
-        evenements: true,
-        ressources: true
-      }
-    },
-    {
-      id: '3',
-      email: 'claire.bernard@example.com',
-      first_name: 'Claire',
-      last_name: 'Bernard',
-      subscription_date: '2024-03-10T09:15:00Z',
-      is_active: false,
-      preferences: {
-        actualites: false,
-        temoignages: true,
-        evenements: false,
-        ressources: false
-      }
-    }
-  ];
-
-  const mockNewsletters: Newsletter[] = [
-    {
-      id: '1',
-      title: 'Newsletter Janvier 2024 - Actualités importantes',
-      content: 'Découvrez les dernières actualités de notre association et les nouveaux services disponibles.',
-      html_content: null,
-      category: 'actualites',
-      status: 'sent',
-      scheduled_date: null,
-      sent_date: '2024-01-30T10:00:00Z',
-      recipients_count: 156,
-      created_at: '2024-01-25T10:00:00Z',
-      updated_at: '2024-01-30T10:00:00Z',
-      created_by: 'admin'
-    },
-    {
-      id: '2',
-      title: 'Témoignage inspirant - Le parcours de Marie',
-      content: 'Marie partage son histoire de reconstruction et d\'espoir après avoir surmonté les violences conjugales.',
-      html_content: null,
-      category: 'temoignages',
-      status: 'draft',
-      scheduled_date: null,
-      sent_date: null,
-      recipients_count: 0,
-      created_at: '2024-02-15T14:00:00Z',
-      updated_at: '2024-02-15T14:00:00Z',
-      created_by: 'admin'
-    }
-  ];
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      setIsLoading(true);
-      setMessage(null);
-      
-      // Timeout pour éviter les chargements trop longs
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 3000)
-      );
-
-      try {
-        // Essayer de charger depuis Supabase avec timeout
-        const subscribersPromise = supabase
-          .from('newsletter_subscribers')
-          .select('*')
-          .order('subscription_date', { ascending: false });
-
-        const { data: subscribersData, error: subscribersError } = await Promise.race([
-          subscribersPromise,
-          timeoutPromise
-        ]) as any;
-
-        if (subscribersError) {
-          throw subscribersError;
-        }
-        
-        setSubscribers(subscribersData || []);
-      } catch (error) {
-        console.warn('Utilisation des données de test pour les abonnés:', error);
-        setSubscribers(mockSubscribers);
-        setMessage({ type: 'error', text: 'Connexion Supabase lente - Données de test affichées' });
-      }
-
-      try {
-        // Essayer de charger les newsletters avec timeout
-        const newslettersPromise = supabase
-          .from('newsletters')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        const { data: newslettersData, error: newslettersError } = await Promise.race([
-          newslettersPromise,
-          timeoutPromise
-        ]) as any;
-
-        if (newslettersError) {
-          throw newslettersError;
-        }
-        
-        setNewsletters(newslettersData || []);
-      } catch (error) {
-        console.warn('Utilisation des données de test pour les newsletters:', error);
-        setNewsletters(mockNewsletters);
-        if (!message) {
-          setMessage({ type: 'error', text: 'Connexion Supabase lente - Données de test affichées' });
-        }
-      }
-
-    } catch (error: any) {
-      console.error('Erreur générale chargement:', error);
-      // Utiliser les données de test en cas d'erreur générale
-      setSubscribers(mockSubscribers);
-      setNewsletters(mockNewsletters);
-      setMessage({ type: 'error', text: 'Utilisation des données de test - Vérifiez la configuration Supabase' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const isLoading = subscribersLoading || newslettersLoading || statsLoading;
 
   const filteredSubscribers = subscribers.filter(subscriber => {
     const matchesSearch = subscriber.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -233,27 +108,19 @@ const NewsletterAdminContent: React.FC = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from('newsletters')
-        .insert({
-          title: newNewsletter.title,
-          content: newNewsletter.content,
-          category: newNewsletter.category,
-          status: 'draft',
-          recipients_count: 0,
-          created_by: user?.id || 'anonymous'
-        });
-
-      if (error) {
-        console.error('Erreur création newsletter:', error);
-        setMessage({ type: 'error', text: `Erreur lors de la création: ${error.message}` });
-        return;
-      }
+      await SupabaseOptimizedService.addNewsletter({
+        title: newNewsletter.title,
+        content: newNewsletter.content,
+        category: newNewsletter.category,
+        status: 'draft',
+        recipients_count: 0,
+        created_by: user?.id || 'anonymous'
+      });
 
       setMessage({ type: 'success', text: 'Newsletter créée avec succès' });
       setNewNewsletter({ title: '', content: '', category: 'actualites' });
       setActiveTab('newsletters');
-      loadData();
+      refreshNewsletters();
     } catch (error: any) {
       console.error('Erreur handleCreateNewsletter:', error);
       setMessage({ type: 'error', text: `Erreur lors de la création: ${error.message}` });
@@ -267,23 +134,18 @@ const NewsletterAdminContent: React.FC = () => {
       );
 
       // Mettre à jour le statut de la newsletter
-      const { error } = await supabase
-        .from('newsletters')
-        .update({
-          status: 'sent',
-          sent_date: new Date().toISOString(),
-          recipients_count: activeSubscribers.length,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', newsletter.id);
-
-      if (error) throw error;
+      await SupabaseOptimizedService.updateNewsletter(newsletter.id, {
+        status: 'sent',
+        sent_date: new Date().toISOString(),
+        recipients_count: activeSubscribers.length,
+        updated_at: new Date().toISOString()
+      });
 
       setMessage({ 
         type: 'success', 
         text: `Newsletter envoyée à ${activeSubscribers.length} abonnés !` 
       });
-      loadData();
+      refreshNewsletters();
     } catch (error: any) {
       setMessage({ type: 'error', text: 'Erreur lors de l\'envoi' });
     }
@@ -314,24 +176,18 @@ const NewsletterAdminContent: React.FC = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  const getStats = () => {
-    const totalSubscribers = subscribers.length;
-    const activeSubscribers = subscribers.filter(sub => sub.is_active).length;
-    const totalNewsletters = newsletters.filter(n => n.status === 'sent').length;
-    const lastNewsletter = newsletters
+  // Calculer les stats locales si pas de stats globales
+  const localStats = {
+    totalSubscribers: subscribers.length,
+    activeSubscribers: subscribers.filter(sub => sub.is_active).length,
+    inactiveSubscribers: subscribers.length - subscribers.filter(sub => sub.is_active).length,
+    totalNewsletters: newsletters.filter(n => n.status === 'sent').length,
+    lastNewsletterDate: newsletters
       .filter(n => n.sent_date)
-      .sort((a, b) => new Date(b.sent_date!).getTime() - new Date(a.sent_date!).getTime())[0];
-
-    return {
-      totalSubscribers,
-      activeSubscribers,
-      inactiveSubscribers: totalSubscribers - activeSubscribers,
-      totalNewsletters,
-      lastNewsletterDate: lastNewsletter?.sent_date
-    };
+      .sort((a, b) => new Date(b.sent_date!).getTime() - new Date(a.sent_date!).getTime())[0]?.sent_date
   };
 
-  const stats = getStats();
+  const displayStats = stats?.newsletter || localStats;
 
   if (isLoading) {
     return (
@@ -351,23 +207,41 @@ const NewsletterAdminContent: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-800">Gestion des Newsletters</h1>
           <p className="text-slate-600 mt-2">Administration des abonnés et envoi des newsletters</p>
+          {subscribersLastUpdated && (
+            <p className="text-xs text-slate-500 mt-1">
+              Dernière mise à jour: {subscribersLastUpdated.toLocaleTimeString('fr-FR')}
+            </p>
+          )}
         </div>
+        <button
+          onClick={() => {
+            refreshSubscribers();
+            refreshNewsletters();
+            refreshStats();
+          }}
+          className="flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>Actualiser</span>
+        </button>
       </div>
 
       {/* Messages */}
-      {message && (
+      {(message || subscribersError || newslettersError) && (
         <div className={`mb-6 p-4 rounded-xl border animate-slide-down ${
-          message.type === 'success' 
+          message?.type === 'success' 
             ? 'bg-green-50 border-green-200 text-green-800' 
             : 'bg-red-50 border-red-200 text-red-800'
         }`}>
           <div className="flex items-center space-x-2">
-            {message.type === 'success' ? (
+            {message?.type === 'success' ? (
               <CheckCircle className="w-5 h-5" />
             ) : (
               <AlertCircle className="w-5 h-5" />
             )}
-            <span className="font-medium">{message.text}</span>
+            <span className="font-medium">
+              {message?.text || subscribersError || newslettersError}
+            </span>
           </div>
         </div>
       )}
@@ -422,6 +296,10 @@ const NewsletterAdminContent: React.FC = () => {
                   <option value="inactive">Inactifs</option>
                 </select>
               </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-slate-600">
+                  {filteredSubscribers.length} abonné(s)
+                </span>
               <button
                 onClick={exportSubscribers}
                 className="flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg hover-glow"
@@ -429,6 +307,7 @@ const NewsletterAdminContent: React.FC = () => {
                 <Download className="w-4 h-4" />
                 <span>Exporter CSV</span>
               </button>
+              </div>
             </div>
           </div>
 
@@ -612,7 +491,7 @@ const NewsletterAdminContent: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-slate-600">Total abonnés</p>
-                <p className="text-2xl font-bold text-slate-800">{stats.totalSubscribers}</p>
+                <p className="text-2xl font-bold text-slate-800">{displayStats.totalSubscribers}</p>
               </div>
             </div>
           </div>
@@ -623,7 +502,7 @@ const NewsletterAdminContent: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-slate-600">Abonnés actifs</p>
-                <p className="text-2xl font-bold text-slate-800">{stats.activeSubscribers}</p>
+                <p className="text-2xl font-bold text-slate-800">{displayStats.activeSubscribers}</p>
               </div>
             </div>
           </div>
@@ -634,7 +513,7 @@ const NewsletterAdminContent: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-slate-600">Newsletters envoyées</p>
-                <p className="text-2xl font-bold text-slate-800">{stats.totalNewsletters}</p>
+                <p className="text-2xl font-bold text-slate-800">{displayStats.totalNewsletters}</p>
               </div>
             </div>
           </div>
@@ -646,8 +525,8 @@ const NewsletterAdminContent: React.FC = () => {
               <div>
                 <p className="text-sm text-slate-600">Dernière newsletter</p>
                 <p className="text-sm font-medium text-slate-800">
-                  {stats.lastNewsletterDate 
-                    ? new Date(stats.lastNewsletterDate).toLocaleDateString('fr-FR')
+                  {displayStats.lastNewsletterDate 
+                    ? new Date(displayStats.lastNewsletterDate).toLocaleDateString('fr-FR')
                     : 'Aucune'
                   }
                 </p>

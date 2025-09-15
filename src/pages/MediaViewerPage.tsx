@@ -17,7 +17,7 @@ import {
   Clock,
   User
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { SupabaseOptimizedService } from '../services/supabaseOptimized';
 
 interface MediaItem {
   id: string;
@@ -63,29 +63,18 @@ const MediaViewerPage: React.FC = () => {
       setError(null);
 
       // Charger le média depuis la base de données
-      const { data, error: fetchError } = await supabase
-        .from('media_items')
-        .select('*')
-        .eq('id', id)
-        .eq('is_published', true)
-        .single();
-
-      if (fetchError) {
-        if (fetchError.code === 'PGRST116') {
-          setError('Média introuvable');
-        } else {
-          throw fetchError;
-        }
+      const mediaItems = await SupabaseOptimizedService.getMediaItems();
+      const mediaItem = mediaItems.find(item => item.id === id);
+      
+      if (!mediaItem) {
+        setError('Média introuvable');
         return;
       }
 
-      setMedia(data);
+      setMedia(mediaItem);
 
       // Incrémenter les vues
-      await supabase
-        .from('media_items')
-        .update({ views_count: data.views_count + 1 })
-        .eq('id', id);
+      await SupabaseOptimizedService.incrementViews(id);
 
     } catch (err: any) {
       console.error('Erreur chargement média:', err);
@@ -107,13 +96,11 @@ const MediaViewerPage: React.FC = () => {
       
       // Incrémenter les téléchargements
       if (media.id) {
-        supabase
-          .from('media_items')
-          .update({ downloads_count: media.downloads_count + 1 })
-          .eq('id', media.id)
+        SupabaseOptimizedService.incrementDownloads(media.id)
           .then(() => {
             setMedia(prev => prev ? { ...prev, downloads_count: prev.downloads_count + 1 } : null);
-          });
+          })
+          .catch(console.error);
       }
     }
   };

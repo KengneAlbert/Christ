@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Download, FileText, Image, Video, Music, Search, Filter, Calendar, Eye, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { useMediaItems } from '../hooks/useOptimizedData';
+import { SupabaseOptimizedService } from '../services/supabaseOptimized';
 
 interface MediaItem {
   id: string;
@@ -26,10 +27,15 @@ interface MediaItem {
 const MediathequePage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  // Utiliser le hook optimisé
+  const { 
+    data: mediaItems = [], 
+    loading: isLoading, 
+    error, 
+    refresh: refreshMediaItems 
+  } = useMediaItems(false); // Mode public
 
   const categories = [
     { id: 'all', name: 'Tout', icon: Filter },
@@ -38,35 +44,6 @@ const MediathequePage: React.FC = () => {
     { id: 'audio', name: 'Audio', icon: Music },
     { id: 'image', name: 'Images', icon: Image }
   ];
-
-  // Charger les données depuis Supabase
-  useEffect(() => {
-    loadMediaItems();
-  }, []);
-
-  const loadMediaItems = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const { data, error: fetchError } = await supabase
-        .from('media_items')
-        .select('*')
-        .eq('is_published', true)
-        .order('created_at', { ascending: false });
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      setMediaItems(data || []);
-    } catch (err: any) {
-      console.error('Erreur chargement médiathèque:', err);
-      setError('Erreur lors du chargement des médias. Veuillez réessayer.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const filteredItems = mediaItems.filter(item => {
     const matchesFilter = activeFilter === 'all' || item.type === activeFilter;
@@ -99,10 +76,7 @@ const MediathequePage: React.FC = () => {
   const handleMediaClick = async (item: MediaItem) => {
     // Incrémenter les vues
     try {
-      await supabase
-        .from('media_items')
-        .update({ views_count: item.views_count + 1 })
-        .eq('id', item.id);
+      await SupabaseOptimizedService.incrementViews(item.id);
     } catch (error) {
       console.error('Erreur mise à jour vues:', error);
     }
@@ -115,10 +89,7 @@ const MediathequePage: React.FC = () => {
     if (item.file_url) {
       // Incrémenter les téléchargements
       try {
-        await supabase
-          .from('media_items')
-          .update({ downloads_count: item.downloads_count + 1 })
-          .eq('id', item.id);
+        await SupabaseOptimizedService.incrementDownloads(item.id);
       } catch (error) {
         console.error('Erreur mise à jour téléchargements:', error);
       }
@@ -171,7 +142,7 @@ const MediathequePage: React.FC = () => {
           <h1 className="text-2xl font-bold text-slate-800 mb-4">Erreur de chargement</h1>
           <p className="text-slate-600 mb-8">{error}</p>
           <button
-            onClick={loadMediaItems}
+            onClick={refreshMediaItems}
             className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
           >
             Réessayer
