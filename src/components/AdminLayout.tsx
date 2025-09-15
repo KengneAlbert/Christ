@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Mail, FileText, BarChart3, Settings, User, Shield } from 'lucide-react';
+import { LogOut, FileText, User, Shield, Eye } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import Logo from '../assets/LogoChrist.png';
 
@@ -15,31 +15,31 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
-      navigate('/');
+      const { error } = await signOut();
+      if (error) {
+        console.error('Erreur déconnexion:', error);
+        alert('Erreur lors de la déconnexion');
+        return;
+      }
+      
+      // Nettoyer le cache et les données locales
+      sessionStorage.clear();
+      localStorage.removeItem('auth_session');
+      
+      // Redirection forcée vers la page d'accueil
+      window.location.href = '/';
     } catch (error) {
       console.error('Erreur déconnexion:', error);
+      alert('Erreur lors de la déconnexion');
     }
   };
 
   const menuItems = [
     {
-      name: 'Médiathèque',
+      name: 'Gestion Médiathèque',
       href: '/admin/mediatheque',
       icon: FileText,
-      description: 'Gérer les ressources multimédia'
-    },
-    {
-      name: 'Newsletters',
-      href: '/admin/newsletter',
-      icon: Mail,
-      description: 'Gérer les abonnés et envois'
-    },
-    {
-      name: 'Statistiques',
-      href: '/admin/stats',
-      icon: BarChart3,
-      description: 'Analyser les performances'
+      description: 'Gérer les ressources de la médiathèque'
     }
   ];
 
@@ -122,7 +122,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
             {/* Quick Actions */}
             <div className="mt-8 pt-6 border-t border-slate-200">
-              <h3 className="text-sm font-semibold text-slate-700 mb-4">Actions rapides</h3>
+              <h3 className="text-sm font-semibold text-slate-700 mb-4">Navigation</h3>
               <div className="space-y-2">
                 <a
                   href="/"
@@ -131,13 +131,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   <Shield className="w-4 h-4" />
                   <span>Voir le site</span>
                 </a>
-                <button
-                  onClick={() => navigate('/admin/settings')}
-                  className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 text-sm transition-colors duration-300 p-2 rounded-lg hover:bg-slate-50 w-full text-left"
+                <a
+                  href="/mediatheque"
+                  className="flex items-center space-x-2 text-slate-600 hover:text-emerald-600 text-sm transition-colors duration-300 p-2 rounded-lg hover:bg-emerald-50"
                 >
-                  <Settings className="w-4 h-4" />
-                  <span>Paramètres</span>
-                </button>
+                  <Eye className="w-4 h-4" />
+                  <span>Médiathèque publique</span>
+                </a>
               </div>
             </div>
           </nav>
