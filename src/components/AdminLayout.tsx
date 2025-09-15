@@ -15,31 +15,34 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const handleSignOut = async () => {
     try {
+      // Nettoyer le cache local
+      if (typeof window !== 'undefined') {
+        sessionStorage.clear();
+        localStorage.removeItem('auth_attempts');
+        localStorage.removeItem('auth_session');
+      }
+      
       await signOut();
       navigate('/');
     } catch (error) {
       console.error('Erreur déconnexion:', error);
+      // Forcer la redirection même en cas d'erreur
+      window.location.href = '/';
     }
   };
 
   const menuItems = [
     {
-      name: 'Médiathèque',
+      name: 'Gestion Médiathèque',
       href: '/admin/mediatheque',
       icon: FileText,
-      description: 'Gérer les ressources multimédia'
+      description: 'Gérer les médias et ressources'
     },
     {
-      name: 'Newsletters',
+      name: 'Gestion Newsletter',
       href: '/admin/newsletter',
       icon: Mail,
-      description: 'Gérer les abonnés et envois'
-    },
-    {
-      name: 'Statistiques',
-      href: '/admin/stats',
-      icon: BarChart3,
-      description: 'Analyser les performances'
+      description: 'Abonnés et campagnes email'
     }
   ];
 
@@ -131,13 +134,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   <Shield className="w-4 h-4" />
                   <span>Voir le site</span>
                 </a>
-                <button
-                  onClick={() => navigate('/admin/settings')}
-                  className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 text-sm transition-colors duration-300 p-2 rounded-lg hover:bg-slate-50 w-full text-left"
+                <a
+                  href="/mediatheque"
+                  className="flex items-center space-x-2 text-slate-600 hover:text-emerald-600 text-sm transition-colors duration-300 p-2 rounded-lg hover:bg-emerald-50"
                 >
-                  <Settings className="w-4 h-4" />
-                  <span>Paramètres</span>
-                </button>
+                  <FileText className="w-4 h-4" />
+                  <span>Médiathèque publique</span>
+                </a>
               </div>
             </div>
           </nav>
