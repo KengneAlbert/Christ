@@ -111,9 +111,14 @@ const Header: React.FC = () => {
               <Phone className="w-4 h-4" />
               <span>Urgence</span>
             </button>
-            <button className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg hover-glow">
+            <a 
+              href="https://www.helloasso.com/associations/christ-le-bon-berger-c-l-b-b/formulaires/1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 rounded-xl font-medium hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg hover-glow"
+            >
               Faire un don
-            </button>
+            </a>
           </div>
 
           {/* Mobile Menu Button */}
@@ -189,9 +194,14 @@ const Header: React.FC = () => {
                   <Phone className="w-4 h-4" />
                   <span>Urgence</span>
                 </button>
-                <button className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover-glow">
+                <a 
+                  href="https://www.helloasso.com/associations/christ-le-bon-berger-c-l-b-b/formulaires/1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover-glow block text-center"
+                >
                   Faire un don
-                </button>
+                </a>
               </div>
             </div>
           </div>

@@ -77,6 +77,14 @@ const Hero: React.FC = () => {
           >
             En savoir plus
           </a>
+          <a 
+            href="https://www.helloasso.com/associations/christ-le-bon-berger-c-l-b-b/formulaires/1"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg hover-glow"
+          >
+            Faire un don
+          </a>
         </div>
 
         {/* Trust Indicators */}

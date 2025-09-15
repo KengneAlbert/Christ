@@ -97,9 +97,22 @@ const Actions: React.FC = () => {
             <p className="text-slate-300 mb-6 max-w-2xl mx-auto">
               Notre équipe est disponible pour vous accompagner dans vos démarches. N'hésitez pas à nous contacter.
             </p>
-            <button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
-              Contactez-nous maintenant
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a 
+                href="/contact"
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                Contactez-nous maintenant
+              </a>
+              <a 
+                href="https://www.helloasso.com/associations/christ-le-bon-berger-c-l-b-b/formulaires/1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover-glow"
+              >
+                Faire un don
+              </a>
+            </div>
           </div>
         </div>
       </div>

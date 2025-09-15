@@ -215,10 +215,12 @@ const TeamPage: React.FC = () => {
                 Devenir bénévole
               </a>
               <a 
-                href="/actions"
-                className="border-2 border-slate-300 text-slate-700 hover:bg-slate-700 hover:text-white hover:border-slate-700 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105"
+                href="https://www.helloasso.com/associations/christ-le-bon-berger-c-l-b-b/formulaires/1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover-glow"
               >
-                En savoir plus
+                Faire un don
               </a>
             </div>
           </div>
