@@ -5,47 +5,68 @@ import { supabase } from '../lib/supabase';
 interface AuthState {
   user: User | null;
   loading: boolean;
+  initialized: boolean;
 }
 
 export const useAuth = () => {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     loading: true,
+    initialized: false,
   });
 
   useEffect(() => {
     let mounted = true;
 
-    // Récupérer la session initiale (important pour lever loading au premier rendu)
-    supabase.auth.getSession()
-      .then(({ data }) => {
+    // Récupérer la session initiale avec retry
+    const initializeAuth = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
         if (mounted) {
           setAuthState({
             user: data?.session?.user ?? null,
             loading: false,
+            initialized: true,
           });
         }
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error('Erreur initialisation auth:', error);
         if (mounted) {
-          setAuthState(prev => ({ ...prev, loading: false }));
+          setAuthState(prev => ({ 
+            ...prev, 
+            loading: false, 
+            initialized: true 
+          }));
         }
-      });
+      }
+    };
+
+    initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setAuthState({
-          user: session?.user ?? null,
-          loading: false,
-        });
+        if (mounted) {
+          setAuthState({
+            user: session?.user ?? null,
+            loading: false,
+            initialized: true,
+          });
+        }
 
         // Update last_login for admin users
         if (event === 'SIGNED_IN' && session?.user) {
           try {
             await supabase
               .from('admin_users')
-              .update({ last_login: new Date().toISOString() })
-              .eq('id', session.user.id);
+              .upsert({
+                id: session.user.id,
+                email: session.user.email,
+                last_login: new Date().toISOString(),
+                is_active: true
+              }, {
+                onConflict: 'id'
+              });
           } catch (error) {
             console.error('Error updating last_login:', error);
           }
@@ -114,6 +135,12 @@ export const useAuth = () => {
           success: true
         });
         localStorage.setItem('auth_attempts', JSON.stringify(attempts));
+        
+        // Sauvegarder la session pour la persistance
+        sessionStorage.setItem('admin_session', JSON.stringify({
+          user: data.user,
+          timestamp: Date.now()
+        }));
         
         // Créer ou mettre à jour l'utilisateur admin dans la base
         try {
@@ -211,9 +238,10 @@ export const useAuth = () => {
     try {
       // Nettoyer les données locales AVANT la déconnexion Supabase
       if (typeof window !== 'undefined') {
+        // Nettoyer la session admin
+        sessionStorage.removeItem('admin_session');
         sessionStorage.clear();
         localStorage.removeItem('auth_attempts');
-        localStorage.removeItem('auth_session');
         localStorage.removeItem('cookie-consent');
         
         // Nettoyer le cache de l'application
@@ -257,6 +285,7 @@ export const useAuth = () => {
   return {
     user: authState.user,
     loading: authState.loading,
+    initialized: authState.initialized,
     signIn,
     signUp,
     signOut,

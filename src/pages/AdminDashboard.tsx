@@ -9,14 +9,38 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, initialized } = useAuth();
   const navigate = useNavigate();
   
   // État pour forcer le rafraîchissement après la connexion
   const [isLoggedIn, setIsLoggedIn] = useState(!!user);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
     setIsLoggedIn(!!user);
+    
+    // Vérifier la session sauvegardée si pas d'utilisateur mais initialisé
+    if (initialized && !user && !sessionChecked) {
+      const savedSession = sessionStorage.getItem('admin_session');
+      if (savedSession) {
+        try {
+          const session = JSON.parse(savedSession);
+          const hourAgo = Date.now() - (60 * 60 * 1000);
+          
+          // Si la session est récente (moins d'1h), considérer comme connecté
+          if (session.timestamp > hourAgo) {
+            console.log('Session admin récupérée depuis le cache');
+            setIsLoggedIn(true);
+          } else {
+            sessionStorage.removeItem('admin_session');
+          }
+        } catch (error) {
+          console.error('Erreur lecture session:', error);
+          sessionStorage.removeItem('admin_session');
+        }
+      }
+      setSessionChecked(true);
+    }
   }, [user]);
 
   const handleLoginSuccess = () => {
@@ -24,7 +48,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ children }) => {
     navigate('/admin/mediatheque'); // Redirection plus propre avec React Router
   };
 
-  if (loading) {
+  if (loading || !initialized || (!sessionChecked && !user)) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">

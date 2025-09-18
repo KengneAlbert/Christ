@@ -49,7 +49,7 @@ interface Newsletter {
 }
 
 const NewsletterAdminContent: React.FC = () => {
-  const { user } = useAuth();
+  const { user, initialized } = useAuth();
   const [activeTab, setActiveTab] = useState<
     "subscribers" | "newsletters" | "create" | "stats"
   >("subscribers");
@@ -83,10 +83,26 @@ const NewsletterAdminContent: React.FC = () => {
 
   const loadSubscribers = React.useCallback(async () => {
     try {
+      // Ne pas charger si l'utilisateur n'est pas initialisé
+      if (!initialized || !user) {
+        console.log('Attente de l\'initialisation de l\'utilisateur...');
+        return;
+      }
+
       setIsLoading(true);
       const from = (currentPage - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
+      // Vérifier la session avant la requête
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        console.error('Session invalide:', sessionError);
+        setMessage({
+          type: "error",
+          text: "Session expirée. Veuillez vous reconnecter.",
+        });
+        return;
+      }
       let query = supabase
         .from("newsletter_subscribers")
         .select(
@@ -126,14 +142,30 @@ const NewsletterAdminContent: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, itemsPerPage, searchTerm, filterStatus]);
+  }, [currentPage, itemsPerPage, searchTerm, filterStatus, initialized, user]);
 
   const loadNewsletters = React.useCallback(async () => {
     try {
+      // Ne pas charger si l'utilisateur n'est pas initialisé
+      if (!initialized || !user) {
+        console.log('Attente de l\'initialisation de l\'utilisateur...');
+        return;
+      }
+
       setIsLoading(true);
       const from = (newsletterCurrentPage - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
+      // Vérifier la session avant la requête
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        console.error('Session invalide:', sessionError);
+        setMessage({
+          type: "error",
+          text: "Session expirée. Veuillez vous reconnecter.",
+        });
+        return;
+      }
       const { data, error, count } = await supabase
         .from("newsletters")
         .select(
@@ -168,16 +200,16 @@ const NewsletterAdminContent: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [newsletterCurrentPage, itemsPerPage]);
+  }, [newsletterCurrentPage, itemsPerPage, initialized, user]);
 
   useEffect(() => {
-    if (activeTab === "subscribers") {
+    if (activeTab === "subscribers" && initialized && user) {
       loadSubscribers();
     }
   }, [activeTab, loadSubscribers]);
 
   useEffect(() => {
-    if (activeTab === "newsletters") {
+    if (activeTab === "newsletters" && initialized && user) {
       loadNewsletters();
     }
   }, [activeTab, loadNewsletters]);

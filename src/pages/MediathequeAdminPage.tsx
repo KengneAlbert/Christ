@@ -19,10 +19,12 @@ import {
   File,
   AlertCircle,
   CheckCircle,
+  RefreshCw,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import AdminDashboard from "./AdminDashboard";
 import { StorageService } from "../services/storageService";
+import { useAuth } from "../hooks/useAuth";
 
 interface MediaItem {
   id: string;
@@ -46,6 +48,7 @@ interface MediaItem {
 }
 
 const MediathequeAdminContent: React.FC = () => {
+  const { user, initialized } = useAuth();
   const [activeTab, setActiveTab] = useState<"list" | "stats">("list");
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -55,6 +58,7 @@ const MediathequeAdminContent: React.FC = () => {
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -87,12 +91,28 @@ const MediathequeAdminContent: React.FC = () => {
 
   const loadMediaItems = React.useCallback(async () => {
     try {
+      // Ne pas charger si l'utilisateur n'est pas initialisé
+      if (!initialized || !user) {
+        console.log('Attente de l\'initialisation de l\'utilisateur...');
+        return;
+      }
+
       setIsLoading(true);
       setMessage(null);
 
       const from = (currentPage - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
+      // Vérifier la connexion Supabase avant la requête
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        console.error('Session invalide:', sessionError);
+        setMessage({
+          type: "error",
+          text: "Session expirée. Veuillez vous reconnecter.",
+        });
+        return;
+      }
       let query = supabase
         .from("media_items")
         .select(
@@ -133,26 +153,45 @@ const MediathequeAdminContent: React.FC = () => {
       const { data, error, count } = await query;
 
       if (error) {
+        console.error('Erreur requête Supabase:', error);
         throw error;
       }
 
       setMediaItems((data as unknown as MediaItem[]) || []);
       setTotalItems(count || 0);
+      
+      console.log(`Chargé ${data?.length || 0} médias sur ${count || 0} total`);
     } catch (error) {
       console.error("Erreur chargement médias:", error);
       setMessage({
         type: "error",
-        text: "Erreur lors du chargement des médias.",
+        text: `Erreur lors du chargement des médias: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
       });
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, filterType, searchTerm, itemsPerPage]);
+  }, [currentPage, filterType, searchTerm, itemsPerPage, initialized, user]);
 
+  // Fonction de refresh manuel
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadMediaItems();
+    setIsRefreshing(false);
+  };
   useEffect(() => {
-    loadMediaItems();
+    if (initialized && user) {
+      loadMediaItems();
+    }
   }, [loadMediaItems]);
 
+  // Effet pour surveiller les changements d'authentification
+  useEffect(() => {
+    if (initialized && !user) {
+      console.log('Utilisateur déconnecté, nettoyage des données...');
+      setMediaItems([]);
+      setTotalItems(0);
+    }
+  }, [user, initialized]);
   const extractYouTubeId = (url: string): string | null => {
     const regExp =
       /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -388,7 +427,7 @@ const MediathequeAdminContent: React.FC = () => {
 
   const stats = getStats();
 
-  if (isLoading) {
+  if (isLoading && !initialized) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
@@ -411,16 +450,26 @@ const MediathequeAdminContent: React.FC = () => {
             Administration des ressources multimédia
           </p>
         </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowModal(true);
-          }}
-          className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 hover-glow"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Ajouter un média</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-sm"
+          >
+            <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Actualiser</span>
+          </button>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowModal(true);
+            }}
+            className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 hover-glow"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Ajouter un média</span>
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -508,8 +557,16 @@ const MediathequeAdminContent: React.FC = () => {
             </div>
           </div>
 
+          {/* État de chargement avec overlay */}
+          {isLoading && (
+            <div className="bg-white rounded-xl p-12 shadow-sm border border-slate-200 text-center">
+              <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-slate-600">Chargement des médias...</p>
+            </div>
+          )}
           {/* Grille des médias */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {!isLoading && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {mediaItems.map((item, index) => {
               const TypeIcon = getTypeIcon(item.type);
               return (
@@ -646,7 +703,8 @@ const MediathequeAdminContent: React.FC = () => {
                 </div>
               );
             })}
-          </div>
+            </div>
+          )}
 
           {/* Pagination Controls */}
           <div className="mt-8 flex items-center justify-between">
@@ -669,7 +727,7 @@ const MediathequeAdminContent: React.FC = () => {
             </button>
           </div>
 
-          {mediaItems.length === 0 && !isLoading && (
+          {mediaItems.length === 0 && !isLoading && initialized && (
             <div className="text-center py-16 animate-fade-in">
               <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-gentle">
                 <Search className="w-12 h-12 text-slate-400" />
