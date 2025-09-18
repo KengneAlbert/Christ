@@ -20,35 +20,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   };
 
   const confirmSignOut = async () => {
-    try {
-      const { error } = await signOut();
-      if (error) {
-        console.warn('Erreur déconnexion Supabase:', error);
-      }
-      
-      // Nettoyage complet
-      if (typeof window !== 'undefined') {
-        sessionStorage.clear();
-        localStorage.clear();
-        Object.keys(localStorage).forEach(key => {
-          if (key.startsWith('supabase.') || key.startsWith('sb-')) {
-            localStorage.removeItem(key);
-          }
-        });
-      }
-      
-      // Redirection vers la page de connexion admin
-      window.location.replace('/admin/mediatheque');
-
-    } catch (error) {
-      console.error('Erreur critique déconnexion:', error);
-      // Forcer le nettoyage et la redirection même en cas d'erreur
-      if (typeof window !== 'undefined') {
-        sessionStorage.clear();
-        localStorage.clear();
-      }
-      window.location.replace('/');
-    }
+    await signOut();
+    // Après la déconnexion, le hook useAuth mettra à jour l'état.
+    // Le composant AdminDashboard affichera alors automatiquement la page de connexion.
+    // Nous forçons un rechargement de la page pour garantir un état propre.
+    window.location.replace('/admin');
   };
 
   const menuItems = [

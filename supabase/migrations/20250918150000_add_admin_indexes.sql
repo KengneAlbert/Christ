@@ -1,15 +1,26 @@
--- Optimize queries used by admin pages
--- Media items: search by title, filter by type, order by created_at
-create index if not exists idx_media_items_title_trgm on media_items using gin (title gin_trgm_ops);
-create index if not exists idx_media_items_type on media_items (type);
-create index if not exists idx_media_items_created_at on media_items (created_at desc);
+-- Activer l’extension trigrammes
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
--- Newsletter subscribers: search by email, filter by is_active, order by subscription_date
-create index if not exists idx_newsletter_subscribers_email_trgm on newsletter_subscribers using gin (email gin_trgm_ops);
-create index if not exists idx_newsletter_subscribers_is_active on newsletter_subscribers (is_active);
-create index if not exists idx_newsletter_subscribers_subscription_date on newsletter_subscribers (subscription_date desc);
+-- Media items
+CREATE INDEX IF NOT EXISTS idx_media_items_title_trgm
+  ON media_items USING gin (title gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_media_items_type
+  ON media_items (type);
+CREATE INDEX IF NOT EXISTS idx_media_items_created_at
+  ON media_items (created_at DESC);
 
--- Newsletters: order by created_at, filter by status/category sometimes
-create index if not exists idx_newsletters_created_at on newsletters (created_at desc);
-create index if not exists idx_newsletters_status on newsletters (status);
-create index if not exists idx_newsletters_category on newsletters (category);
+-- Newsletter subscribers
+CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_email_trgm
+  ON newsletter_subscribers USING gin (email gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_is_active
+  ON newsletter_subscribers (is_active);
+CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_subscription_date
+  ON newsletter_subscribers (subscription_date DESC);
+
+-- Newsletters
+CREATE INDEX IF NOT EXISTS idx_newsletters_created_at
+  ON newsletters (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_newsletters_status
+  ON newsletters (status);
+CREATE INDEX IF NOT EXISTS idx_newsletters_category
+  ON newsletters (category);
