@@ -14,29 +14,24 @@ export const useAuth = () => {
   });
 
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error getting session:', error);
+    let mounted = true;
+
+    // Récupérer la session initiale (important pour lever loading au premier rendu)
+    supabase.auth.getSession()
+      .then(({ data }) => {
+        if (mounted) {
+          setAuthState({
+            user: data?.session?.user ?? null,
+            loading: false,
+          });
         }
-        setAuthState({
-          user: session?.user ?? null,
-          loading: false,
-        });
-      } catch (error) {
-        console.error('Error in getInitialSession:', error);
-        setAuthState({
-          user: null,
-          loading: false,
-        });
-      }
-    };
+      })
+      .catch(() => {
+        if (mounted) {
+          setAuthState(prev => ({ ...prev, loading: false }));
+        }
+      });
 
-    getInitialSession();
-
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setAuthState({
@@ -59,6 +54,7 @@ export const useAuth = () => {
     );
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -148,26 +144,10 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string) => {
     try {
-      // Vérifier si l'email est autorisé pour l'inscription admin
-      const authorizedEmails = [
-        'admin@christlebonberger.fr',
-        'suzy.poka@christlebonberger.fr',
-        'christelle.youeto@christlebonberger.fr',
-        'florence.noumo@christlebonberger.fr',
-        'mariette.kom@christlebonberger.fr'
-      ];
+      // La vérification de l'autorisation de l'email est désormais gérée par la fonction Supabase `auth-register`.
+      // Cette fonction est appelée depuis AdminAuth.tsx.
       
-      const authorizedDomains = ['christlebonberger.fr'];
-      const domain = email.split('@')[1]?.toLowerCase();
-      
-      const isAuthorized = authorizedEmails.includes(email.toLowerCase()) || 
-                          authorizedDomains.includes(domain);
-      
-      if (!isAuthorized) {
-        throw new Error('Cette adresse email n\'est pas autorisée pour l\'inscription admin');
-      }
-      
-      // Validation du mot de passe
+      // Validation du mot de passe (peut rester côté client pour une meilleure UX)
       if (password.length < 12) {
         throw new Error('Le mot de passe doit contenir au moins 12 caractères');
       }

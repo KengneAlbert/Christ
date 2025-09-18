@@ -1,25 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Mail, 
-  Users, 
-  Send, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  Calendar, 
+import React, { useState, useEffect } from "react";
+import {
+  Mail,
+  Users,
+  Send,
+  Edit,
+  Eye,
+  Calendar,
   BarChart3,
   Download,
   Plus,
   Search,
-  Filter,
   AlertCircle,
   CheckCircle,
   Save,
-  X
-} from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../hooks/useAuth';
-import AdminDashboard from './AdminDashboard';
+} from "lucide-react";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../hooks/useAuth";
+import AdminDashboard from "./AdminDashboard";
 
 interface Subscriber {
   id: string;
@@ -41,8 +38,8 @@ interface Newsletter {
   title: string;
   content: string;
   html_content?: string;
-  category: 'actualites' | 'temoignages' | 'evenements' | 'ressources';
-  status: 'draft' | 'scheduled' | 'sent';
+  category: "actualites" | "temoignages" | "evenements" | "ressources";
+  status: "draft" | "scheduled" | "sent";
   scheduled_date?: string;
   sent_date?: string;
   recipients_count: number;
@@ -53,173 +50,265 @@ interface Newsletter {
 
 const NewsletterAdminContent: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'subscribers' | 'newsletters' | 'create' | 'stats'>('subscribers');
+  const [activeTab, setActiveTab] = useState<
+    "subscribers" | "newsletters" | "create" | "stats"
+  >("subscribers");
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "active" | "inactive"
+  >("all");
   const [isLoading, setIsLoading] = useState(true);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
+  const [totalSubscribers, setTotalSubscribers] = useState(0);
+
+  // State for newsletters pagination
+  const [newsletterCurrentPage, setNewsletterCurrentPage] = useState(1);
+  const [totalNewsletters, setTotalNewsletters] = useState(0);
 
   // Newsletter creation form
   const [newNewsletter, setNewNewsletter] = useState({
-    title: '',
-    content: '',
-    category: 'actualites' as Newsletter['category']
+    title: "",
+    content: "",
+    category: "actualites" as Newsletter["category"],
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadSubscribers = React.useCallback(async () => {
     try {
       setIsLoading(true);
-      setMessage(null);
-      
-      // Charger les abonnés
-      const { data: subscribersData, error: subscribersError } = await supabase
-        .from('newsletter_subscribers')
-        .select('*')
-        .order('subscription_date', { ascending: false });
+      const from = (currentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
 
-      if (subscribersError) {
-        throw subscribersError;
+      let query = supabase
+        .from("newsletter_subscribers")
+        .select(
+          [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "subscription_date",
+            "is_active",
+            "preferences",
+          ].join(","),
+          { count: "planned" }
+        );
+
+      if (searchTerm) {
+        query = query.ilike("email", `%${searchTerm}%`);
       }
-      
-      setSubscribers(subscribersData || []);
-
-      // Charger les newsletters
-      const { data: newslettersData, error: newslettersError } = await supabase
-        .from('newsletters')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (newslettersError) {
-        throw newslettersError;
+      if (filterStatus !== "all") {
+        query = query.eq("is_active", filterStatus === "active");
       }
-      
-      setNewsletters(newslettersData || []);
 
-    } catch (error: any) {
-      console.error('Erreur chargement données:', error);
-      setMessage({ type: 'error', text: 'Erreur lors du chargement des données. Vérifiez la configuration Supabase.' });
+      const { data, error, count } = await query
+        .order("subscription_date", { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      setSubscribers((data as unknown as Subscriber[]) || []);
+      setTotalSubscribers(count || 0);
+    } catch (error) {
+      console.error("Erreur chargement abonnés:", error);
+      setMessage({
+        type: "error",
+        text: "Erreur lors du chargement des abonnés.",
+      });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, itemsPerPage, searchTerm, filterStatus]);
 
-  const filteredSubscribers = subscribers.filter(subscriber => {
-    const matchesSearch = subscriber.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (subscriber.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-    const matchesFilter = filterStatus === 'all' || 
-                         (filterStatus === 'active' && subscriber.is_active) ||
-                         (filterStatus === 'inactive' && !subscriber.is_active);
-    return matchesSearch && matchesFilter;
-  });
+  const loadNewsletters = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const from = (newsletterCurrentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
+      const { data, error, count } = await supabase
+        .from("newsletters")
+        .select(
+          [
+            "id",
+            "title",
+            "content",
+            "category",
+            "status",
+            "scheduled_date",
+            "sent_date",
+            "recipients_count",
+            "created_at",
+            "updated_at",
+            "created_by",
+          ].join(","),
+          { count: "planned" }
+        )
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      setNewsletters((data as unknown as Newsletter[]) || []);
+      setTotalNewsletters(count || 0);
+    } catch (error) {
+      console.error("Erreur chargement newsletters:", error);
+      setMessage({
+        type: "error",
+        text: "Erreur lors du chargement des newsletters.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [newsletterCurrentPage, itemsPerPage]);
+
+  useEffect(() => {
+    if (activeTab === "subscribers") {
+      loadSubscribers();
+    }
+  }, [activeTab, loadSubscribers]);
+
+  useEffect(() => {
+    if (activeTab === "newsletters") {
+      loadNewsletters();
+    }
+  }, [activeTab, loadNewsletters]);
 
   const handleCreateNewsletter = async () => {
     if (!newNewsletter.title || !newNewsletter.content) {
-      setMessage({ type: 'error', text: 'Veuillez remplir tous les champs' });
+      setMessage({ type: "error", text: "Veuillez remplir tous les champs" });
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from('newsletters')
-        .insert({
-          title: newNewsletter.title,
-          content: newNewsletter.content,
-          category: newNewsletter.category,
-          status: 'draft',
-          recipients_count: 0,
-          created_by: user?.id || 'anonymous'
-        });
+      const { error } = await supabase.from("newsletters").insert({
+        title: newNewsletter.title,
+        content: newNewsletter.content,
+        category: newNewsletter.category,
+        status: "draft",
+        recipients_count: 0,
+        created_by: user?.id || "anonymous",
+      });
 
       if (error) {
-        console.error('Erreur création newsletter:', error);
-        setMessage({ type: 'error', text: `Erreur lors de la création: ${error.message}` });
+        console.error("Erreur création newsletter:", error);
+        setMessage({
+          type: "error",
+          text: `Erreur lors de la création: ${error.message}`,
+        });
         return;
       }
 
-      setMessage({ type: 'success', text: 'Newsletter créée avec succès' });
-      setNewNewsletter({ title: '', content: '', category: 'actualites' });
-      setActiveTab('newsletters');
-      loadData();
-    } catch (error: any) {
-      console.error('Erreur handleCreateNewsletter:', error);
-      setMessage({ type: 'error', text: `Erreur lors de la création: ${error.message}` });
+      setMessage({ type: "success", text: "Newsletter créée avec succès" });
+      setNewNewsletter({ title: "", content: "", category: "actualites" });
+      setActiveTab("newsletters");
+      loadNewsletters();
+    } catch (error) {
+      console.error("Erreur handleCreateNewsletter:", error);
+      const msg =
+        error instanceof Error ? error.message : "Erreur lors de la création";
+      setMessage({ type: "error", text: `Erreur lors de la création: ${msg}` });
     }
   };
 
   const handleSendNewsletter = async (newsletter: Newsletter) => {
     try {
-      const activeSubscribers = subscribers.filter(sub => 
-        sub.is_active && sub.preferences[newsletter.category]
+      const activeSubscribers = subscribers.filter(
+        (sub) => sub.is_active && sub.preferences[newsletter.category]
       );
 
       // Mettre à jour le statut de la newsletter
       const { error } = await supabase
-        .from('newsletters')
+        .from("newsletters")
         .update({
-          status: 'sent',
+          status: "sent",
           sent_date: new Date().toISOString(),
           recipients_count: activeSubscribers.length,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', newsletter.id);
+        .eq("id", newsletter.id);
 
       if (error) throw error;
 
-      setMessage({ 
-        type: 'success', 
-        text: `Newsletter envoyée à ${activeSubscribers.length} abonnés !` 
+      setMessage({
+        type: "success",
+        text: `Newsletter envoyée à ${activeSubscribers.length} abonnés !`,
       });
-      loadData();
-    } catch (error: any) {
-      setMessage({ type: 'error', text: 'Erreur lors de l\'envoi' });
+      loadNewsletters();
+    } catch (error) {
+      console.error("Erreur envoi newsletter:", error);
+      setMessage({ type: "error", text: "Erreur lors de l'envoi" });
     }
   };
 
   const exportSubscribers = () => {
     const csvContent = [
-      ['Email', 'Prénom', 'Nom', 'Date d\'abonnement', 'Statut', 'Actualités', 'Témoignages', 'Événements', 'Ressources'],
-      ...filteredSubscribers.map(sub => [
+      [
+        "Email",
+        "Prénom",
+        "Nom",
+        "Date d'abonnement",
+        "Statut",
+        "Actualités",
+        "Témoignages",
+        "Événements",
+        "Ressources",
+      ],
+      ...subscribers.map((sub) => [
         sub.email,
-        sub.first_name || '',
-        sub.last_name || '',
-        new Date(sub.subscription_date).toLocaleDateString('fr-FR'),
-        sub.is_active ? 'Actif' : 'Inactif',
-        sub.preferences.actualites ? 'Oui' : 'Non',
-        sub.preferences.temoignages ? 'Oui' : 'Non',
-        sub.preferences.evenements ? 'Oui' : 'Non',
-        sub.preferences.ressources ? 'Oui' : 'Non'
-      ])
-    ].map(row => row.join(',')).join('\n');
+        sub.first_name || "",
+        sub.last_name || "",
+        new Date(sub.subscription_date).toLocaleDateString("fr-FR"),
+        sub.is_active ? "Actif" : "Inactif",
+        sub.preferences.actualites ? "Oui" : "Non",
+        sub.preferences.temoignages ? "Oui" : "Non",
+        sub.preferences.evenements ? "Oui" : "Non",
+        sub.preferences.ressources ? "Oui" : "Non",
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `abonnes_newsletter_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `abonnes_newsletter_${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
   const getStats = () => {
+    // Note: This stats will only reflect the current page of subscribers.
+    // For accurate global stats, new queries would be needed.
     const totalSubscribers = subscribers.length;
-    const activeSubscribers = subscribers.filter(sub => sub.is_active).length;
-    const totalNewsletters = newsletters.filter(n => n.status === 'sent').length;
+    const activeSubscribers = subscribers.filter((sub) => sub.is_active).length;
+    const totalNewsletters = newsletters.filter(
+      (n) => n.status === "sent"
+    ).length;
     const lastNewsletter = newsletters
-      .filter(n => n.sent_date)
-      .sort((a, b) => new Date(b.sent_date!).getTime() - new Date(a.sent_date!).getTime())[0];
+      .filter((n) => n.sent_date)
+      .sort(
+        (a, b) =>
+          new Date(b.sent_date!).getTime() - new Date(a.sent_date!).getTime()
+      )[0];
 
     return {
       totalSubscribers,
       activeSubscribers,
       inactiveSubscribers: totalSubscribers - activeSubscribers,
       totalNewsletters,
-      lastNewsletterDate: lastNewsletter?.sent_date
+      lastNewsletterDate: lastNewsletter?.sent_date,
     };
   };
 
@@ -241,20 +330,26 @@ const NewsletterAdminContent: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Gestion des Newsletters</h1>
-          <p className="text-slate-600 mt-2">Administration des abonnés et envoi des newsletters</p>
+          <h1 className="text-3xl font-bold text-slate-800">
+            Gestion des Newsletters
+          </h1>
+          <p className="text-slate-600 mt-2">
+            Administration des abonnés et envoi des newsletters
+          </p>
         </div>
       </div>
 
       {/* Messages */}
       {message && (
-        <div className={`mb-6 p-4 rounded-xl border animate-slide-down ${
-          message.type === 'success' 
-            ? 'bg-green-50 border-green-200 text-green-800' 
-            : 'bg-red-50 border-red-200 text-red-800'
-        }`}>
+        <div
+          className={`mb-6 p-4 rounded-xl border animate-slide-down ${
+            message.type === "success"
+              ? "bg-green-50 border-green-200 text-green-800"
+              : "bg-red-50 border-red-200 text-red-800"
+          }`}
+        >
           <div className="flex items-center space-x-2">
-            {message.type === 'success' ? (
+            {message.type === "success" ? (
               <CheckCircle className="w-5 h-5" />
             ) : (
               <AlertCircle className="w-5 h-5" />
@@ -267,18 +362,22 @@ const NewsletterAdminContent: React.FC = () => {
       {/* Navigation */}
       <div className="flex space-x-1 bg-white rounded-xl p-1 shadow-sm border border-slate-200 mb-8">
         {[
-          { id: 'subscribers', label: 'Abonnés', icon: Users },
-          { id: 'newsletters', label: 'Newsletters', icon: Mail },
-          { id: 'create', label: 'Créer', icon: Plus },
-          { id: 'stats', label: 'Statistiques', icon: BarChart3 }
+          { id: "subscribers", label: "Abonnés", icon: Users },
+          { id: "newsletters", label: "Newsletters", icon: Mail },
+          { id: "create", label: "Créer", icon: Plus },
+          { id: "stats", label: "Statistiques", icon: BarChart3 },
         ].map(({ id, label, icon: Icon }) => (
           <button
             key={id}
-            onClick={() => setActiveTab(id as any)}
+            onClick={() =>
+              setActiveTab(
+                id as "subscribers" | "newsletters" | "create" | "stats"
+              )
+            }
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 ${
               activeTab === id
-                ? 'bg-emerald-500 text-white shadow-lg'
-                : 'text-slate-600 hover:bg-slate-50'
+                ? "bg-emerald-500 text-white shadow-lg"
+                : "text-slate-600 hover:bg-slate-50"
             }`}
           >
             <Icon className="w-4 h-4" />
@@ -288,7 +387,7 @@ const NewsletterAdminContent: React.FC = () => {
       </div>
 
       {/* Subscribers Tab */}
-      {activeTab === 'subscribers' && (
+      {activeTab === "subscribers" && (
         <div className="space-y-6">
           {/* Filters and Search */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
@@ -306,20 +405,27 @@ const NewsletterAdminContent: React.FC = () => {
                 </div>
                 <select
                   value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as any)}
+                  onChange={(e) =>
+                    setFilterStatus(
+                      e.target.value as "all" | "active" | "inactive"
+                    )
+                  }
                   className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
                 >
                   <option value="all">Tous</option>
                   <option value="active">Actifs</option>
                   <option value="inactive">Inactifs</option>
                 </select>
+                <div className="text-sm text-slate-600">
+                  {totalSubscribers} abonné(s) au total
+                </div>
               </div>
               <button
                 onClick={exportSubscribers}
                 className="flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg hover-glow"
               >
                 <Download className="w-4 h-4" />
-                <span>Exporter CSV</span>
+                <span>Exporter la page</span>
               </button>
             </div>
           </div>
@@ -330,44 +436,70 @@ const NewsletterAdminContent: React.FC = () => {
               <table className="w-full">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    <th className="text-left px-6 py-4 font-medium text-slate-700">Email</th>
-                    <th className="text-left px-6 py-4 font-medium text-slate-700">Nom</th>
-                    <th className="text-left px-6 py-4 font-medium text-slate-700">Date d'abonnement</th>
-                    <th className="text-left px-6 py-4 font-medium text-slate-700">Statut</th>
-                    <th className="text-left px-6 py-4 font-medium text-slate-700">Préférences</th>
+                    <th className="text-left px-6 py-4 font-medium text-slate-700">
+                      Email
+                    </th>
+                    <th className="text-left px-6 py-4 font-medium text-slate-700">
+                      Nom
+                    </th>
+                    <th className="text-left px-6 py-4 font-medium text-slate-700">
+                      Date d'abonnement
+                    </th>
+                    <th className="text-left px-6 py-4 font-medium text-slate-700">
+                      Statut
+                    </th>
+                    <th className="text-left px-6 py-4 font-medium text-slate-700">
+                      Préférences
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {filteredSubscribers.map((subscriber, index) => (
-                    <tr key={subscriber.id} className={`hover:bg-slate-50 transition-colors duration-200 animate-slide-up delay-${index * 50}`}>
-                      <td className="px-6 py-4 text-slate-800 font-medium">{subscriber.email}</td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {subscriber.first_name || subscriber.last_name 
-                          ? `${subscriber.first_name || ''} ${subscriber.last_name || ''}`.trim()
-                          : '-'
-                        }
+                  {subscribers.map((subscriber, index) => (
+                    <tr
+                      key={subscriber.id}
+                      className={`hover:bg-slate-50 transition-colors duration-200 animate-slide-up delay-${
+                        index * 50
+                      }`}
+                    >
+                      <td className="px-6 py-4 text-slate-800 font-medium">
+                        {subscriber.email}
                       </td>
                       <td className="px-6 py-4 text-slate-600">
-                        {new Date(subscriber.subscription_date).toLocaleDateString('fr-FR')}
+                        {subscriber.first_name || subscriber.last_name
+                          ? `${subscriber.first_name || ""} ${
+                              subscriber.last_name || ""
+                            }`.trim()
+                          : "-"}
+                      </td>
+                      <td className="px-6 py-4 text-slate-600">
+                        {new Date(
+                          subscriber.subscription_date
+                        ).toLocaleDateString("fr-FR")}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          subscriber.is_active 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {subscriber.is_active ? 'Actif' : 'Inactif'}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            subscriber.is_active
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {subscriber.is_active ? "Actif" : "Inactif"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1">
-                          {Object.entries(subscriber.preferences).map(([key, value]) => (
-                            value && (
-                              <span key={key} className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded text-xs">
-                                {key}
-                              </span>
-                            )
-                          ))}
+                          {Object.entries(subscriber.preferences).map(
+                            ([key, value]) =>
+                              value && (
+                                <span
+                                  key={key}
+                                  className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded text-xs"
+                                >
+                                  {key}
+                                </span>
+                              )
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -376,42 +508,87 @@ const NewsletterAdminContent: React.FC = () => {
               </table>
             </div>
           </div>
+          {/* Pagination Controls */}
+          <div className="mt-8 flex items-center justify-between">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-white border border-slate-200 rounded-lg font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Précédent
+            </button>
+            <span className="text-sm text-slate-700">
+              Page {currentPage} sur{" "}
+              {Math.ceil(totalSubscribers / itemsPerPage)}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => p + 1)}
+              disabled={currentPage * itemsPerPage >= totalSubscribers}
+              className="px-4 py-2 bg-white border border-slate-200 rounded-lg font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Suivant
+            </button>
+          </div>
         </div>
       )}
 
       {/* Newsletters Tab */}
-      {activeTab === 'newsletters' && (
+      {activeTab === "newsletters" && (
         <div className="space-y-6">
           {newsletters.map((newsletter, index) => (
-            <div key={newsletter.id} className={`bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-lg transition-all duration-300 animate-slide-up delay-${index * 100}`}>
+            <div
+              key={newsletter.id}
+              className={`bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-lg transition-all duration-300 animate-slide-up delay-${
+                index * 100
+              }`}
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
                     <h3 className="text-xl font-bold text-slate-800 hover:text-emerald-600 transition-colors duration-300">
                       {newsletter.title}
                     </h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      newsletter.status === 'sent' ? 'bg-green-100 text-green-800' :
-                      newsletter.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {newsletter.status === 'sent' ? 'Envoyée' :
-                       newsletter.status === 'scheduled' ? 'Programmée' : 'Brouillon'}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        newsletter.status === "sent"
+                          ? "bg-green-100 text-green-800"
+                          : newsletter.status === "scheduled"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {newsletter.status === "sent"
+                        ? "Envoyée"
+                        : newsletter.status === "scheduled"
+                        ? "Programmée"
+                        : "Brouillon"}
                     </span>
                     <span className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded text-xs">
                       {newsletter.category}
                     </span>
                   </div>
-                  <p className="text-slate-600 mb-4 line-clamp-2">{newsletter.content}</p>
+                  <p className="text-slate-600 mb-4 line-clamp-2">
+                    {newsletter.content}
+                  </p>
                   <div className="flex items-center space-x-4 text-sm text-slate-500">
                     <span className="flex items-center space-x-1">
                       <Calendar className="w-4 h-4" />
-                      <span>Créée le {new Date(newsletter.created_at).toLocaleDateString('fr-FR')}</span>
+                      <span>
+                        Créée le{" "}
+                        {new Date(newsletter.created_at).toLocaleDateString(
+                          "fr-FR"
+                        )}
+                      </span>
                     </span>
                     {newsletter.sent_date && (
                       <span className="flex items-center space-x-1">
                         <Send className="w-4 h-4" />
-                        <span>Envoyée le {new Date(newsletter.sent_date).toLocaleDateString('fr-FR')}</span>
+                        <span>
+                          Envoyée le{" "}
+                          {new Date(newsletter.sent_date).toLocaleDateString(
+                            "fr-FR"
+                          )}
+                        </span>
                       </span>
                     )}
                     {newsletter.recipients_count > 0 && (
@@ -429,7 +606,7 @@ const NewsletterAdminContent: React.FC = () => {
                   <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-300 hover:scale-110 transform">
                     <Edit className="w-4 h-4" />
                   </button>
-                  {newsletter.status === 'draft' && (
+                  {newsletter.status === "draft" && (
                     <button
                       onClick={() => handleSendNewsletter(newsletter)}
                       className="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm transition-all duration-300 hover:scale-105 shadow-lg hover-glow"
@@ -442,29 +619,71 @@ const NewsletterAdminContent: React.FC = () => {
               </div>
             </div>
           ))}
+
+          {/* Pagination Controls */}
+          <div className="mt-8 flex items-center justify-between">
+            <button
+              onClick={() =>
+                setNewsletterCurrentPage((p) => Math.max(1, p - 1))
+              }
+              disabled={newsletterCurrentPage === 1}
+              className="px-4 py-2 bg-white border border-slate-200 rounded-lg font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Précédent
+            </button>
+            <span className="text-sm text-slate-700">
+              Page {newsletterCurrentPage} sur{" "}
+              {Math.ceil(totalNewsletters / itemsPerPage)}
+            </span>
+            <button
+              onClick={() => setNewsletterCurrentPage((p) => p + 1)}
+              disabled={
+                newsletterCurrentPage * itemsPerPage >= totalNewsletters
+              }
+              className="px-4 py-2 bg-white border border-slate-200 rounded-lg font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Suivant
+            </button>
+          </div>
         </div>
       )}
 
       {/* Create Newsletter Tab */}
-      {activeTab === 'create' && (
+      {activeTab === "create" && (
         <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
-          <h2 className="text-2xl font-bold text-slate-800 mb-6">Créer une nouvelle newsletter</h2>
+          <h2 className="text-2xl font-bold text-slate-800 mb-6">
+            Créer une nouvelle newsletter
+          </h2>
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Titre *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Titre *
+              </label>
               <input
                 type="text"
                 value={newNewsletter.title}
-                onChange={(e) => setNewNewsletter(prev => ({ ...prev, title: e.target.value }))}
+                onChange={(e) =>
+                  setNewNewsletter((prev) => ({
+                    ...prev,
+                    title: e.target.value,
+                  }))
+                }
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
                 placeholder="Titre de la newsletter"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Catégorie *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Catégorie *
+              </label>
               <select
                 value={newNewsletter.category}
-                onChange={(e) => setNewNewsletter(prev => ({ ...prev, category: e.target.value as any }))}
+                onChange={(e) =>
+                  setNewNewsletter((prev) => ({
+                    ...prev,
+                    category: e.target.value as Newsletter["category"],
+                  }))
+                }
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
               >
                 <option value="actualites">Actualités</option>
@@ -474,11 +693,18 @@ const NewsletterAdminContent: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Contenu *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Contenu *
+              </label>
               <textarea
                 rows={12}
                 value={newNewsletter.content}
-                onChange={(e) => setNewNewsletter(prev => ({ ...prev, content: e.target.value }))}
+                onChange={(e) =>
+                  setNewNewsletter((prev) => ({
+                    ...prev,
+                    content: e.target.value,
+                  }))
+                }
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none focus-ring"
                 placeholder="Contenu de la newsletter..."
               />
@@ -495,7 +721,7 @@ const NewsletterAdminContent: React.FC = () => {
       )}
 
       {/* Statistics Tab */}
-      {activeTab === 'stats' && (
+      {activeTab === "stats" && (
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-lg transition-all duration-300 hover-lift">
             <div className="flex items-center space-x-3">
@@ -504,7 +730,9 @@ const NewsletterAdminContent: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-slate-600">Total abonnés</p>
-                <p className="text-2xl font-bold text-slate-800">{stats.totalSubscribers}</p>
+                <p className="text-2xl font-bold text-slate-800">
+                  {stats.totalSubscribers}
+                </p>
               </div>
             </div>
           </div>
@@ -515,7 +743,9 @@ const NewsletterAdminContent: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-slate-600">Abonnés actifs</p>
-                <p className="text-2xl font-bold text-slate-800">{stats.activeSubscribers}</p>
+                <p className="text-2xl font-bold text-slate-800">
+                  {stats.activeSubscribers}
+                </p>
               </div>
             </div>
           </div>
@@ -526,7 +756,9 @@ const NewsletterAdminContent: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-slate-600">Newsletters envoyées</p>
-                <p className="text-2xl font-bold text-slate-800">{stats.totalNewsletters}</p>
+                <p className="text-2xl font-bold text-slate-800">
+                  {stats.totalNewsletters}
+                </p>
               </div>
             </div>
           </div>
@@ -538,10 +770,11 @@ const NewsletterAdminContent: React.FC = () => {
               <div>
                 <p className="text-sm text-slate-600">Dernière newsletter</p>
                 <p className="text-sm font-medium text-slate-800">
-                  {stats.lastNewsletterDate 
-                    ? new Date(stats.lastNewsletterDate).toLocaleDateString('fr-FR')
-                    : 'Aucune'
-                  }
+                  {stats.lastNewsletterDate
+                    ? new Date(stats.lastNewsletterDate).toLocaleDateString(
+                        "fr-FR"
+                      )
+                    : "Aucune"}
                 </p>
               </div>
             </div>

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import AdminAuth from '../components/AdminAuth';
 import AdminLayout from '../components/AdminLayout';
+import { useNavigate } from 'react-router-dom';
 
 interface AdminDashboardProps {
   children: React.ReactNode;
@@ -9,6 +10,19 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ children }) => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  
+  // État pour forcer le rafraîchissement après la connexion
+  const [isLoggedIn, setIsLoggedIn] = useState(!!user);
+
+  useEffect(() => {
+    setIsLoggedIn(!!user);
+  }, [user]);
+
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+    navigate('/admin/mediatheque'); // Redirection plus propre avec React Router
+  };
 
   if (loading) {
     return (
@@ -21,13 +35,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ children }) => {
     );
   }
 
-  // Temporairement, permettre l'accès même sans utilisateur pour tester la base de données
-  // En production, décommenter la ligne suivante :
-  // if (!user) return <AdminAuth onSuccess={() => window.location.replace('/admin/mediatheque')} />;
-  
-  // Pour le moment, permettre l'accès direct au tableau de bord pour tester
-  if (!user) {
-    return <AdminAuth onSuccess={() => window.location.replace('/admin/mediatheque')} />;
+  if (!isLoggedIn) {
+    return <AdminAuth onSuccess={handleLoginSuccess} />;
   }
 
   return <AdminLayout>{children}</AdminLayout>;
