@@ -17,21 +17,10 @@ import {
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../hooks/useAuth";
 import AdminDashboard from "./AdminDashboard";
+import { sendNewsletter, NewsletterSubscriber } from "../services/newsletterService";
+import NewsletterPreviewModal from "../components/NewsletterPreviewModal";
 
-interface Subscriber {
-  id: string;
-  email: string;
-  first_name?: string;
-  last_name?: string;
-  subscription_date: string;
-  is_active: boolean;
-  preferences: {
-    actualites: boolean;
-    temoignages: boolean;
-    evenements: boolean;
-    ressources: boolean;
-  };
-}
+interface Subscriber extends NewsletterSubscriber {}
 
 interface Newsletter {
   id: string;
@@ -74,12 +63,26 @@ const NewsletterAdminContent: React.FC = () => {
   const [newsletterCurrentPage, setNewsletterCurrentPage] = useState(1);
   const [totalNewsletters, setTotalNewsletters] = useState(0);
 
+  // State for newsletter preview modal
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter | null>(null);
+
   // Newsletter creation form
   const [newNewsletter, setNewNewsletter] = useState({
     title: "",
     content: "",
     category: "actualites" as Newsletter["category"],
   });
+
+  const handlePreview = (newsletter: Newsletter) => {
+    setSelectedNewsletter(newsletter);
+    setIsPreviewModalOpen(true);
+  };
+
+  const handleModalSuccess = () => {
+    loadNewsletters();
+    setMessage({ type: "success", text: "Newsletter mise à jour avec succès" });
+  };
 
   const loadSubscribers = React.useCallback(async () => {
     try {
@@ -253,9 +256,18 @@ const NewsletterAdminContent: React.FC = () => {
 
   const handleSendNewsletter = async (newsletter: Newsletter) => {
     try {
-      const activeSubscribers = subscribers.filter(
-        (sub) => sub.is_active && sub.preferences[newsletter.category]
-      );
+      const { data: activeSubscribers, error: subsError } = await supabase
+        .from('newsletter_subscribers')
+        .select('*')
+        .eq('is_active', true);
+
+      if (subsError) throw subsError;
+
+      const success = await sendNewsletter(newsletter, activeSubscribers as NewsletterSubscriber[]);
+
+      if (!success) {
+        throw new Error("L\'envoi d\'e-mails a échoué.");
+      }
 
       // Mettre à jour le statut de la newsletter
       const { error } = await supabase
@@ -632,12 +644,14 @@ const NewsletterAdminContent: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-300 hover:scale-110 transform">
+                  <button onClick={() => handlePreview(newsletter)} className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-300 hover:scale-110 transform">
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-300 hover:scale-110 transform">
-                    <Edit className="w-4 h-4" />
-                  </button>
+                  {newsletter.status === "draft" && (
+                    <button onClick={() => handlePreview(newsletter)} className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-300 hover:scale-110 transform">
+                      <Edit className="w-4 h-4" />
+                    </button>
+                  )}
                   {newsletter.status === "draft" && (
                     <button
                       onClick={() => handleSendNewsletter(newsletter)}
@@ -813,6 +827,13 @@ const NewsletterAdminContent: React.FC = () => {
           </div>
         </div>
       )}
+
+      <NewsletterPreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        newsletter={selectedNewsletter}
+        onSuccess={handleModalSuccess}
+      />
     </div>
   );
 };

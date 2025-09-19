@@ -21,6 +21,7 @@ import CookieConsent from './components/CookieConsent';
 import CookiePolicyPage from './pages/CookiePolicyPage';
 import MediathequeAdminPage from './pages/MediathequeAdminPage';
 import AdminDashboard from './pages/AdminDashboard';
+import UnsubscribePage from './pages/UnsubscribePage';
 
 const HomePage = () => (
   <>
@@ -53,6 +54,7 @@ const AppContent = () => {
           <Route path="/admin/newsletter" element={<NewsletterAdminPage />} />
           <Route path="/cookies" element={<CookiePolicyPage />} />
           <Route path="/admin/mediatheque" element={<MediathequeAdminPage />} />
+          <Route path="/unsubscribe" element={<UnsubscribePage />} />
           <Route path="/admin" element={<Navigate to="/admin/mediatheque" replace />} />
           {/* Redirection pour les anciennes URLs ou erreurs */}
           <Route path="*" element={<Navigate to="/" replace />} />

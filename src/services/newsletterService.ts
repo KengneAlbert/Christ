@@ -35,87 +35,7 @@ export interface Newsletter {
   recipients: number;
 }
 
-// Stockage local des abonnés (en production, utiliser une vraie base de données)
-const SUBSCRIBERS_KEY = 'newsletter_subscribers';
-const NEWSLETTERS_KEY = 'newsletters_archive';
 
-// Fonction pour s'abonner à la newsletter
-export const subscribeToNewsletter = async (
-  email: string, 
-  firstName?: string, 
-  lastName?: string,
-  preferences?: Partial<NewsletterSubscriber['preferences']>
-): Promise<boolean> => {
-  try {
-    // Vérifier si l'email existe déjà
-    const subscribers = getSubscribers();
-    const existingSubscriber = subscribers.find(sub => sub.email === email);
-    
-    if (existingSubscriber) {
-      throw new Error('Cette adresse email est déjà abonnée');
-    }
-
-    // Créer un nouvel abonné
-    const newSubscriber: NewsletterSubscriber = {
-      id: Date.now().toString(),
-      email,
-      firstName,
-      lastName,
-      subscriptionDate: new Date(),
-      isActive: true,
-      preferences: {
-        actualites: true,
-        temoignages: true,
-        evenements: true,
-        ressources: true,
-        ...preferences
-      }
-    };
-
-    // Ajouter à la liste
-    subscribers.push(newSubscriber);
-    localStorage.setItem(SUBSCRIBERS_KEY, JSON.stringify(subscribers));
-
-    // Envoyer email de bienvenue
-    await sendWelcomeEmail(newSubscriber);
-
-    return true;
-  } catch (error) {
-    console.error('Erreur lors de l\'abonnement:', error);
-    return false;
-  }
-};
-
-// Fonction pour se désabonner
-export const unsubscribeFromNewsletter = (email: string): boolean => {
-  try {
-    const subscribers = getSubscribers();
-    const updatedSubscribers = subscribers.map(sub => 
-      sub.email === email ? { ...sub, isActive: false } : sub
-    );
-    localStorage.setItem(SUBSCRIBERS_KEY, JSON.stringify(updatedSubscribers));
-    return true;
-  } catch (error) {
-    console.error('Erreur lors du désabonnement:', error);
-    return false;
-  }
-};
-
-// Fonction pour obtenir tous les abonnés
-export const getSubscribers = (): NewsletterSubscriber[] => {
-  try {
-    const stored = localStorage.getItem(SUBSCRIBERS_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch (error) {
-    console.error('Erreur lors de la récupération des abonnés:', error);
-    return [];
-  }
-};
-
-// Fonction pour obtenir les abonnés actifs
-export const getActiveSubscribers = (): NewsletterSubscriber[] => {
-  return getSubscribers().filter(sub => sub.isActive);
-};
 
 // Fonction pour envoyer l'email de bienvenue
 const sendWelcomeEmail = async (subscriber: NewsletterSubscriber): Promise<boolean> => {
@@ -158,12 +78,11 @@ L'équipe Christ Le Bon Berger
 };
 
 // Fonction pour envoyer une newsletter
-export const sendNewsletter = async (newsletter: Newsletter): Promise<boolean> => {
+export const sendNewsletter = async (newsletter: Newsletter, subscribers: NewsletterSubscriber[]): Promise<boolean> => {
   try {
     emailjs.init(EMAILJS_PUBLIC_KEY);
     
-    const activeSubscribers = getActiveSubscribers();
-    const filteredSubscribers = activeSubscribers.filter(sub => 
+    const filteredSubscribers = subscribers.filter(sub => 
       sub.preferences[newsletter.category]
     );
 
@@ -194,16 +113,6 @@ export const sendNewsletter = async (newsletter: Newsletter): Promise<boolean> =
       }
     }
 
-    // Mettre à jour le statut de la newsletter
-    const updatedNewsletter = {
-      ...newsletter,
-      status: 'sent' as const,
-      sentDate: new Date(),
-      recipients: successCount
-    };
-
-    saveNewsletterToArchive(updatedNewsletter);
-
     return successCount > 0;
   } catch (error) {
     console.error('Erreur lors de l\'envoi de la newsletter:', error);
@@ -211,34 +120,7 @@ export const sendNewsletter = async (newsletter: Newsletter): Promise<boolean> =
   }
 };
 
-// Fonction pour sauvegarder une newsletter dans les archives
-const saveNewsletterToArchive = (newsletter: Newsletter): void => {
-  try {
-    const archives = getNewsletterArchives();
-    const existingIndex = archives.findIndex(n => n.id === newsletter.id);
-    
-    if (existingIndex >= 0) {
-      archives[existingIndex] = newsletter;
-    } else {
-      archives.push(newsletter);
-    }
-    
-    localStorage.setItem(NEWSLETTERS_KEY, JSON.stringify(archives));
-  } catch (error) {
-    console.error('Erreur sauvegarde newsletter:', error);
-  }
-};
 
-// Fonction pour obtenir les archives des newsletters
-export const getNewsletterArchives = (): Newsletter[] => {
-  try {
-    const stored = localStorage.getItem(NEWSLETTERS_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch (error) {
-    console.error('Erreur récupération archives:', error);
-    return [];
-  }
-};
 
 // Fonction pour créer une nouvelle newsletter
 export const createNewsletter = (

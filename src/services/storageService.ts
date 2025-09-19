@@ -19,7 +19,7 @@ export interface UploadResult {
 
 export class StorageService {
   private static readonly BUCKET_NAME = 'media-files';
-  private static readonly MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+  
   private static readonly ALLOWED_TYPES = {
     video: ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/webm'],
     audio: ['audio/mp3', 'audio/wav', 'audio/ogg', 'audio/m4a', 'audio/aac'],
@@ -27,47 +27,11 @@ export class StorageService {
     document: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain']
   };
 
-  // Vérifier si le bucket existe et le créer si nécessaire
-  static async initializeBucket(): Promise<boolean> {
-    try {
-      const { data: buckets, error } = await supabase.storage.listBuckets();
-      
-      if (error) {
-        console.error('Erreur listage buckets:', error);
-        return false;
-      }
-
-      const bucketExists = buckets?.some(bucket => bucket.name === this.BUCKET_NAME);
-      
-      if (!bucketExists) {
-        const { error: createError } = await supabase.storage.createBucket(this.BUCKET_NAME, {
-          public: true,
-          allowedMimeTypes: Object.values(this.ALLOWED_TYPES).flat(),
-          fileSizeLimit: this.MAX_FILE_SIZE
-        });
-
-        if (createError) {
-          console.error('Erreur création bucket:', createError);
-          return false;
-        }
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Erreur initialisation bucket:', error);
-      return false;
-    }
-  }
+  
 
   // Valider un fichier avant upload
   static validateFile(file: File, type: keyof typeof StorageService.ALLOWED_TYPES): { isValid: boolean; error?: string } {
-    // Vérifier la taille
-    if (file.size > this.MAX_FILE_SIZE) {
-      return {
-        isValid: false,
-        error: `Le fichier est trop volumineux. Taille maximum: ${Math.round(this.MAX_FILE_SIZE / 1024 / 1024)}MB`
-      };
-    }
+    
 
     // Vérifier le type MIME
     const allowedTypes = this.ALLOWED_TYPES[type];
@@ -104,11 +68,7 @@ export class StorageService {
     onProgress?: (progress: UploadProgress) => void
   ): Promise<UploadResult> {
     try {
-      // Initialiser le bucket si nécessaire
-      const bucketReady = await this.initializeBucket();
-      if (!bucketReady) {
-        return { success: false, error: 'Impossible d\'initialiser le stockage' };
-      }
+      
 
       // Valider le fichier
       const validation = this.validateFile(file, type);
