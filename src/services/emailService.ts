@@ -1,11 +1,8 @@
-import emailjs from '@emailjs/browser';
 import { CSRFService } from './csrfService';
 import { ValidationService } from './validationService';
+import { supabase } from '../lib/supabase';
 
-// Configuration EmailJS
-const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+// Switching to Brevo via Supabase Edge Function
 
 // Interface pour les données du formulaire
 export interface ContactFormData {
@@ -42,28 +39,21 @@ export const sendContactEmail = async (formData: ContactFormData): Promise<boole
       message: ValidationService.sanitizeString(formData.message, 5000)
     };
 
-    // Initialisation d'EmailJS avec la clé publique
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-
-    // Préparation des données pour le template
-    const templateParams = {
-      from_name: `${sanitizedData.firstName} ${sanitizedData.lastName}`.trim(),
-      from_email: sanitizedData.email,
-      subject: sanitizedData.subject,
-      message: sanitizedData.message,
-      to_name: 'Christ Le Bon Berger',
-      reply_to: sanitizedData.email,
-      csrf_token: CSRFService.getToken()
-    };
-
-    // Envoi de l'email
-    const response = await emailjs.send(
-      EMAILJS_SERVICE_ID,
-      EMAILJS_TEMPLATE_ID,
-      templateParams
-    );
-
-    console.log('Email envoyé avec succès:', response.status, response.text);
+    const { data, error } = await supabase.functions.invoke('brevo-contact-send', {
+      body: {
+        firstName: sanitizedData.firstName,
+        lastName: sanitizedData.lastName,
+        email: sanitizedData.email,
+        subject: sanitizedData.subject,
+        message: sanitizedData.message,
+        csrf_token: CSRFService.getToken(),
+      }
+    });
+    if (error) {
+      console.error('Erreur Brevo:', error);
+      return false;
+    }
+    console.log('Brevo contact envoyé:', data);
     return true;
   } catch (error) {
     console.error('Erreur lors de l\'envoi de l\'email:', error);
@@ -83,25 +73,20 @@ export const sendUrgencyEmail = async (message: string, contactInfo?: string): P
       return false;
     }
 
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-
-    const templateParams = {
-      from_name: 'Demande d\'urgence',
-      from_email: sanitizedContact || 'urgence@christlebonberger.fr',
-      subject: '🚨 DEMANDE D\'URGENCE - Action immédiate requise',
-      message: `DEMANDE D'URGENCE:\n\n${sanitizedMessage}\n\nContact: ${sanitizedContact || 'Non fourni'}\n\nHeure: ${new Date().toLocaleString('fr-FR')}`,
-      to_name: 'Équipe d\'urgence - Christ Le Bon Berger',
-      reply_to: sanitizedContact || 'urgence@christlebonberger.fr',
-      csrf_token: CSRFService.getToken()
-    };
-
-    const response = await emailjs.send(
-      EMAILJS_SERVICE_ID,
-      'template_urgency', // Template spécial pour les urgences
-      templateParams
-    );
-
-    console.log('Email d\'urgence envoyé:', response.status);
+    const { data, error } = await supabase.functions.invoke('brevo-contact-send', {
+      body: {
+        firstName: 'Demande',
+        lastName: 'Urgence',
+        email: sanitizedContact || 'urgence@christlebonberger.fr',
+        subject: "🚨 DEMANDE D'URGENCE - Action immédiate requise",
+        message: `DEMANDE D'URGENCE:\n\n${sanitizedMessage}\n\nContact: ${sanitizedContact || 'Non fourni'}\n\nHeure: ${new Date().toLocaleString('fr-FR')}`,
+      }
+    });
+    if (error) {
+      console.error('Erreur Brevo urgence:', error);
+      return false;
+    }
+    console.log('Brevo urgence envoyé:', data);
     return true;
   } catch (error) {
     console.error('Erreur envoi email d\'urgence:', error);

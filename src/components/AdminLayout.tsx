@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Mail, FileText, BarChart3, Settings, User, Shield } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import Logo from '../assets/LogoChrist.png';
-import ConfirmationModal from './ConfirmationModal'; // Importer le composant de modal
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { LogOut, Mail, FileText, User, Shield, Users } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import Logo from "../assets/LogoChrist.png";
+import ConfirmationModal from "./ConfirmationModal"; // Importer le composant de modal
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -11,7 +11,6 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { user, signOut } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -24,22 +23,28 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     // Après la déconnexion, le hook useAuth mettra à jour l'état.
     // Le composant AdminDashboard affichera alors automatiquement la page de connexion.
     // Nous forçons un rechargement de la page pour garantir un état propre.
-    window.location.replace('/admin');
+    window.location.replace("/admin");
   };
 
   const menuItems = [
     {
-      name: 'Gestion Médiathèque',
-      href: '/admin/mediatheque',
+      name: "Gestion Médiathèque",
+      href: "/admin/mediatheque",
       icon: FileText,
-      description: 'Gérer les médias et ressources'
+      description: "Gérer les médias et ressources",
     },
     {
-      name: 'Gestion Newsletter',
-      href: '/admin/newsletter',
+      name: "Gestion Newsletter",
+      href: "/admin/newsletter",
       icon: Mail,
-      description: 'Abonnés et campagnes email'
-    }
+      description: "Abonnés et campagnes email",
+    },
+    {
+      name: "Gestion Accès Admin",
+      href: "/admin/users",
+      icon: Users,
+      description: "Gérer les emails autorisés",
+    },
   ];
 
   const isActivePage = (href: string) => {
@@ -60,7 +65,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 className="w-12 h-12 object-contain"
               />
               <div>
-                <h1 className="text-xl font-bold text-slate-800">Administration</h1>
+                <h1 className="text-xl font-bold text-slate-800">
+                  Administration
+                </h1>
                 <p className="text-sm text-emerald-600">Christ Le Bon Berger</p>
               </div>
             </div>
@@ -72,7 +79,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   <User className="w-5 h-5 text-white" />
                 </div>
                 <div className="hidden md:block">
-                  <p className="text-sm font-medium text-slate-800">{user?.email}</p>
+                  <p className="text-sm font-medium text-slate-800">
+                    {user?.email}
+                  </p>
                   <p className="text-xs text-slate-500">Administrateur</p>
                 </div>
               </div>
@@ -96,21 +105,31 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = isActivePage(item.href);
-                
+
                 return (
                   <a
                     key={item.href}
                     href={item.href}
                     className={`group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 hover:transform hover:scale-105 ${
                       isActive
-                        ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                        ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-800"
                     }`}
                   >
-                    <Icon className={`w-5 h-5 ${isActive ? 'animate-bounce-gentle' : 'group-hover:scale-110 transition-transform duration-300'}`} />
+                    <Icon
+                      className={`w-5 h-5 ${
+                        isActive
+                          ? "animate-bounce-gentle"
+                          : "group-hover:scale-110 transition-transform duration-300"
+                      }`}
+                    />
                     <div className="flex-1">
                       <div className="font-medium">{item.name}</div>
-                      <div className={`text-xs ${isActive ? 'text-white/80' : 'text-slate-500'}`}>
+                      <div
+                        className={`text-xs ${
+                          isActive ? "text-white/80" : "text-slate-500"
+                        }`}
+                      >
                         {item.description}
                       </div>
                     </div>
@@ -121,7 +140,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
             {/* Quick Actions */}
             <div className="mt-8 pt-6 border-t border-slate-200">
-              <h3 className="text-sm font-semibold text-slate-700 mb-4">Actions rapides</h3>
+              <h3 className="text-sm font-semibold text-slate-700 mb-4">
+                Actions rapides
+              </h3>
               <div className="space-y-2">
                 <a
                   href="/"
@@ -143,12 +164,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 min-h-[calc(100vh-73px)]">
-          {children}
-        </main>
+        <main className="flex-1 min-h-[calc(100vh-73px)]">{children}</main>
       </div>
 
-      <ConfirmationModal 
+      <ConfirmationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={confirmSignOut}

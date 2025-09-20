@@ -1,10 +1,6 @@
-import emailjs from '@emailjs/browser';
+import { supabase } from '../lib/supabase';
 
-// Configuration EmailJS pour les newsletters
-const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-const EMAILJS_NEWSLETTER_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_NEWSLETTER_TEMPLATE_ID;
-const EMAILJS_WELCOME_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_WELCOME_TEMPLATE_ID;
-const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+// Using Brevo via Supabase Edge Function for newsletters
 
 // Interface pour les abonnés
 export interface NewsletterSubscriber {
@@ -40,36 +36,27 @@ export interface Newsletter {
 // Fonction pour envoyer l'email de bienvenue
 const sendWelcomeEmail = async (subscriber: NewsletterSubscriber): Promise<boolean> => {
   try {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-
-    const templateParams = {
-      to_email: subscriber.email,
-      to_name: subscriber.firstName || 'Cher(e) abonné(e)',
-      from_name: 'Christ Le Bon Berger',
-      subject: 'Bienvenue dans notre communauté de soutien',
-      message: `
-Bonjour ${subscriber.firstName || ''},
-
-Merci de vous être abonné(e) à notre newsletter. Vous recevrez désormais :
-
-• Les dernières actualités de notre association
-• Des témoignages inspirants de reconstruction
-• Les annonces de nos événements et groupes de parole
-• Des ressources utiles pour votre parcours
-
-Vous pouvez modifier vos préférences ou vous désabonner à tout moment.
-
-Avec tout notre soutien,
-L'équipe Christ Le Bon Berger
-      `
-    };
-
-    await emailjs.send(
-      EMAILJS_SERVICE_ID,
-      EMAILJS_WELCOME_TEMPLATE_ID,
-      templateParams
-    );
-
+    const subject = 'Bienvenue dans notre communauté de soutien';
+    const htmlContent = `
+      <p>Bonjour ${subscriber.firstName || ''},</p>
+      <p>Merci de vous être abonné(e) à notre newsletter. Vous recevrez désormais :</p>
+      <ul>
+        <li>Les dernières actualités de notre association</li>
+        <li>Des témoignages inspirants de reconstruction</li>
+        <li>Les annonces de nos événements et groupes de parole</li>
+        <li>Des ressources utiles pour votre parcours</li>
+      </ul>
+      <p>Vous pouvez modifier vos préférences ou vous vous désabonner à tout moment.</p>
+      <p>Avec tout notre soutien,<br/>L'équipe Christ Le Bon Berger</p>
+    `;
+    const { error } = await supabase.functions.invoke('brevo-newsletter-send', {
+      body: {
+        subject,
+        htmlContent,
+        recipients: [{ email: subscriber.email, name: subscriber.firstName || 'Abonné' }],
+      }
+    });
+    if (error) throw error;
     return true;
   } catch (error) {
     console.error('Erreur envoi email de bienvenue:', error);
@@ -80,40 +67,20 @@ L'équipe Christ Le Bon Berger
 // Fonction pour envoyer une newsletter
 export const sendNewsletter = async (newsletter: Newsletter, subscribers: NewsletterSubscriber[]): Promise<boolean> => {
   try {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-    
-    const filteredSubscribers = subscribers.filter(sub => 
-      sub.preferences[newsletter.category]
-    );
+    const filteredSubscribers = subscribers.filter(sub => sub.preferences[newsletter.category]);
+    if (filteredSubscribers.length === 0) return false;
 
-    let successCount = 0;
+    const recipients = filteredSubscribers.map(sub => ({ email: sub.email, name: sub.firstName || 'Abonné' }));
 
-    // Envoyer à tous les abonnés concernés
-    for (const subscriber of filteredSubscribers) {
-      try {
-        const templateParams = {
-          to_email: subscriber.email,
-          to_name: subscriber.firstName || 'Cher(e) abonné(e)',
-          from_name: 'Christ Le Bon Berger',
-          subject: newsletter.title,
-          message: newsletter.content,
-          html_content: newsletter.htmlContent,
-          unsubscribe_link: `${window.location.origin}/unsubscribe?email=${subscriber.email}`
-        };
-
-        await emailjs.send(
-          EMAILJS_SERVICE_ID,
-          EMAILJS_NEWSLETTER_TEMPLATE_ID,
-          templateParams
-        );
-
-        successCount++;
-      } catch (error) {
-        console.error(`Erreur envoi à ${subscriber.email}:`, error);
+    const { error } = await supabase.functions.invoke('brevo-newsletter-send', {
+      body: {
+        subject: newsletter.title,
+        htmlContent: newsletter.htmlContent || `<pre>${newsletter.content}</pre>`,
+        recipients,
       }
-    }
-
-    return successCount > 0;
+    });
+    if (error) throw error;
+    return true;
   } catch (error) {
     console.error('Erreur lors de l\'envoi de la newsletter:', error);
     return false;
