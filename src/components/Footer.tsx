@@ -1,11 +1,9 @@
 import React from "react";
 import {
-  Shield,
   Phone,
   Mail,
   MapPin,
   Facebook,
-  Twitter,
   Instagram,
   Heart,
   ExternalLink,
@@ -196,18 +194,18 @@ const Footer: React.FC = () => {
               <div className="space-y-3 text-sm">
                 <div className="flex items-center space-x-3 text-slate-300">
                   <Phone className="w-4 h-4 text-emerald-400" />
-                  <span>+33 1 23 45 67 89</span>
+                  <span>+33 07 81 32 44 74</span>
                 </div>
                 <div className="flex items-center space-x-3 text-slate-300">
                   <Mail className="w-4 h-4 text-emerald-400" />
-                  <span>contact@christlebonberger.fr</span>
+                  <span>pokasuzy99@gmail.com</span>
                 </div>
                 <div className="flex items-start space-x-3 text-slate-300">
                   <MapPin className="w-4 h-4 text-emerald-400 mt-1" />
                   <span>
-                    123 Rue de l'Espoir
+                    29 rue du docteur Fleming
                     <br />
-                    75001 Paris, France
+                    Aulnay-sous-bois, France
                   </span>
                 </div>
               </div>
@@ -225,13 +223,13 @@ const Footer: React.FC = () => {
 
             <div className="flex flex-wrap justify-center lg:justify-end space-x-6 text-sm">
               <a
-                href="#"
+                href="/mentions-legales"
                 className="text-slate-400 hover:text-emerald-300 transition-colors duration-300"
               >
                 Mentions légales
               </a>
               <a
-                href="#"
+                href="/confidentialite"
                 className="text-slate-400 hover:text-emerald-300 transition-colors duration-300"
               >
                 Politique de confidentialité
@@ -242,6 +240,12 @@ const Footer: React.FC = () => {
               >
                 Cookies
               </a>
+              <span className="text-slate-400">
+                Développé par{" "}
+                <span className="font-medium text-slate-300">
+                  KENGNE GUEMNE ALBERT
+                </span>
+              </span>
             </div>
           </div>
 

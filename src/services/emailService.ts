@@ -69,6 +69,9 @@ export const sendContactEmail = async (formData: ContactFormData): Promise<boole
     });
 
     const { data, error } = await supabase.functions.invoke('brevo-contact-send', {
+      headers: {
+        'X-CSRF-Token': CSRFService.getToken(),
+      },
       body: {
         firstName: sanitizedData.firstName,
         lastName: sanitizedData.lastName,
@@ -76,7 +79,6 @@ export const sendContactEmail = async (formData: ContactFormData): Promise<boole
         subject: sanitizedData.subject,
         message: sanitizedData.message,
         htmlContent,
-        csrf_token: CSRFService.getToken(),
       }
     });
     if (error) {
@@ -128,6 +130,9 @@ export const sendUrgencyEmail = async (message: string, contactInfo?: string): P
       logoUrl: '',
     });
     const { data, error } = await supabase.functions.invoke('brevo-contact-send', {
+      headers: {
+        'X-CSRF-Token': CSRFService.getToken(),
+      },
       body: {
         firstName: 'Demande',
         lastName: 'Urgence',

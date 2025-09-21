@@ -23,6 +23,8 @@ import ActionsPage from "./pages/ActionsPage";
 import NewsletterAdminPage from "./pages/NewsletterAdminPage";
 import CookieConsent from "./components/CookieConsent";
 import CookiePolicyPage from "./pages/CookiePolicyPage";
+import LegalMentionsPage from "./pages/LegalMentionsPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import MediathequeAdminPage from "./pages/MediathequeAdminPage";
 import UnsubscribePage from "./pages/UnsubscribePage";
 import AdminUsersPage from "./pages/AdminUsersPage";
@@ -57,6 +59,8 @@ const AppContent = () => {
           <Route path="/mediatheque/:id" element={<MediaViewerPage />} />
           <Route path="/admin/newsletter" element={<NewsletterAdminPage />} />
           <Route path="/cookies" element={<CookiePolicyPage />} />
+          <Route path="/mentions-legales" element={<LegalMentionsPage />} />
+          <Route path="/confidentialite" element={<PrivacyPolicyPage />} />
           <Route path="/admin/mediatheque" element={<MediathequeAdminPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/unsubscribe" element={<UnsubscribePage />} />

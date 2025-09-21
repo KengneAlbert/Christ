@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { CSRFService } from './csrfService';
 import { buildNewsletterHtml } from '../emails/renderers';
 
 // Using Brevo via Supabase Edge Function for newsletters
@@ -77,6 +78,9 @@ export const sendNewsletter = async (newsletter: NewsletterInput, subscribers: N
       .replace(/>\s+</g, '><');
 
     const { error } = await supabase.functions.invoke('brevo-newsletter-send', {
+      headers: {
+        'X-CSRF-Token': CSRFService.getToken(),
+      },
       body: {
         subject: newsletter.title,
   htmlContent: minifiedHtml,

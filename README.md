@@ -33,7 +33,7 @@ Pour configurer l'envoi d'emails via les formulaires de contact :
    ```
    VITE_SITE_URL=https://votre-domaine.exemple
    ```
-   Si non définie, l'URL Netlify par défaut sera utilisée.
+   Si non définie, l'URL Vercel par défaut sera utilisée.
 
 ### 4. Template d'email recommandé
 

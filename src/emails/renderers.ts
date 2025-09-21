@@ -28,9 +28,9 @@ export const buildNewsletterHtml = (
   const gradient = branding.brandColor || 'linear-gradient(135deg, #10b981, #14b8a6)';
   const headerTitle = branding.headerTitle || 'Christ Le Bon Berger';
   const footerText = branding.footerText || 'Vous recevez cet email car vous êtes abonné(e) à notre newsletter.';
-  // Prefer VITE_SITE_URL when available; fallback to Netlify domain
+  // Prefer VITE_SITE_URL when available; fallback to Vercel domain
   const siteUrl = (typeof import.meta !== 'undefined' && (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_SITE_URL)
-    || 'https://christ-le-bon-berger.netlify.app';
+    || 'https://christ-le-bon-berger.com';
   const logo = branding.logoUrl
     ? `<img src="${branding.logoUrl}" alt="Logo" width="28" height="28" style="border-radius:8px; margin-right:12px; vertical-align:middle;" />`
     : '';
@@ -100,7 +100,7 @@ export const buildContactHtml = (
   const headerTitle = branding.headerTitle || 'Message de contact';
   const footerText = branding.footerText || 'Christ Le Bon Berger — Formulaire de contact';
   const siteUrl = (typeof import.meta !== 'undefined' && (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_SITE_URL)
-    || 'https://christ-le-bon-berger.netlify.app';
+    || 'https://christ-le-bon-berger.com';
   const logo = branding.logoUrl
     ? `<img src="${branding.logoUrl}" alt="Logo" width="28" height="28" style="border-radius:8px; margin-right:12px; vertical-align:middle;" />`
     : '';

@@ -10,7 +10,7 @@ export const BRAND = {
   // Logo (URL absolue recommandée pour emails)
   logoUrl: '',
   // Site URL pour les liens
-  siteUrl: 'https://christ-le-bon-berger.netlify.app',
+  siteUrl: (typeof import.meta !== 'undefined' && (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_SITE_URL) || 'https://christ-le-bon-berger.com',
   // Footer avec désabonnement
   footerText:
     "Vous recevez cet email car vous êtes abonné(e) à notre newsletter.",
