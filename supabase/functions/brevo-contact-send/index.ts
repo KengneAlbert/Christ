@@ -7,6 +7,7 @@ type ContactPayload = {
   email: string;
   subject: string;
   message: string;
+  htmlContent?: string;
 };
 
 const json = (data: unknown, status = 200) =>
@@ -53,17 +54,46 @@ serve(async (req: Request) => {
     }
 
     const fullName = `${body.firstName} ${body.lastName ?? ''}`.trim();
-    const subject = `[Contact] ${escapeHtml(body.subject)}`;
-    const htmlContent = `
-      <div>
-        <p><strong>De:</strong> ${escapeHtml(fullName)} &lt;${escapeHtml(body.email)}&gt;</p>
-        <p><strong>Objet:</strong> ${subject}</p>
-        <hr/>
-        <pre style="white-space: pre-wrap; font-family: inherit;">${escapeHtml(body.message)}</pre>
-        <hr/>
-        <p>Date: ${new Date().toLocaleString('fr-FR')}</p>
-      </div>
+    const subject = `${escapeHtml(body.subject)}`;
+    const inner = `
+      <p style="margin:0 0 12px 0"><strong>De:</strong> ${escapeHtml(fullName)} &lt;${escapeHtml(body.email)}&gt;</p>
+      <p style="margin:0 0 12px 0"><strong>Objet:</strong> ${subject}</p>
+      <hr style="border:none; border-top:1px solid #e2e8f0; margin:16px 0"/>
+      <div style="white-space:pre-wrap; line-height:1.6; color:#0f172a">${escapeHtml(body.message)}</div>
+      <hr style="border:none; border-top:1px solid #e2e8f0; margin:16px 0"/>
+      <p style="margin:0; color:#64748b">Date: ${new Date().toLocaleString('fr-FR')}</p>
     `;
+
+    const htmlContent = body.htmlContent || `<!DOCTYPE html>
+    <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>${subject}</title>
+        <style>
+          body { margin:0; padding:0; background:#f6f7f9; -webkit-font-smoothing:antialiased; }
+          .wrapper { width:100%; background:#f6f7f9; padding:24px 0; }
+          .container { width:100%; max-width:640px; margin:0 auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+          .header { background:#10b981; color:#ffffff; padding:20px 24px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; }
+          .header h1 { margin:0; font-size:20px; }
+          .content { padding:24px; color:#0f172a; line-height:1.6; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; }
+          .footer { padding:16px 24px; color:#64748b; font-size:12px; text-align:center; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; background:#f8fafc; }
+          @media (max-width: 600px) { .content { padding:18px; } .header { padding:16px 18px; } }
+        </style>
+      </head>
+      <body>
+        <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              <h1>Message de contact</h1>
+            </div>
+            <div class="content">${inner}</div>
+            <div class="footer">Christ Le Bon Berger — Formulaire de contact</div>
+          </div>
+        </div>
+      </body>
+    </html>`;
 
     const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
@@ -78,6 +108,7 @@ serve(async (req: Request) => {
         replyTo: { email: body.email, name: fullName },
         subject,
         htmlContent,
+        textContent: `${fullName} <${body.email}>\nObjet: ${body.subject}\n\n${body.message}`,
       }),
     });
 
@@ -93,3 +124,4 @@ serve(async (req: Request) => {
     return json({ error: 'Internal error' }, 500);
   }
 });
+

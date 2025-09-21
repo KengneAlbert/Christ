@@ -12,7 +12,6 @@ import {
   BarChart3,
   Download,
   ExternalLink,
-  Youtube,
   File,
   AlertCircle,
   CheckCircle,

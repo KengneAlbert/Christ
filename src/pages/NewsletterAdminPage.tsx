@@ -17,10 +17,36 @@ import {
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../hooks/useAuth";
 import AdminDashboard from "./AdminDashboard";
-import { sendNewsletter, NewsletterSubscriber } from "../services/newsletterService";
+import {
+  sendNewsletter,
+  NewsletterSubscriber,
+} from "../services/newsletterService";
 import NewsletterPreviewModal from "../components/NewsletterPreviewModal";
+import ConfirmationModal from "../components/ConfirmationModal";
+import RichTextEditor from "../components/RichTextEditor";
+import { buildNewsletterHtml } from "../emails/renderers";
+import {
+  cleanHtml,
+  htmlToText,
+  textToHtml,
+  linkifyHtml,
+  applySubtitleToHtml,
+} from "../utils/htmlUtils";
 
-interface Subscriber extends NewsletterSubscriber {}
+interface Subscriber {
+  id: number;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  subscription_date: string;
+  is_active: boolean;
+  preferences: {
+    actualites: boolean;
+    temoignages: boolean;
+    evenements: boolean;
+    ressources: boolean;
+  };
+}
 
 interface Newsletter {
   id: string;
@@ -49,6 +75,15 @@ const NewsletterAdminContent: React.FC = () => {
     "all" | "active" | "inactive"
   >("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<{
+    type: "delete" | "duplicate";
+    newsletter: Newsletter | null;
+    open: boolean;
+  }>({ type: "delete", newsletter: null, open: false });
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -62,17 +97,37 @@ const NewsletterAdminContent: React.FC = () => {
   // State for newsletters pagination
   const [newsletterCurrentPage, setNewsletterCurrentPage] = useState(1);
   const [totalNewsletters, setTotalNewsletters] = useState(0);
+  const [newsletterItemsPerPage, setNewsletterItemsPerPage] = useState(10);
+
+  // Create tab preview device state
+  const [createPreviewDevice, setCreatePreviewDevice] = useState<
+    "mobile" | "tablet" | "desktop"
+  >("desktop");
+  const getDeviceWidth = (device: "mobile" | "tablet" | "desktop") => {
+    switch (device) {
+      case "mobile":
+        return 390; // iPhone 12-ish width
+      case "tablet":
+        return 768; // iPad portrait
+      default:
+        return 900; // desktop preview width
+    }
+  };
 
   // State for newsletter preview modal
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-  const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter | null>(null);
+  const [selectedNewsletter, setSelectedNewsletter] =
+    useState<Newsletter | null>(null);
 
   // Newsletter creation form
   const [newNewsletter, setNewNewsletter] = useState({
     title: "",
+    subtitle: "",
     content: "",
+    html_content: "<p><br></p>",
     category: "actualites" as Newsletter["category"],
   });
+  // Simple editor removed: always use rich editor
 
   const handlePreview = (newsletter: Newsletter) => {
     setSelectedNewsletter(newsletter);
@@ -88,7 +143,7 @@ const NewsletterAdminContent: React.FC = () => {
     try {
       // Ne pas charger si l'utilisateur n'est pas initialisé
       if (!initialized || !user) {
-        console.log('Attente de l\'initialisation de l\'utilisateur...');
+        console.log("Attente de l'initialisation de l'utilisateur...");
         return;
       }
 
@@ -97,9 +152,12 @@ const NewsletterAdminContent: React.FC = () => {
       const to = from + itemsPerPage - 1;
 
       // Vérifier la session avant la requête
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
       if (sessionError || !session) {
-        console.error('Session invalide:', sessionError);
+        console.error("Session invalide:", sessionError);
         setMessage({
           type: "error",
           text: "Session expirée. Veuillez vous reconnecter.",
@@ -151,18 +209,21 @@ const NewsletterAdminContent: React.FC = () => {
     try {
       // Ne pas charger si l'utilisateur n'est pas initialisé
       if (!initialized || !user) {
-        console.log('Attente de l\'initialisation de l\'utilisateur...');
+        console.log("Attente de l'initialisation de l'utilisateur...");
         return;
       }
 
       setIsLoading(true);
-      const from = (newsletterCurrentPage - 1) * itemsPerPage;
-      const to = from + itemsPerPage - 1;
+      const from = (newsletterCurrentPage - 1) * newsletterItemsPerPage;
+      const to = from + newsletterItemsPerPage - 1;
 
       // Vérifier la session avant la requête
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
       if (sessionError || !session) {
-        console.error('Session invalide:', sessionError);
+        console.error("Session invalide:", sessionError);
         setMessage({
           type: "error",
           text: "Session expirée. Veuillez vous reconnecter.",
@@ -176,6 +237,7 @@ const NewsletterAdminContent: React.FC = () => {
             "id",
             "title",
             "content",
+            "html_content",
             "category",
             "status",
             "scheduled_date",
@@ -203,35 +265,58 @@ const NewsletterAdminContent: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [newsletterCurrentPage, itemsPerPage, initialized, user]);
+  }, [newsletterCurrentPage, newsletterItemsPerPage, initialized, user]);
 
   useEffect(() => {
     if (activeTab === "subscribers" && initialized && user) {
       loadSubscribers();
     }
-  }, [activeTab, loadSubscribers]);
+  }, [activeTab, initialized, user, loadSubscribers]);
 
   useEffect(() => {
     if (activeTab === "newsletters" && initialized && user) {
       loadNewsletters();
     }
-  }, [activeTab, loadNewsletters]);
+  }, [activeTab, initialized, user, loadNewsletters]);
 
   const handleCreateNewsletter = async () => {
-    if (!newNewsletter.title || !newNewsletter.content) {
-      setMessage({ type: "error", text: "Veuillez remplir tous les champs" });
+    if (!user) {
+      setMessage({ type: "error", text: "Vous devez être connecté." });
+      return;
+    }
+
+    const hasNonEmptyHtml = newNewsletter.html_content
+      ? htmlToText(newNewsletter.html_content).trim().length > 0
+      : false;
+    if (!newNewsletter.title || (!hasNonEmptyHtml && !newNewsletter.content)) {
+      setMessage({
+        type: "error",
+        text: "Veuillez remplir tous les champs obligatoires (*).",
+      });
       return;
     }
 
     try {
-      const { error } = await supabase.from("newsletters").insert({
-        title: newNewsletter.title,
-        content: newNewsletter.content,
-        category: newNewsletter.category,
-        status: "draft",
-        recipients_count: 0,
-        created_by: user?.id || "anonymous",
-      });
+      setIsCreating(true);
+      // Appliquer le sous-titre au HTML final avant enregistrement
+      const rawHtml =
+        newNewsletter.html_content || textToHtml(newNewsletter.content || "");
+      const finalHtml = applySubtitleToHtml(rawHtml, newNewsletter.subtitle);
+      const finalText = htmlToText(finalHtml);
+
+      const { data, error } = await supabase
+        .from("newsletters")
+        .insert({
+          title: newNewsletter.title,
+          content: finalText,
+          html_content: finalHtml,
+          category: newNewsletter.category,
+          status: "draft",
+          recipients_count: 0,
+          created_by: user.id,
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error("Erreur création newsletter:", error);
@@ -243,30 +328,57 @@ const NewsletterAdminContent: React.FC = () => {
       }
 
       setMessage({ type: "success", text: "Newsletter créée avec succès" });
-      setNewNewsletter({ title: "", content: "", category: "actualites" });
+
+      // Réinitialiser le formulaire
+      setNewNewsletter({
+        title: "",
+        subtitle: "",
+        content: "",
+        html_content: "<p><br></p>",
+        category: "actualites" as Newsletter["category"],
+      });
+
+      // Mettre à jour la liste et changer d'onglet
+      if (data) {
+        setNewsletters((prev) => [data as Newsletter, ...prev]);
+      } else {
+        loadNewsletters();
+      }
       setActiveTab("newsletters");
-      loadNewsletters();
     } catch (error) {
       console.error("Erreur handleCreateNewsletter:", error);
       const msg =
         error instanceof Error ? error.message : "Erreur lors de la création";
       setMessage({ type: "error", text: `Erreur lors de la création: ${msg}` });
+    } finally {
+      setIsCreating(false);
     }
   };
 
   const handleSendNewsletter = async (newsletter: Newsletter) => {
     try {
+      setSendingId(newsletter.id);
       const { data: activeSubscribers, error: subsError } = await supabase
-        .from('newsletter_subscribers')
-        .select('*')
-        .eq('is_active', true);
+        .from("newsletter_subscribers")
+        .select("*")
+        .eq("is_active", true);
 
       if (subsError) throw subsError;
 
-      const success = await sendNewsletter(newsletter, activeSubscribers as NewsletterSubscriber[]);
+      const newsletterSubscribers: NewsletterSubscriber[] =
+        activeSubscribers.map((sub) => ({
+          id: sub.id.toString(),
+          email: sub.email,
+          firstName: sub.first_name,
+          lastName: sub.last_name,
+          subscriptionDate: new Date(sub.subscription_date),
+          isActive: sub.is_active,
+          preferences: sub.preferences,
+        }));
+      const success = await sendNewsletter(newsletter, newsletterSubscribers);
 
       if (!success) {
-        throw new Error("L\'envoi d\'e-mails a échoué.");
+        throw new Error("L'envoi d'e-mails a échoué.");
       }
 
       // Mettre à jour le statut de la newsletter
@@ -290,6 +402,78 @@ const NewsletterAdminContent: React.FC = () => {
     } catch (error) {
       console.error("Erreur envoi newsletter:", error);
       setMessage({ type: "error", text: "Erreur lors de l'envoi" });
+    } finally {
+      setSendingId(null);
+    }
+  };
+
+  const handleDeleteNewsletter = async (newsletter: Newsletter) => {
+    try {
+      setConfirm({ type: "delete", newsletter, open: true });
+      return;
+    } catch (error) {
+      console.error("Erreur ouverture confirmation suppression:", error);
+    }
+  };
+
+  const performDelete = async () => {
+    if (!confirm.newsletter) return;
+    const newsletter = confirm.newsletter;
+    try {
+      setDeletingId(newsletter.id);
+      const { error } = await supabase
+        .from("newsletters")
+        .delete()
+        .eq("id", newsletter.id);
+      if (error) throw error;
+      setNewsletters((prev) => prev.filter((n) => n.id !== newsletter.id));
+      setMessage({ type: "success", text: "Newsletter supprimée." });
+    } catch (error) {
+      console.error("Erreur suppression newsletter:", error);
+      setMessage({ type: "error", text: "Erreur lors de la suppression." });
+    } finally {
+      setDeletingId(null);
+      setConfirm({ type: "delete", newsletter: null, open: false });
+    }
+  };
+
+  const handleDuplicateNewsletter = async (newsletter: Newsletter) => {
+    setConfirm({ type: "duplicate", newsletter, open: true });
+  };
+
+  const performDuplicate = async () => {
+    if (!confirm.newsletter) return;
+    const newsletter = confirm.newsletter;
+    try {
+      setDuplicatingId(newsletter.id);
+      const newTitle = `Copie - ${newsletter.title}`;
+      const { data, error } = await supabase
+        .from("newsletters")
+        .insert({
+          title: newTitle,
+          content: newsletter.content,
+          html_content: newsletter.html_content,
+          category: newsletter.category,
+          status: "draft",
+          recipients_count: 0,
+          created_by: user?.id || null,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      if (data) {
+        setNewsletters((prev) => [data as Newsletter, ...prev]);
+      }
+      setMessage({
+        type: "success",
+        text: "Newsletter dupliquée en brouillon.",
+      });
+    } catch (error) {
+      console.error("Erreur duplication newsletter:", error);
+      setMessage({ type: "error", text: "Erreur lors de la duplication." });
+    } finally {
+      setDuplicatingId(null);
+      setConfirm({ type: "duplicate", newsletter: null, open: false });
     }
   };
 
@@ -579,6 +763,30 @@ const NewsletterAdminContent: React.FC = () => {
       {/* Newsletters Tab */}
       {activeTab === "newsletters" && (
         <div className="space-y-6">
+          <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-4">
+            <div className="text-sm text-slate-600">
+              {totalNewsletters} newsletter(s) au total
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm text-slate-600">Par page</label>
+              <select
+                value={newsletterItemsPerPage}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  setNewsletterItemsPerPage(v);
+                  setNewsletterCurrentPage(1);
+                  if (activeTab === "newsletters") {
+                    loadNewsletters();
+                  }
+                }}
+                className="px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          </div>
           {newsletters.map((newsletter, index) => (
             <div
               key={newsletter.id}
@@ -644,21 +852,187 @@ const NewsletterAdminContent: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button onClick={() => handlePreview(newsletter)} className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-300 hover:scale-110 transform">
+                  <button
+                    onClick={() => handlePreview(newsletter)}
+                    className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-300 hover:scale-110 transform"
+                  >
                     <Eye className="w-4 h-4" />
                   </button>
-                  {newsletter.status === "draft" && (
-                    <button onClick={() => handlePreview(newsletter)} className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-300 hover:scale-110 transform">
-                      <Edit className="w-4 h-4" />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handlePreview(newsletter)}
+                    className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-300 hover:scale-110 transform"
+                    title="Modifier"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDuplicateNewsletter(newsletter)}
+                    disabled={duplicatingId === newsletter.id}
+                    className={`p-2 rounded text-slate-400 hover:text-slate-600 transition-colors ${
+                      duplicatingId === newsletter.id
+                        ? "opacity-60 cursor-wait"
+                        : ""
+                    }`}
+                    title="Dupliquer"
+                  >
+                    {duplicatingId === newsletter.id ? (
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="w-4 h-4"
+                      >
+                        <rect
+                          x="9"
+                          y="9"
+                          width="13"
+                          height="13"
+                          rx="2"
+                          ry="2"
+                        ></rect>
+                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteNewsletter(newsletter)}
+                    disabled={deletingId === newsletter.id}
+                    className={`p-2 rounded text-red-400 hover:text-red-600 transition-colors ${
+                      deletingId === newsletter.id
+                        ? "opacity-60 cursor-wait"
+                        : ""
+                    }`}
+                    title="Supprimer"
+                  >
+                    {deletingId === newsletter.id ? (
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="w-4 h-4"
+                      >
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path>
+                        <path d="M10 11v6"></path>
+                        <path d="M14 11v6"></path>
+                        <path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2"></path>
+                      </svg>
+                    )}
+                  </button>
                   {newsletter.status === "draft" && (
                     <button
                       onClick={() => handleSendNewsletter(newsletter)}
-                      className="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm transition-all duration-300 hover:scale-105 shadow-lg hover-glow"
+                      disabled={sendingId === newsletter.id}
+                      className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-sm transition-all duration-300 shadow-lg hover-glow ${
+                        sendingId === newsletter.id
+                          ? "bg-emerald-400 cursor-wait opacity-80"
+                          : "bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-105"
+                      }`}
                     >
-                      <Send className="w-3 h-3" />
-                      <span>Envoyer</span>
+                      {sendingId === newsletter.id ? (
+                        <>
+                          <svg
+                            className="animate-spin h-3 w-3 text-white"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            ></path>
+                          </svg>
+                          <span>Envoi...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3 h-3" />
+                          <span>Envoyer</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                  {newsletter.status === "sent" && (
+                    <button
+                      onClick={() => handleSendNewsletter(newsletter)}
+                      disabled={sendingId === newsletter.id}
+                      className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-sm transition-all duration-300 shadow-lg hover-glow ${
+                        sendingId === newsletter.id
+                          ? "bg-emerald-400 cursor-wait opacity-80"
+                          : "bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-105"
+                      }`}
+                    >
+                      {sendingId === newsletter.id ? (
+                        <>
+                          <svg
+                            className="animate-spin h-3 w-3 text-white"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            ></path>
+                          </svg>
+                          <span>Réenvoi...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3 h-3" />
+                          <span>Réenvoyer</span>
+                        </>
+                      )}
                     </button>
                   )}
                 </div>
@@ -679,12 +1053,13 @@ const NewsletterAdminContent: React.FC = () => {
             </button>
             <span className="text-sm text-slate-700">
               Page {newsletterCurrentPage} sur{" "}
-              {Math.ceil(totalNewsletters / itemsPerPage)}
+              {Math.ceil(totalNewsletters / newsletterItemsPerPage)}
             </span>
             <button
               onClick={() => setNewsletterCurrentPage((p) => p + 1)}
               disabled={
-                newsletterCurrentPage * itemsPerPage >= totalNewsletters
+                newsletterCurrentPage * newsletterItemsPerPage >=
+                totalNewsletters
               }
               className="px-4 py-2 bg-white border border-slate-200 rounded-lg font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -696,75 +1071,257 @@ const NewsletterAdminContent: React.FC = () => {
 
       {/* Create Newsletter Tab */}
       {activeTab === "create" && (
-        <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
-          <h2 className="text-2xl font-bold text-slate-800 mb-6">
-            Créer une nouvelle newsletter
-          </h2>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Titre *
-              </label>
-              <input
-                type="text"
-                value={newNewsletter.title}
-                onChange={(e) =>
-                  setNewNewsletter((prev) => ({
-                    ...prev,
-                    title: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
-                placeholder="Titre de la newsletter"
-              />
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-teal-50">
+            <h2 className="text-2xl font-bold text-slate-800 mb-2">
+              Créer une nouvelle newsletter
+            </h2>
+            <p className="text-slate-600">
+              Utilisez l'éditeur riche pour créer du contenu formaté avec aperçu
+              en temps réel.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 min-h-[700px]">
+            {/* Panneau d'édition */}
+            <div className="p-6 border-r border-slate-200 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Titre *
+                </label>
+                <input
+                  type="text"
+                  value={newNewsletter.title}
+                  onChange={(e) =>
+                    setNewNewsletter((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Titre de la newsletter"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Sous-titre (facultatif)
+                </label>
+                <input
+                  type="text"
+                  value={newNewsletter.subtitle}
+                  onChange={(e) =>
+                    setNewNewsletter((prev) => ({
+                      ...prev,
+                      subtitle: e.target.value,
+                    }))
+                  }
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Sous-titre de la newsletter"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Catégorie *
+                </label>
+                <select
+                  value={newNewsletter.category}
+                  onChange={(e) =>
+                    setNewNewsletter((prev) => ({
+                      ...prev,
+                      category: e.target.value as Newsletter["category"],
+                    }))
+                  }
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="actualites">Actualités</option>
+                  <option value="temoignages">Témoignages</option>
+                  <option value="evenements">Événements</option>
+                  <option value="ressources">Ressources</option>
+                </select>
+              </div>
+
+              <div className="flex-1 flex flex-col">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Contenu *
+                </label>
+                <RichTextEditor
+                  value={newNewsletter.html_content || "<p><br></p>"}
+                  onChange={(value) => {
+                    const cleanedHtml = cleanHtml(value);
+                    const linkified = linkifyHtml(cleanedHtml);
+                    setNewNewsletter((prev) => ({
+                      ...prev,
+                      html_content: linkified,
+                      content: htmlToText(linkified),
+                    }));
+                  }}
+                  placeholder="Écrivez le contenu de votre newsletter..."
+                  className="flex-1"
+                />
+              </div>
+
+              <div className="flex justify-end pt-4 border-t border-slate-200">
+                <button
+                  onClick={async () => {
+                    if (isCreating) return;
+                    // set flag and call
+                    // we'll set/reset inside handler too for safety if needed
+                    // but keep UI responsive immediately
+                    // Call the existing handler
+                    handleCreateNewsletter();
+                  }}
+                  disabled={
+                    isCreating ||
+                    !newNewsletter.title ||
+                    !newNewsletter.html_content
+                  }
+                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform shadow-lg flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+                    isCreating
+                      ? "bg-emerald-400 cursor-wait"
+                      : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white hover:scale-105"
+                  }`}
+                >
+                  {isCreating ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        ></path>
+                      </svg>
+                      <span>Création...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-5 h-5" />
+                      <span>Créer la newsletter</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Catégorie *
-              </label>
-              <select
-                value={newNewsletter.category}
-                onChange={(e) =>
-                  setNewNewsletter((prev) => ({
-                    ...prev,
-                    category: e.target.value as Newsletter["category"],
-                  }))
-                }
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
-              >
-                <option value="actualites">Actualités</option>
-                <option value="temoignages">Témoignages</option>
-                <option value="evenements">Événements</option>
-                <option value="ressources">Ressources</option>
-              </select>
+
+            {/* Panneau d'aperçu en temps réel */}
+            <div className="p-6 bg-slate-50">
+              {/* Device preview controls */}
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCreatePreviewDevice("mobile")}
+                    className={`px-3 py-1 rounded-lg text-sm border ${
+                      createPreviewDevice === "mobile"
+                        ? "bg-emerald-500 text-white border-emerald-500"
+                        : "bg-white text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    Mobile
+                  </button>
+                  <button
+                    onClick={() => setCreatePreviewDevice("tablet")}
+                    className={`px-3 py-1 rounded-lg text-sm border ${
+                      createPreviewDevice === "tablet"
+                        ? "bg-emerald-500 text-white border-emerald-500"
+                        : "bg-white text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    Tablette
+                  </button>
+                  <button
+                    onClick={() => setCreatePreviewDevice("desktop")}
+                    className={`px-3 py-1 rounded-lg text-sm border ${
+                      createPreviewDevice === "desktop"
+                        ? "bg-emerald-500 text-white border-emerald-500"
+                        : "bg-white text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    Desktop
+                  </button>
+                </div>
+                <div className="text-sm text-slate-600">
+                  Largeur: {getDeviceWidth(createPreviewDevice)}px
+                </div>
+              </div>
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                  Aperçu en temps réel
+                </h3>
+                <div className="text-sm text-slate-600">
+                  Voici comment votre newsletter apparaîtra dans les emails.
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <div
+                  className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm"
+                  style={{ width: getDeviceWidth(createPreviewDevice) }}
+                >
+                  <iframe
+                    srcDoc={buildNewsletterHtml(
+                      newNewsletter.title || "Titre de la newsletter",
+                      applySubtitleToHtml(
+                        newNewsletter.html_content ||
+                          textToHtml(newNewsletter.content) ||
+                          "<p>Contenu de la newsletter...</p>",
+                        newNewsletter.subtitle
+                      ),
+                      {
+                        headerTitle: "Christ Le Bon Berger",
+                        brandColor: "linear-gradient(135deg, #10b981, #14b8a6)",
+                        logoUrl: "",
+                      }
+                    )}
+                    className="w-full h-96 border-0"
+                    sandbox="allow-same-origin allow-scripts"
+                    title="Aperçu de la newsletter"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Contenu *
-              </label>
-              <textarea
-                rows={12}
-                value={newNewsletter.content}
-                onChange={(e) =>
-                  setNewNewsletter((prev) => ({
-                    ...prev,
-                    content: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none focus-ring"
-                placeholder="Contenu de la newsletter..."
-              />
-            </div>
-            <button
-              onClick={handleCreateNewsletter}
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover-glow flex items-center space-x-2"
-            >
-              <Save className="w-5 h-5" />
-              <span>Créer la newsletter</span>
-            </button>
           </div>
         </div>
       )}
+
+      {/* Confirmation Modals */}
+      <ConfirmationModal
+        isOpen={confirm.open && confirm.type === "delete"}
+        onClose={() =>
+          setConfirm({ type: "delete", newsletter: null, open: false })
+        }
+        onConfirm={performDelete}
+        title="Confirmer la suppression"
+        message={`Voulez-vous vraiment supprimer « ${
+          confirm.newsletter?.title || ""
+        } » ? Cette action est irréversible.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+      />
+
+      <ConfirmationModal
+        isOpen={confirm.open && confirm.type === "duplicate"}
+        onClose={() =>
+          setConfirm({ type: "duplicate", newsletter: null, open: false })
+        }
+        onConfirm={performDuplicate}
+        title="Confirmer la duplication"
+        message={`Créer une copie de « ${
+          confirm.newsletter?.title || ""
+        } » en tant que brouillon ?`}
+        confirmText="Dupliquer"
+        cancelText="Annuler"
+      />
 
       {/* Statistics Tab */}
       {activeTab === "stats" && (
