@@ -15,6 +15,8 @@ import {
   Clock,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import SEOHead from "../components/SEOHead";
+import { seoService } from "../services/seoService";
 
 interface MediaItem {
   id: string;
@@ -135,8 +137,6 @@ const MediaViewerPage: React.FC = () => {
   useEffect(() => {
     loadMedia();
   }, [loadMedia]);
-
-  // loadMedia defined via useCallback above
 
   const handleDownload = () => {
     if (media?.file_url) {
@@ -424,8 +424,25 @@ const MediaViewerPage: React.FC = () => {
 
   const TypeIcon = getTypeIcon(media.type);
 
+  // Générer le SEO pour ce média
+  const mediaSEO = seoService.generateMediaSEO({
+    id: media.id,
+    type: media.type,
+    title: media.title,
+    description: media.description,
+    category: media.category,
+    created_at: media.created_at,
+    updated_at: media.updated_at,
+    views_count: media.views_count,
+    file_url: media.file_url || undefined,
+    thumbnail_url: media.thumbnail_url || undefined,
+    duration: media.duration || undefined,
+    pages: media.pages || undefined,
+  });
+
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead seo={mediaSEO} />
       {/* Header avec navigation */}
       <div className="bg-gradient-to-r from-slate-50 to-emerald-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

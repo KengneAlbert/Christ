@@ -218,7 +218,10 @@ const Footer: React.FC = () => {
           <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
             <div className="flex items-center space-x-2 text-slate-400 text-sm">
               <Heart className="w-4 h-4 text-emerald-400" />
-              <span>© 2024 Christ Le Bon Berger. Tous droits réservés.</span>
+              <span>
+                © {new Date().getFullYear()} Christ Le Bon Berger. Tous droits
+                réservés.
+              </span>
             </div>
 
             <div className="flex flex-wrap justify-center lg:justify-end space-x-6 text-sm">
@@ -240,12 +243,25 @@ const Footer: React.FC = () => {
               >
                 Cookies
               </a>
-              <span className="text-slate-400">
-                Développé par{" "}
-                <span className="font-medium text-slate-300">
-                  KENGNE GUEMNE ALBERT
-                </span>
-              </span>
+            </div>
+          </div>
+
+          {/* Developer Credit - Section dédiée */}
+          <div className="mt-8 pt-6 border-t border-slate-800/50">
+            <div className="text-center">
+              <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm rounded-2xl px-6 py-3 border border-slate-700/50">
+                <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">K</span>
+                </div>
+                <div className="text-left">
+                  <p className="text-slate-400 text-xs">
+                    Développé avec passion par
+                  </p>
+                  <p className="text-slate-200 font-semibold text-sm tracking-wide">
+                    KENGNE GUEMNE ALBERT
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 

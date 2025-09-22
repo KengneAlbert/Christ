@@ -5,6 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import TrustBanner from "./components/TrustBanner";
@@ -14,6 +15,7 @@ import Team from "./components/Team";
 import News from "./components/News";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
+import SEOHead from "./components/SEOHead";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import MediathequePage from "./pages/MediathequePage";
@@ -28,18 +30,24 @@ import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import MediathequeAdminPage from "./pages/MediathequeAdminPage";
 import UnsubscribePage from "./pages/UnsubscribePage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import { seoService } from "./services/seoService";
 
-const HomePage = () => (
-  <>
-    <Hero />
-    <TrustBanner />
-    <Statistics />
-    <Actions />
-    <Team />
-    <News />
-    <Contact />
-  </>
-);
+const HomePage = () => {
+  const homeSEO = seoService.generatePageSEO("home");
+
+  return (
+    <>
+      <SEOHead seo={homeSEO} />
+      <Hero />
+      <TrustBanner />
+      <Statistics />
+      <Actions />
+      <Team />
+      <News />
+      <Contact />
+    </>
+  );
+};
 
 const AppContent = () => {
   const location = useLocation();
@@ -57,6 +65,7 @@ const AppContent = () => {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/mediatheque" element={<MediathequePage />} />
           <Route path="/mediatheque/:id" element={<MediaViewerPage />} />
+          <Route path="/media/:slug" element={<MediaViewerPage />} />
           <Route path="/admin/newsletter" element={<NewsletterAdminPage />} />
           <Route path="/cookies" element={<CookiePolicyPage />} />
           <Route path="/mentions-legales" element={<LegalMentionsPage />} />
@@ -80,9 +89,11 @@ const AppContent = () => {
 
 function App() {
   return (
-    <Router basename="/">
-      <AppContent />
-    </Router>
+    <HelmetProvider>
+      <Router basename="/">
+        <AppContent />
+      </Router>
+    </HelmetProvider>
   );
 }
 

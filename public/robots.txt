@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://christ-le-bon-berger.com/api/sitemap.xml
+
+# Disallow admin pages
+Disallow: /admin/
+
+# Allow specific paths
+Allow: /mediatheque/
+Allow: /contact/
+Allow: /about/
+Allow: /actions/
+Allow: /team/
+
+# Crawl delay
+Crawl-delay: 1
+
+# Block sensitive areas
+Disallow: /api/auth/
+Disallow: /*.json$
