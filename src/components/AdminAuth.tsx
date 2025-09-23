@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
+import { ButtonLoader } from "./Loader";
 
 interface AdminAuthProps {
   onSuccess: () => void;
@@ -343,16 +344,23 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
               } text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center space-x-3`}
             >
               {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>
-                    {mode === "login"
+                <ButtonLoader
+                  type={
+                    mode === "login"
+                      ? "default"
+                      : mode === "register"
+                      ? "save"
+                      : "send"
+                  }
+                  text={
+                    mode === "login"
                       ? "Connexion..."
                       : mode === "register"
                       ? "Création..."
-                      : "Envoi..."}
-                  </span>
-                </>
+                      : "Envoi..."
+                  }
+                  size="md"
+                />
               ) : (
                 <>
                   <span>

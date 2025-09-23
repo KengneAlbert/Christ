@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { StorageService } from "../services/storageService";
 import { useAuth } from "../hooks/useAuth";
 import CustomDropdown from "./CustomDropdown";
+import { ButtonLoader, ModalLoader } from "./Loader";
 
 // This interface should ideally be in a dedicated types file (e.g., src/types/index.ts)
 interface MediaItem {
@@ -178,6 +179,8 @@ const MediaFormModal: React.FC<MediaFormModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -260,6 +263,8 @@ const MediaFormModal: React.FC<MediaFormModalProps> = ({
       return;
     }
 
+    setIsSaving(true);
+    setIsProcessing(true);
     setUploadProgress({ percentage: 0, isUploading: true });
 
     try {
@@ -333,14 +338,12 @@ const MediaFormModal: React.FC<MediaFormModalProps> = ({
         if (error) throw error;
         onSuccess("Média mis à jour avec succès.");
       } else {
-        const { error } = await supabase
-          .from("media_items")
-          .insert({
-            ...mediaData,
-            is_published: true,
-            views_count: 0,
-            downloads_count: 0,
-          });
+        const { error } = await supabase.from("media_items").insert({
+          ...mediaData,
+          is_published: true,
+          views_count: 0,
+          downloads_count: 0,
+        });
         if (error) throw error;
         onSuccess("Média ajouté avec succès.");
       }
@@ -355,322 +358,338 @@ const MediaFormModal: React.FC<MediaFormModalProps> = ({
       setErrorMessage(msg);
     } finally {
       setUploadProgress({ percentage: 0, isUploading: false });
+      setIsSaving(false);
+      setIsProcessing(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
-        <div className="p-6 border-b border-slate-200 sticky top-0 bg-white z-10">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-slate-800">
-              {editingItem ? "Modifier le média" : "Ajouter un média"}
-            </h2>
-            <button
-              onClick={onClose}
-              disabled={uploadProgress.isUploading}
-              className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-300 hover:scale-110 transform"
-            >
-              <X className="w-6 h-6" />
-            </button>
+    <>
+      {isProcessing && (
+        <ModalLoader
+          text={
+            uploadProgress.isUploading ? "Upload en cours..." : "Traitement..."
+          }
+          type={uploadProgress.isUploading ? "upload" : "save"}
+        />
+      )}
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
+        <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+          <div className="p-6 border-b border-slate-200 sticky top-0 bg-white z-10">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-slate-800">
+                {editingItem ? "Modifier le média" : "Ajouter un média"}
+              </h2>
+              <button
+                onClick={onClose}
+                disabled={uploadProgress.isUploading}
+                className="p-2 text-slate-400 hover:text-slate-600 transition-colors duration-300 hover:scale-110 transform"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
           </div>
-        </div>
 
-        {editingItem && <MediaPreview item={editingItem} />}
+          {editingItem && <MediaPreview item={editingItem} />}
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {errorMessage && (
-            <div className="mb-6 p-4 rounded-xl border bg-red-50 border-red-200 text-red-800 animate-slide-down">
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="w-5 h-5" />
-                <span className="font-medium">{errorMessage}</span>
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {errorMessage && (
+              <div className="mb-6 p-4 rounded-xl border bg-red-50 border-red-200 text-red-800 animate-slide-down">
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="w-5 h-5" />
+                  <span className="font-medium">{errorMessage}</span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Type *
-              </label>
-              <CustomDropdown
-                options={[
-                  { value: "video", label: "Vidéo" },
-                  { value: "document", label: "Document" },
-                  { value: "audio", label: "Audio" },
-                  { value: "image", label: "Image" },
-                ]}
-                value={formData.type}
-                onChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    type: value as MediaItem["type"],
-                  }))
-                }
-                placeholder="Sélectionner un type"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Catégorie *
-              </label>
-              {showNewCategory ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
-                    placeholder="Nouvelle catégorie"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewCategory(false)}
-                    className="p-2 text-slate-400 hover:text-slate-600"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <CustomDropdown
-                    options={categories.map((cat) => ({
-                      value: cat,
-                      label: cat,
-                    }))}
-                    value={formData.category}
-                    onChange={(value) =>
-                      setFormData((prev) => ({ ...prev, category: value }))
-                    }
-                    placeholder="catégorie"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewCategory(true)}
-                    className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium"
-                  >
-                    Nouveau
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Titre *
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, title: e.target.value }))
-              }
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
-              placeholder="Titre du média"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Description *
-            </label>
-            <textarea
-              rows={4}
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none focus-ring"
-              placeholder="Description du contenu"
-              required
-            />
-          </div>
-
-          {formData.type === "video" && (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  URL YouTube (optionnel)
+                  Type *
                 </label>
-                <input
-                  type="url"
-                  value={formData.youtubeUrl}
-                  onChange={(e) =>
+                <CustomDropdown
+                  options={[
+                    { value: "video", label: "Vidéo" },
+                    { value: "document", label: "Document" },
+                    { value: "audio", label: "Audio" },
+                    { value: "image", label: "Image" },
+                  ]}
+                  value={formData.type}
+                  onChange={(value) =>
                     setFormData((prev) => ({
                       ...prev,
-                      youtubeUrl: e.target.value,
+                      type: value as MediaItem["type"],
                     }))
                   }
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
-                  placeholder="https://www.youtube.com/watch?v=..."
+                  placeholder="Sélectionner un type"
                 />
               </div>
-              <div className="text-center text-slate-500 text-sm font-medium">
-                ou
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Catégorie *
+                </label>
+                {showNewCategory ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
+                      placeholder="Nouvelle catégorie"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewCategory(false)}
+                      className="p-2 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <CustomDropdown
+                      options={categories.map((cat) => ({
+                        value: cat,
+                        label: cat,
+                      }))}
+                      value={formData.category}
+                      onChange={(value) =>
+                        setFormData((prev) => ({ ...prev, category: value }))
+                      }
+                      placeholder="catégorie"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewCategory(true)}
+                      className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium"
+                    >
+                      Nouveau
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
-          )}
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              {editingItem
-                ? "Remplacer le fichier (optionnel)"
-                : formData.type === "video" && formData.youtubeUrl
-                ? "Fichier (optionnel)"
-                : "Fichier *"}
-            </label>
-            <div
-              className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-300 ${
-                uploadProgress.isUploading
-                  ? "border-emerald-500 bg-emerald-50"
-                  : "border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/30"
-              }`}
-            >
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Titre *
+              </label>
               <input
-                type="file"
+                type="text"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, title: e.target.value }))
+                }
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
+                placeholder="Titre du média"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Description *
+              </label>
+              <textarea
+                rows={4}
+                value={formData.description}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    file: e.target.files?.[0] || null,
+                    description: e.target.value,
                   }))
                 }
-                className="hidden"
-                id="file-upload"
-                disabled={uploadProgress.isUploading}
-                accept={
-                  formData.type === "video"
-                    ? "video/*"
-                    : formData.type === "audio"
-                    ? "audio/*"
-                    : formData.type === "image"
-                    ? "image/*"
-                    : ".pdf,.doc,.docx,.txt"
-                }
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none focus-ring"
+                placeholder="Description du contenu"
+                required
               />
-              <label
-                htmlFor="file-upload"
-                className={
-                  uploadProgress.isUploading
-                    ? "cursor-not-allowed"
-                    : "cursor-pointer"
-                }
-              >
-                <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2 hover:scale-110 transition-transform duration-300" />
-                <p className="text-slate-600">
-                  {formData.file
-                    ? formData.file.name
-                    : "Cliquez pour sélectionner un fichier"}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {formData.type === "video"
-                    ? "Formats: MP4, AVI, MOV"
-                    : formData.type === "audio"
-                    ? "Formats: MP3, WAV, OGG"
-                    : formData.type === "image"
-                    ? "Formats: JPG, PNG, GIF"
-                    : "Formats: PDF, DOC, DOCX, TXT"}
-                </p>
+            </div>
+
+            {formData.type === "video" && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    URL YouTube (optionnel)
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.youtubeUrl}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        youtubeUrl: e.target.value,
+                      }))
+                    }
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                  />
+                </div>
+                <div className="text-center text-slate-500 text-sm font-medium">
+                  ou
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                {editingItem
+                  ? "Remplacer le fichier (optionnel)"
+                  : formData.type === "video" && formData.youtubeUrl
+                  ? "Fichier (optionnel)"
+                  : "Fichier *"}
               </label>
-              {uploadProgress.isUploading && (
-                <div className="mt-4">
-                  <div className="w-full bg-slate-200 rounded-full h-2">
-                    <div
-                      className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${uploadProgress.percentage}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-sm text-slate-600 mt-2">
-                    Upload en cours... {Math.round(uploadProgress.percentage)}%
+              <div
+                className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-300 ${
+                  uploadProgress.isUploading
+                    ? "border-emerald-500 bg-emerald-50"
+                    : "border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/30"
+                }`}
+              >
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      file: e.target.files?.[0] || null,
+                    }))
+                  }
+                  className="hidden"
+                  id="file-upload"
+                  disabled={uploadProgress.isUploading}
+                  accept={
+                    formData.type === "video"
+                      ? "video/*"
+                      : formData.type === "audio"
+                      ? "audio/*"
+                      : formData.type === "image"
+                      ? "image/*"
+                      : ".pdf,.doc,.docx,.txt"
+                  }
+                />
+                <label
+                  htmlFor="file-upload"
+                  className={
+                    uploadProgress.isUploading
+                      ? "cursor-not-allowed"
+                      : "cursor-pointer"
+                  }
+                >
+                  <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2 hover:scale-110 transition-transform duration-300" />
+                  <p className="text-slate-600">
+                    {formData.file
+                      ? formData.file.name
+                      : "Cliquez pour sélectionner un fichier"}
                   </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {formData.type === "video"
+                      ? "Formats: MP4, AVI, MOV"
+                      : formData.type === "audio"
+                      ? "Formats: MP3, WAV, OGG"
+                      : formData.type === "image"
+                      ? "Formats: JPG, PNG, GIF"
+                      : "Formats: PDF, DOC, DOCX, TXT"}
+                  </p>
+                </label>
+                {uploadProgress.isUploading && (
+                  <div className="mt-4">
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div
+                        className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress.percentage}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-sm text-slate-600 mt-2">
+                      Upload en cours... {Math.round(uploadProgress.percentage)}
+                      %
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {(formData.type === "video" || formData.type === "audio") && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Durée
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.duration}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        duration: e.target.value,
+                      }))
+                    }
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
+                    placeholder="Ex: 12:34"
+                  />
+                </div>
+              )}
+              {formData.type === "document" && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Nombre de pages
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.pages}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        pages: parseInt(e.target.value) || 0,
+                      }))
+                    }
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
+                    placeholder="0"
+                    min="0"
+                  />
                 </div>
               )}
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {(formData.type === "video" || formData.type === "audio") && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Durée
-                </label>
-                <input
-                  type="text"
-                  value={formData.duration}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      duration: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
-                  placeholder="Ex: 12:34"
-                />
-              </div>
-            )}
-            {formData.type === "document" && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Nombre de pages
-                </label>
-                <input
-                  type="number"
-                  value={formData.pages}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      pages: parseInt(e.target.value) || 0,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus-ring"
-                  placeholder="0"
-                  min="0"
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-end space-x-4 pt-6 border-t border-slate-200">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={uploadProgress.isUploading}
-              className="px-6 py-3 text-slate-600 hover:text-slate-800 font-medium transition-colors duration-300 hover:scale-105 transform"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              disabled={uploadProgress.isUploading}
-              className={`text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center space-x-2 ${
-                uploadProgress.isUploading
-                  ? "bg-slate-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 hover-glow"
-              }`}
-            >
-              {uploadProgress.isUploading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Upload...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  <span>{editingItem ? "Modifier" : "Ajouter"}</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+            <div className="flex items-center justify-end space-x-4 pt-6 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={uploadProgress.isUploading}
+                className="px-6 py-3 text-slate-600 hover:text-slate-800 font-medium transition-colors duration-300 hover:scale-105 transform"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                disabled={uploadProgress.isUploading}
+                className={`text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center space-x-2 ${
+                  uploadProgress.isUploading
+                    ? "bg-slate-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 hover-glow"
+                }`}
+              >
+                {uploadProgress.isUploading || isSaving ? (
+                  <ButtonLoader
+                    type={uploadProgress.isUploading ? "upload" : "save"}
+                    text={
+                      uploadProgress.isUploading ? "Upload..." : "Sauvegarde..."
+                    }
+                    size="sm"
+                  />
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    <span>{editingItem ? "Modifier" : "Ajouter"}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

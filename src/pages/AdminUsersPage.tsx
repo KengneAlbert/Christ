@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import ConfirmationModal from "../components/ConfirmationModal";
+import { ButtonLoader } from "../components/Loader";
 
 interface AuthorizedAdmin {
   id: string;
@@ -50,6 +51,8 @@ const AdminUsersContent: React.FC = () => {
   );
   const [editedAuthorizedEmail, setEditedAuthorizedEmail] =
     useState<string>("");
+  const [addingAdmin, setAddingAdmin] = useState(false);
+  const [deletingAdminId, setDeletingAdminId] = useState<string | null>(null);
 
   const loadAdmins = useCallback(async () => {
     try {
@@ -107,6 +110,7 @@ const AdminUsersContent: React.FC = () => {
       return;
     }
 
+    setAddingAdmin(true);
     try {
       const { error } = await supabase
         .from("authorized_admins")
@@ -129,6 +133,8 @@ const AdminUsersContent: React.FC = () => {
       const msg =
         error instanceof Error ? error.message : "Une erreur est survenue.";
       setMessage({ type: "error", text: msg });
+    } finally {
+      setAddingAdmin(false);
     }
   };
 
@@ -170,7 +176,9 @@ const AdminUsersContent: React.FC = () => {
   };
 
   const handleDeleteAdmin = async (id: string, email: string) => {
+    setDeletingAdminId(id);
     if (!window.confirm(`Désactiver l'accès pour ${email} ?`)) {
+      setDeletingAdminId(null);
       return;
     }
 
@@ -189,6 +197,8 @@ const AdminUsersContent: React.FC = () => {
     } catch (error: unknown) {
       console.error("Erreur lors de la suppression:", error);
       setMessage({ type: "error", text: "Erreur lors de la désactivation." });
+    } finally {
+      setDeletingAdminId(null);
     }
   };
 
@@ -307,9 +317,18 @@ const AdminUsersContent: React.FC = () => {
                           onClick={() =>
                             handleDeleteAdmin(admin.id, admin.email)
                           }
-                          className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
+                          disabled={deletingAdminId === admin.id}
+                          className={`px-3 py-1 rounded-md transition-colors duration-300 ${
+                            deletingAdminId === admin.id
+                              ? "bg-slate-400 cursor-not-allowed"
+                              : "bg-red-500 text-white hover:bg-red-600"
+                          }`}
                         >
-                          <Trash2 className="w-5 h-5" />
+                          {deletingAdminId === admin.id ? (
+                            <ButtonLoader type="delete" text="" size="sm" />
+                          ) : (
+                            <Trash2 className="w-5 h-5" />
+                          )}
                         </button>
                       </li>
                     ))}
@@ -430,10 +449,21 @@ const AdminUsersContent: React.FC = () => {
             </div>
             <button
               type="submit"
-              className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold px-4 py-3 rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              disabled={addingAdmin}
+              className={`w-full flex items-center justify-center space-x-2 font-semibold px-4 py-3 rounded-lg transition-all duration-300 transform shadow-lg ${
+                addingAdmin
+                  ? "bg-slate-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 hover:scale-105"
+              }`}
             >
-              <UserPlus className="w-5 h-5" />
-              <span>Autoriser cet email</span>
+              {addingAdmin ? (
+                <ButtonLoader type="save" text="Ajout..." size="sm" />
+              ) : (
+                <>
+                  <UserPlus className="w-5 h-5" />
+                  <span>Autoriser cet email</span>
+                </>
+              )}
             </button>
           </form>
           <div className="mt-6 bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-lg">

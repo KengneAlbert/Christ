@@ -25,6 +25,7 @@ import NewsletterPreviewModal from "../components/NewsletterPreviewModal";
 import ConfirmationModal from "../components/ConfirmationModal";
 import RichTextEditor from "../components/RichTextEditor";
 import { buildNewsletterHtml } from "../emails/renderers";
+import { ButtonLoader, ContentLoader } from "../components/Loader";
 import {
   cleanHtml,
   htmlToText,
@@ -660,81 +661,85 @@ const NewsletterAdminContent: React.FC = () => {
 
           {/* Subscribers List */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-slate-50 border-b border-slate-200">
-                  <tr>
-                    <th className="text-left px-6 py-4 font-medium text-slate-700">
-                      Email
-                    </th>
-                    <th className="text-left px-6 py-4 font-medium text-slate-700">
-                      Nom
-                    </th>
-                    <th className="text-left px-6 py-4 font-medium text-slate-700">
-                      Date d'abonnement
-                    </th>
-                    <th className="text-left px-6 py-4 font-medium text-slate-700">
-                      Statut
-                    </th>
-                    <th className="text-left px-6 py-4 font-medium text-slate-700">
-                      Préférences
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {subscribers.map((subscriber, index) => (
-                    <tr
-                      key={subscriber.id}
-                      className={`hover:bg-slate-50 transition-colors duration-200 animate-slide-up delay-${
-                        index * 50
-                      }`}
-                    >
-                      <td className="px-6 py-4 text-slate-800 font-medium">
-                        {subscriber.email}
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {subscriber.first_name || subscriber.last_name
-                          ? `${subscriber.first_name || ""} ${
-                              subscriber.last_name || ""
-                            }`.trim()
-                          : "-"}
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {new Date(
-                          subscriber.subscription_date
-                        ).toLocaleDateString("fr-FR")}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            subscriber.is_active
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {subscriber.is_active ? "Actif" : "Inactif"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-1">
-                          {Object.entries(subscriber.preferences).map(
-                            ([key, value]) =>
-                              value && (
-                                <span
-                                  key={key}
-                                  className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded text-xs"
-                                >
-                                  {key}
-                                </span>
-                              )
-                          )}
-                        </div>
-                      </td>
+            {isLoading ? (
+              <ContentLoader text="Chargement des abonnés..." />
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="text-left px-6 py-4 font-medium text-slate-700">
+                        Email
+                      </th>
+                      <th className="text-left px-6 py-4 font-medium text-slate-700">
+                        Nom
+                      </th>
+                      <th className="text-left px-6 py-4 font-medium text-slate-700">
+                        Date d'abonnement
+                      </th>
+                      <th className="text-left px-6 py-4 font-medium text-slate-700">
+                        Statut
+                      </th>
+                      <th className="text-left px-6 py-4 font-medium text-slate-700">
+                        Préférences
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {subscribers.map((subscriber, index) => (
+                      <tr
+                        key={subscriber.id}
+                        className={`hover:bg-slate-50 transition-colors duration-200 animate-slide-up delay-${
+                          index * 50
+                        }`}
+                      >
+                        <td className="px-6 py-4 text-slate-800 font-medium">
+                          {subscriber.email}
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">
+                          {subscriber.first_name || subscriber.last_name
+                            ? `${subscriber.first_name || ""} ${
+                                subscriber.last_name || ""
+                              }`.trim()
+                            : "-"}
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">
+                          {new Date(
+                            subscriber.subscription_date
+                          ).toLocaleDateString("fr-FR")}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              subscriber.is_active
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {subscriber.is_active ? "Actif" : "Inactif"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-1">
+                            {Object.entries(subscriber.preferences).map(
+                              ([key, value]) =>
+                                value && (
+                                  <span
+                                    key={key}
+                                    className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded text-xs"
+                                  >
+                                    {key}
+                                  </span>
+                                )
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
           {/* Pagination Controls */}
           <div className="mt-8 flex items-center justify-between">
@@ -966,27 +971,7 @@ const NewsletterAdminContent: React.FC = () => {
                       }`}
                     >
                       {sendingId === newsletter.id ? (
-                        <>
-                          <svg
-                            className="animate-spin h-3 w-3 text-white"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                            ></path>
-                          </svg>
-                          <span>Envoi...</span>
-                        </>
+                        <ButtonLoader type="send" text="Envoi..." size="sm" />
                       ) : (
                         <>
                           <Send className="w-3 h-3" />
@@ -1006,27 +991,7 @@ const NewsletterAdminContent: React.FC = () => {
                       }`}
                     >
                       {sendingId === newsletter.id ? (
-                        <>
-                          <svg
-                            className="animate-spin h-3 w-3 text-white"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                            ></path>
-                          </svg>
-                          <span>Réenvoi...</span>
-                        </>
+                        <ButtonLoader type="send" text="Réenvoi..." size="sm" />
                       ) : (
                         <>
                           <Send className="w-3 h-3" />
@@ -1184,27 +1149,7 @@ const NewsletterAdminContent: React.FC = () => {
                   }`}
                 >
                   {isCreating ? (
-                    <>
-                      <svg
-                        className="animate-spin h-5 w-5 text-white"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                        ></path>
-                      </svg>
-                      <span>Création...</span>
-                    </>
+                    <ButtonLoader type="save" text="Création..." size="md" />
                   ) : (
                     <>
                       <Save className="w-5 h-5" />
