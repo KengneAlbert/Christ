@@ -3,7 +3,9 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
 const ALLOWED_ORIGINS = new Set([
   'https://christ-le-bon-berger.com',
+  'https://christ-le-bon-berger.vercel.app',
   'http://localhost:5173',
+  'http://localhost:3000',
   Deno.env.get('ALLOWED_ORIGIN') || '',
 ].filter(Boolean));
 

@@ -19,7 +19,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.voiceflow.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://general-runtime.voiceflow.com https://runtime-api.voiceflow.com; frame-src https://www.youtube.com https://cdn.voiceflow.com; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.voiceflow.com https://general-runtime.voiceflow.com https://runtime-api.voiceflow.com; style-src 'self' 'unsafe-inline' https://cdn.voiceflow.com; style-src-elem 'self' 'unsafe-inline' https://cdn.voiceflow.com; img-src 'self' data: blob: https:; font-src 'self' data: https: https://cdn.voiceflow.com; connect-src 'self' https://*.supabase.co https://general-runtime.voiceflow.com https://runtime-api.voiceflow.com https://api.brevo.com; frame-src https://www.youtube.com https://cdn.voiceflow.com; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
         }
       ]
     }
