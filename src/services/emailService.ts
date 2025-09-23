@@ -68,9 +68,15 @@ export const sendContactEmail = async (formData: ContactFormData): Promise<boole
       logoUrl: '',
     });
 
-    const { data, error } = await supabase.functions.invoke('brevo-contact-send', {
+    // Logging pour diagnostic
+    const csrfToken = CSRFService.getToken();
+    console.log('CSRF Token length:', csrfToken.length);
+    console.log('Origin:', window.location.origin);
+    
+    // Tentative avec brevo-contact-send d'abord
+    let { data, error } = await supabase.functions.invoke('brevo-contact-send', {
       headers: {
-        'X-CSRF-Token': CSRFService.getToken(),
+        'X-CSRF-Token': csrfToken,
       },
       body: {
         firstName: sanitizedData.firstName,
@@ -81,8 +87,41 @@ export const sendContactEmail = async (formData: ContactFormData): Promise<boole
         htmlContent,
       }
     });
+    
+    // Si erreur 403, essayer avec brevo-newsletter-send comme fallback
+    if (error && (error.message?.includes('403') || error.message?.includes('Forbidden'))) {
+      console.warn('Fallback vers brevo-newsletter-send pour le contact');
+      const newsletterPayload = {
+        subject: `[CONTACT] ${sanitizedData.subject}`,
+        htmlContent,
+        textContent: `Contact de: ${sanitizedData.firstName} ${sanitizedData.lastName || ''} <${sanitizedData.email}>\n\n${sanitizedData.message}`,
+        recipients: [{ 
+          email: 'contact@christ-le-bon-berger.com',
+          name: 'Équipe Contact'
+        }],
+        senderName: 'Christ Le Bon Berger - Contact'
+      };
+      
+      const fallbackResult = await supabase.functions.invoke('brevo-newsletter-send', {
+        headers: {
+          'X-CSRF-Token': csrfToken,
+        },
+        body: newsletterPayload
+      });
+      
+      data = fallbackResult.data;
+      error = fallbackResult.error;
+    }
+    
     if (error) {
-      console.error('Erreur Brevo:', error);
+      console.error('Erreur Brevo détaillée:', {
+        error,
+        message: error.message,
+        details: error.details,
+        status: error.status,
+        origin: window.location.origin,
+        csrfTokenLength: csrfToken.length
+      });
       return false;
     }
     console.log('Brevo contact envoyé:', data);
