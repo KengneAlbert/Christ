@@ -48,8 +48,13 @@ serve(async (req) => {
 
     if (adminError || !admin) {
       console.warn(`Tentative de connexion échouée pour un email non autorisé: ${email}`);
-      // Réponse générique pour ne pas révéler si l'email existe
-      return sendResponse({ error: 'Email ou mot de passe invalide' }, 401);
+      // Message plus informatif pour les tentatives de connexion non autorisées
+      return sendResponse({ 
+        error: 'Accès restreint',
+        message: 'Cette adresse email n\'est pas autorisée à accéder à l\'administration. L\'accès est réservé aux membres de l\'équipe Christ Le Bon Berger.',
+        details: 'Pour obtenir l\'accès, contactez l\'administrateur principal à contact@christ-le-bon-berger.com',
+        errorCode: 'UNAUTHORIZED_ACCESS'
+      }, 401);
     }
 
     // 5. Si l'email est autorisé, tenter de connecter l'utilisateur

@@ -26,6 +26,7 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
+    details?: string;
   } | null>(null);
   const [passwordStrength, setPasswordStrength] = useState<{
     score: number;
@@ -118,19 +119,38 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
       }
     } catch (error: any) {
       let errorMessage = "Une erreur est survenue.";
+      let errorDetails = "";
 
-      if (error.message === "Invalid login credentials") {
-        errorMessage = "Email ou mot de passe incorrect.";
+      // Gestion spécifique des erreurs d'autorisation
+      if (
+        error.message === "Accès non autorisé" ||
+        error.message === "Accès restreint"
+      ) {
+        errorMessage = "🚫 Accès non autorisé";
+        errorDetails =
+          "Cette adresse email n'est pas dans notre liste d'administrateurs autorisés. Seuls les membres de l'équipe Christ Le Bon Berger peuvent accéder à cette section.";
+      } else if (error.message === "Invalid login credentials") {
+        errorMessage = "🔑 Identifiants incorrects";
+        errorDetails = "Vérifiez votre adresse email et votre mot de passe.";
       } else if (error.message === "Email not confirmed") {
-        errorMessage =
-          "Veuillez confirmer votre email avant de vous connecter.";
+        errorMessage = "📧 Email non confirmé";
+        errorDetails =
+          "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte mail.";
+      } else if (error.message?.includes("autorisée")) {
+        errorMessage = "🚫 Email non autorisé";
+        errorDetails =
+          "Cette adresse email n'est pas autorisée à créer un compte administrateur. Contactez l'équipe si vous pensez qu'il s'agit d'une erreur.";
       } else if (error.message) {
-        errorMessage = error.message;
+        errorMessage = `⚠️ ${error.message}`;
+        if (error.details) {
+          errorDetails = error.details;
+        }
       }
 
       setMessage({
         type: "error",
         text: errorMessage,
+        details: errorDetails,
       });
     } finally {
       setIsLoading(false);
@@ -172,13 +192,31 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
                   : "bg-red-50 border-red-200 text-red-800"
               } animate-slide-down`}
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-start space-x-2">
                 {message.type === "success" ? (
-                  <CheckCircle className="w-5 h-5" />
+                  <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
                 ) : (
-                  <AlertCircle className="w-5 h-5" />
+                  <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
                 )}
-                <span className="font-medium">{message.text}</span>
+                <div className="flex-1">
+                  <span className="font-medium block">{message.text}</span>
+                  {message.details && (
+                    <p className="text-sm mt-1 opacity-90 leading-5">
+                      {message.details}
+                    </p>
+                  )}
+                  {message.type === "error" && (
+                    <p className="text-xs mt-2 opacity-75">
+                      💬 Besoin d'aide ? Contactez-nous à{" "}
+                      <a
+                        href="mailto:contact@christ-le-bon-berger.com"
+                        className="underline hover:no-underline"
+                      >
+                        contact@christ-le-bon-berger.com
+                      </a>
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -375,9 +413,25 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
               <span>Accès sécurisé réservé aux administrateurs autorisés</span>
             </div>
             {mode === "register" && (
+              <div className="mt-3 space-y-2">
+                <div className="text-xs text-slate-600 font-medium">
+                  📋 Conditions d'inscription :
+                </div>
+                <ul className="text-xs text-slate-500 space-y-1 ml-2">
+                  <li>• Votre email doit être pré-autorisé par l'équipe</li>
+                  <li>
+                    • Seuls les membres de Christ Le Bon Berger peuvent
+                    s'inscrire
+                  </li>
+                  <li>
+                    • Contactez-nous si vous pensez avoir les droits d'accès
+                  </li>
+                </ul>
+              </div>
+            )}
+            {mode === "login" && (
               <div className="mt-2 text-xs text-slate-500">
-                L'inscription est limitée aux adresses email autorisées de
-                l'association.
+                Accès réservé aux membres autorisés de l'équipe administrative.
               </div>
             )}
           </div>

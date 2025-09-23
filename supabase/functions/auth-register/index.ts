@@ -51,7 +51,12 @@ serve(async (req) => {
     const isAuthorized = await isAdminEmail(supabaseAdmin, email);
     if (!isAuthorized) {
       console.warn(`Tentative d'inscription non autorisée pour: ${email}`);
-      return sendResponse({ error: 'Cette adresse email n\'est pas autorisée à s\'inscrire.' }, 403);
+      return sendResponse({ 
+        error: 'Accès non autorisé', 
+        message: 'Cette adresse email n\'est pas dans notre liste d\'administrateurs autorisés. Seuls les membres de l\'équipe Christ Le Bon Berger peuvent créer un compte administrateur.',
+        details: 'Si vous pensez qu\'il s\'agit d\'une erreur, contactez l\'administrateur principal à contact@christ-le-bon-berger.com',
+        errorCode: 'UNAUTHORIZED_EMAIL'
+      }, 403);
     }
 
     // 2. Si autorisé, créer l'utilisateur
