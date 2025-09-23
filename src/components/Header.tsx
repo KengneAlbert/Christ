@@ -107,10 +107,10 @@ const Header: React.FC = () => {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
-            <button className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg animate-heartbeat">
+            <a href="tel:17" className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg animate-heartbeat">
               <Phone className="w-4 h-4" />
-              <span>Urgence</span>
-            </button>
+              <span>Urgence - 17</span>
+            </a>
             <a 
               href="https://www.helloasso.com/associations/christ-le-bon-berger-c-l-b-b/formulaires/1"
               target="_blank"
@@ -190,10 +190,10 @@ const Header: React.FC = () => {
                 Médiathèque
               </a>
               <div className="flex flex-col space-y-3 pt-4 animate-slide-in-left delay-600">
-                <button className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg animate-heartbeat">
+                <a href="tel:17" className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg animate-heartbeat">
                   <Phone className="w-4 h-4" />
-                  <span>Urgence</span>
-                </button>
+                  <span>Urgence - 17</span>
+                </a>
                 <a 
                   href="https://www.helloasso.com/associations/christ-le-bon-berger-c-l-b-b/formulaires/1"
                   target="_blank"
