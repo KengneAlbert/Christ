@@ -1,72 +1,103 @@
-import React from 'react';
-import { User, Mail, Phone, Heart, Shield, Users, Award, Calendar, MapPin } from 'lucide-react';
+import React from "react";
+import {
+  User,
+  Mail,
+  Phone,
+  Heart,
+  Shield,
+  Users,
+  Award,
+  Calendar,
+  MapPin,
+} from "lucide-react";
 import Fondatrice from "../assets/fondatrice.jpg";
 
 const TeamPage: React.FC = () => {
   const teamMembers = [
     {
-      name: 'Suzy POKA',
-      role: 'Présidente',
-      description: 'Fondatrice de l\'association, elle dirige avec passion et dévouement notre mission d\'aide aux victimes de violences conjugales.',
-      expertise: ['Leadership', 'Accompagnement', 'Témoignage'],
-      color: 'from-emerald-500 to-teal-600',
-      bgColor: 'from-emerald-50 to-teal-50',
+      name: "Suzy POKA",
+      role: "Présidente",
+      description:
+        "Fondatrice de l'association, elle dirige avec passion et dévouement notre mission d'aide aux victimes de violences conjugales.",
+      expertise: ["Leadership", "Accompagnement", "Témoignage"],
+      color: "from-emerald-500 to-teal-600",
+      bgColor: "from-emerald-50 to-teal-50",
       image: Fondatrice,
     },
     {
-      name: 'Christelle YOUETO',
-      role: 'Secrétaire',
-      description: 'Responsable de la gestion administrative et des communications de l\'association, elle assure le bon fonctionnement quotidien.',
-      expertise: ['Administration', 'Communication', 'Organisation'],
-      color: 'from-blue-500 to-indigo-600',
-      bgColor: 'from-blue-50 to-indigo-50',
-      image: 'https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=400'
+      name: "Christelle YOUETO",
+      role: "Secrétaire",
+      description:
+        "Responsable de la gestion administrative et des communications de l'association, elle assure le bon fonctionnement quotidien.",
+      expertise: ["Administration", "Communication", "Organisation"],
+      color: "from-blue-500 to-indigo-600",
+      bgColor: "from-blue-50 to-indigo-50",
+      image:
+        "https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=400",
     },
     {
-      name: 'Florence NOUMO',
-      role: 'Avocate',
-      description: 'Experte juridique de l\'association, elle apporte son expertise légale pour accompagner les victimes dans leurs démarches.',
-      expertise: ['Droit familial', 'Conseil juridique', 'Procédures'],
-      color: 'from-purple-500 to-pink-600',
-      bgColor: 'from-purple-50 to-pink-50',
-      image: 'https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=400'
+      name: "Florence NOUMO",
+      role: "Avocate",
+      description:
+        "Experte juridique de l'association, elle apporte son expertise légale pour accompagner les victimes dans leurs démarches.",
+      expertise: ["Droit familial", "Conseil juridique", "Procédures"],
+      color: "from-purple-500 to-pink-600",
+      bgColor: "from-purple-50 to-pink-50",
+      image:
+        "https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=400",
     },
     {
-      name: 'Mariette KOM',
-      role: 'Trésorière',
-      description: 'Responsable de la gestion financière de l\'association, elle veille à la bonne utilisation des ressources pour notre mission.',
-      expertise: ['Gestion financière', 'Comptabilité', 'Budget'],
-      color: 'from-orange-500 to-red-600',
-      bgColor: 'from-orange-50 to-red-50',
-      image: 'https://images.pexels.com/photos/3184339/pexels-photo-3184339.jpeg?auto=compress&cs=tinysrgb&w=400'
-    }
+      name: "Mariette KOM",
+      role: "Trésorière",
+      description:
+        "Responsable de la gestion financière de l'association, elle veille à la bonne utilisation des ressources pour notre mission.",
+      expertise: ["Gestion financière", "Comptabilité", "Budget"],
+      color: "from-orange-500 to-red-600",
+      bgColor: "from-orange-50 to-red-50",
+      image:
+        "https://images.pexels.com/photos/3184339/pexels-photo-3184339.jpeg?auto=compress&cs=tinysrgb&w=400",
+    },
+    {
+      name: "Patricia SANDANASSAMY",
+      role: "Responsable de la communication",
+      description:
+        "Coordonne les communications et la sensibilisation de l'association, elle développe les stratégies de communication pour mieux servir notre mission.",
+      expertise: ["Communication", "Sensibilisation", "Relations publiques"],
+      color: "from-pink-500 to-rose-600",
+      bgColor: "from-pink-50 to-rose-50",
+      image:
+        "https://images.pexels.com/photos/3184328/pexels-photo-3184328.jpeg?auto=compress&cs=tinysrgb&w=400",
+    },
   ];
 
   const values = [
     {
       icon: Heart,
-      title: 'Compassion',
-      description: 'Une écoute bienveillante et un accompagnement sans jugement'
+      title: "Compassion",
+      description:
+        "Une écoute bienveillante et un accompagnement sans jugement",
     },
     {
       icon: Shield,
-      title: 'Protection',
-      description: 'Défendre et protéger les droits des victimes avec détermination'
+      title: "Protection",
+      description:
+        "Défendre et protéger les droits des victimes avec détermination",
     },
     {
       icon: Users,
-      title: 'Solidarité',
-      description: 'Créer un environnement de soutien mutuel et d\'entraide'
-    }
+      title: "Solidarité",
+      description: "Créer un environnement de soutien mutuel et d'entraide",
+    },
   ];
 
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section 
+      <section
         className="relative min-h-[500px] bg-cover bg-center bg-no-repeat flex items-center justify-center"
         style={{
-          backgroundImage: 'url(https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1)'
+          backgroundImage:
+            "url(https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1)",
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-slate-800/80"></div>
@@ -87,7 +118,11 @@ const TeamPage: React.FC = () => {
             Une équipe unie par une mission commune
           </h2>
           <p className="text-lg text-slate-600 leading-relaxed mb-8">
-            Notre équipe dévouée est le cœur de notre organisation. Chaque membre apporte des compétences uniques et une passion commune pour l'aide aux autres. Ensemble, nous créons un environnement favorable où chacun se sent valorisé et compris. Nous sommes là pour vous guider sur le chemin de la guérison.
+            Notre équipe dévouée est le cœur de notre organisation. Chaque
+            membre apporte des compétences uniques et une passion commune pour
+            l'aide aux autres. Ensemble, nous créons un environnement favorable
+            où chacun se sent valorisé et compris. Nous sommes là pour vous
+            guider sur le chemin de la guérison.
           </p>
           <div className="w-24 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 mx-auto rounded-full"></div>
         </div>
@@ -98,7 +133,7 @@ const TeamPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12">
             {teamMembers.map((member, index) => (
-              <div 
+              <div
                 key={index}
                 className={`group bg-gradient-to-br ${member.bgColor} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105 border border-white/50`}
               >
@@ -106,13 +141,15 @@ const TeamPage: React.FC = () => {
                   {/* Photo */}
                   <div className="relative flex-shrink-0">
                     <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg">
-                      <img 
+                      <img
                         src={member.image}
                         alt={member.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     </div>
-                    <div className={`absolute -bottom-3 -right-3 w-12 h-12 bg-gradient-to-r ${member.color} rounded-xl flex items-center justify-center shadow-lg`}>
+                    <div
+                      className={`absolute -bottom-3 -right-3 w-12 h-12 bg-gradient-to-r ${member.color} rounded-xl flex items-center justify-center shadow-lg`}
+                    >
                       <User className="w-6 h-6 text-white" />
                     </div>
                   </div>
@@ -122,7 +159,9 @@ const TeamPage: React.FC = () => {
                     <h3 className="text-2xl font-bold text-slate-800 mb-2">
                       {member.name}
                     </h3>
-                    <p className={`text-lg font-semibold bg-gradient-to-r ${member.color} bg-clip-text text-transparent mb-4`}>
+                    <p
+                      className={`text-lg font-semibold bg-gradient-to-r ${member.color} bg-clip-text text-transparent mb-4`}
+                    >
                       {member.role}
                     </p>
                     <p className="text-slate-600 leading-relaxed mb-6">
@@ -131,10 +170,12 @@ const TeamPage: React.FC = () => {
 
                     {/* Expertise */}
                     <div className="mb-6">
-                      <h4 className="text-sm font-semibold text-slate-700 mb-3">Domaines d'expertise :</h4>
+                      <h4 className="text-sm font-semibold text-slate-700 mb-3">
+                        Domaines d'expertise :
+                      </h4>
                       <div className="flex flex-wrap gap-2 justify-center md:justify-start">
                         {member.expertise.map((skill, skillIndex) => (
-                          <span 
+                          <span
                             key={skillIndex}
                             className="px-3 py-1 bg-white/80 text-slate-600 text-sm rounded-full border border-slate-200"
                           >
@@ -169,13 +210,14 @@ const TeamPage: React.FC = () => {
               Nos valeurs partagées
             </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Ces valeurs guident chacune de nos actions et unissent notre équipe
+              Ces valeurs guident chacune de nos actions et unissent notre
+              équipe
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {values.map((value, index) => (
-              <div 
+              <div
                 key={index}
                 className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105 text-center"
               >
@@ -205,16 +247,18 @@ const TeamPage: React.FC = () => {
               Rejoignez notre mission
             </h3>
             <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Vous souhaitez contribuer à notre cause ? Nous recherchons toujours des bénévoles passionnés pour nous aider dans notre mission d'accompagnement et de soutien.
+              Vous souhaitez contribuer à notre cause ? Nous recherchons
+              toujours des bénévoles passionnés pour nous aider dans notre
+              mission d'accompagnement et de soutien.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
+              <a
                 href="/contact#contact-form"
                 className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
                 Devenir bénévole
               </a>
-              <a 
+              <a
                 href="https://www.helloasso.com/associations/christ-le-bon-berger-c-l-b-b/formulaires/1"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -237,17 +281,18 @@ const TeamPage: React.FC = () => {
             </h2>
           </div>
           <p className="text-xl text-white/90 mb-8 leading-relaxed">
-            Notre équipe est disponible pour vous accompagner dans vos démarches et répondre à toutes vos questions.
+            Notre équipe est disponible pour vous accompagner dans vos démarches
+            et répondre à toutes vos questions.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a 
+            <a
               href="tel:0781324474"
               className="bg-white text-emerald-600 px-8 py-4 rounded-xl font-semibold hover:bg-slate-50 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2"
             >
               <Phone className="w-5 h-5" />
               <span>07 81 32 44 74</span>
             </a>
-            <a 
+            <a
               href="/contact"
               className="border-2 border-white text-white hover:bg-white hover:text-emerald-600 px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
             >

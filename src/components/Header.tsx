@@ -34,7 +34,7 @@ const Header: React.FC = () => {
                 Christ Le Bon Berger
               </h1>
               <p className="text-sm text-emerald-600 font-medium">
-                Aux Écoute et Réconfort
+                Aide Écoute et Réconfort
               </p>
             </div>
           </a>

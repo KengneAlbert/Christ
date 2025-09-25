@@ -1,40 +1,43 @@
-import React from 'react';
-import { User, Mail, Phone } from 'lucide-react';
+import React from "react";
+import { User, Mail, Phone } from "lucide-react";
 
 const Team: React.FC = () => {
   const teamMembers = [
     {
-      name: 'Suzy POKA',
-      role: 'Présidente',
-      color: 'from-emerald-500 to-teal-600',
-      bgColor: 'from-emerald-50 to-teal-50',
-      description: 'Dirige l\'association avec passion et dévouement'
+      name: "Suzy POKA",
+      role: "Présidente",
+      color: "from-emerald-500 to-teal-600",
+      bgColor: "from-emerald-50 to-teal-50",
+      description: "Dirige l'association avec passion et dévouement",
     },
     {
-      name: 'Christelle YOUETO',
-      role: 'Secrétaire',
-      color: 'from-blue-500 to-indigo-600',
-      bgColor: 'from-blue-50 to-indigo-50',
-      description: 'Gère les communications et l\'administration'
+      name: "Christelle YOUETO",
+      role: "Secrétaire",
+      color: "from-blue-500 to-indigo-600",
+      bgColor: "from-blue-50 to-indigo-50",
+      description: "Gère les communications et l'administration",
     },
     {
-      name: 'Florence NOUMO',
-      role: 'Avocate',
-      color: 'from-purple-500 to-pink-600',
-      bgColor: 'from-purple-50 to-pink-50',
-      description: 'Apporte son expertise juridique aux victimes'
+      name: "Florence NOUMO",
+      role: "Avocate",
+      color: "from-purple-500 to-pink-600",
+      bgColor: "from-purple-50 to-pink-50",
+      description: "Apporte son expertise juridique aux victimes",
     },
     {
-      name: 'Mariette KOM',
-      role: 'Trésorière',
-      color: 'from-orange-500 to-red-600',
-      bgColor: 'from-orange-50 to-red-50',
-      description: 'Assure la gestion financière de l\'association'
-    }
+      name: "Mariette KOM",
+      role: "Trésorière",
+      color: "from-orange-500 to-red-600",
+      bgColor: "from-orange-50 to-red-50",
+      description: "Assure la gestion financière de l'association",
+    },
   ];
 
   return (
-    <section id="team" className="py-24 bg-gradient-to-br from-white via-emerald-50 to-teal-50 relative overflow-hidden">
+    <section
+      id="team"
+      className="py-24 bg-gradient-to-br from-white via-emerald-50 to-teal-50 relative overflow-hidden"
+    >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-400 rounded-full blur-3xl"></div>
@@ -53,13 +56,17 @@ const Team: React.FC = () => {
               Notre équipe
             </h2>
             <div className="w-24 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 mb-8 rounded-full animate-glow"></div>
-            
+
             <div className="prose prose-lg text-slate-600 leading-relaxed space-y-6">
               <p>
-                Notre équipe dévouée est le cœur de notre organisation. Chaque membre apporte des compétences uniques et une passion commune pour l'aide aux autres.
+                Notre équipe dévouée est le cœur de notre organisation. Chaque
+                membre apporte des compétences uniques et une passion commune
+                pour l'aide aux autres.
               </p>
               <p>
-                Ensemble, nous créons un environnement favorable où chacun se sent valorisé et compris. Nous sommes là pour vous guider sur le chemin de la guérison.
+                Ensemble, nous créons un environnement favorable où chacun se
+                sent valorisé et compris. Nous sommes là pour vous guider sur le
+                chemin de la guérison.
               </p>
             </div>
 
@@ -69,8 +76,12 @@ const Team: React.FC = () => {
                   <Phone className="w-6 h-6 text-emerald-600" />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-800">Contactez notre équipe</div>
-                  <div className="text-sm text-slate-600">Disponible 24h/24 pour vous accompagner</div>
+                  <div className="font-semibold text-slate-800">
+                    Contactez notre équipe
+                  </div>
+                  <div className="text-sm text-slate-600">
+                    Disponible 24h/24 pour vous accompagner
+                  </div>
                 </div>
               </div>
             </div>
@@ -79,19 +90,31 @@ const Team: React.FC = () => {
           {/* Right Content - Team Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-slide-in-right">
             {teamMembers.map((member, index) => (
-              <div 
-                key={index} 
-                className={`group bg-gradient-to-br ${member.bgColor} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105 text-center border border-white/50 hover-tilt animate-scale-in delay-${index * 200}`}
+              <div
+                key={index}
+                className={`group bg-gradient-to-br ${
+                  member.bgColor
+                } rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105 text-center border border-white/50 hover-tilt animate-scale-in delay-${
+                  index * 200
+                }`}
               >
-                <div className={`w-24 h-24 bg-gradient-to-r ${member.color} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg animate-bounce-gentle delay-${index * 300}`}>
+                <div
+                  className={`w-24 h-24 bg-gradient-to-r ${
+                    member.color
+                  } rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg animate-bounce-gentle delay-${
+                    index * 300
+                  }`}
+                >
                   <User className="w-12 h-12 text-white" />
                 </div>
-                
+
                 <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors duration-300">
                   {member.name}
                 </h3>
-                
-                <p className={`text-sm font-semibold bg-gradient-to-r ${member.color} bg-clip-text text-transparent mb-4`}>
+
+                <p
+                  className={`text-sm font-semibold bg-gradient-to-r ${member.color} bg-clip-text text-transparent mb-4`}
+                >
                   {member.role}
                 </p>
 
@@ -115,16 +138,18 @@ const Team: React.FC = () => {
               Rejoignez notre mission
             </h3>
             <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Vous souhaitez contribuer à notre cause ? Nous recherchons toujours des bénévoles passionnés pour nous aider dans notre mission.
+              Vous souhaitez contribuer à notre cause ? Nous recherchons
+              toujours des bénévoles passionnés pour nous aider dans notre
+              mission.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
+              <a
                 href="/contact#contact-form"
                 className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover-glow animate-slide-in-left delay-1000"
               >
                 Devenir bénévole
               </a>
-              <a 
+              <a
                 href="https://www.helloasso.com/associations/christ-le-bon-berger-c-l-b-b/formulaires/1"
                 target="_blank"
                 rel="noopener noreferrer"

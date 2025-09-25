@@ -62,7 +62,7 @@ const Footer: React.FC = () => {
               <div>
                 <h3 className="text-2xl font-bold">Christ Le Bon Berger</h3>
                 <p className="text-emerald-300 font-medium">
-                  Aux Écoute et Réconfort
+                  Aide Écoute et Réconfort
                 </p>
               </div>
             </div>
