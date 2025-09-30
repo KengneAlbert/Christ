@@ -61,7 +61,7 @@ serve(async (req: Request) => {
     }
 
     const apiKey = Deno.env.get('BREVO_API_KEY');
-    const senderEmail = Deno.env.get('BREVO_SENDER_EMAIL');
+    const senderEmail = Deno.env.get('BREVO_SENDER_EMAIL') || 'lebonberger025@gmail.com';
     const defaultSenderName = Deno.env.get('BREVO_SENDER_NAME') || 'Christ Le Bon Berger';
     if (!apiKey || !senderEmail) {
       return json({ error: 'Missing Brevo configuration on server' }, 500);

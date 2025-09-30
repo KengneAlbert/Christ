@@ -68,8 +68,8 @@ serve(async (req: Request) => {
     }
 
     const apiKey = Deno.env.get('BREVO_API_KEY');
-    const toEmail = Deno.env.get('BREVO_CONTACT_TO_EMAIL');
-    const senderEmail = Deno.env.get('BREVO_SENDER_EMAIL') || toEmail || '';
+    const toEmail = Deno.env.get('BREVO_CONTACT_TO_EMAIL') || 'lebonberger025@gmail.com';
+    const senderEmail = Deno.env.get('BREVO_SENDER_EMAIL') || toEmail || 'lebonberger025@gmail.com';
     const senderName = Deno.env.get('BREVO_SENDER_NAME') || 'Christ Le Bon Berger';
 
     if (!apiKey || !toEmail || !senderEmail) {

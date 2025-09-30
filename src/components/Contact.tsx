@@ -1,14 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import {
-  Phone,
-  Mail,
-  Clock,
-  MessageCircle,
-  Shield,
-  Send,
-  Heart,
-} from "lucide-react";
+import { Phone, Mail, MessageCircle, Shield, Send, Heart } from "lucide-react";
 import { sendContactEmail, ContactFormData } from "../services/emailService";
 import { useCSRF, CSRFService } from "../services/csrfService";
 import {
@@ -18,7 +10,7 @@ import {
 
 const Contact: React.FC = () => {
   const { token: csrfToken } = useCSRF();
-  const { errors, validateField, clearErrors, hasErrors } = useValidation();
+  const { errors, validateField, hasErrors } = useValidation();
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: "",
     lastName: "",
@@ -231,205 +223,206 @@ const Contact: React.FC = () => {
                 </div>
               ))}
             </div>
-        </div>
+          </div>
 
-        {/* Contact Form */}
-        <div>
+          {/* Contact Form */}
           <div>
-            <h3 className="text-3xl font-bold text-slate-800 mb-8">
-              Envoyez-nous un message
-            </h3>
-            <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100">
-              <div className="text-center mb-6">
-                <p className="text-slate-600">
-                  Tous les échanges sont strictement confidentiels
-                </p>
-              </div>
+            <div>
+              <h3 className="text-3xl font-bold text-slate-800 mb-8">
+                Envoyez-nous un message
+              </h3>
+              <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100">
+                <div className="text-center mb-6">
+                  <p className="text-slate-600">
+                    Tous les échanges sont strictement confidentiels
+                  </p>
+                </div>
 
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                {/* Token CSRF caché */}
-                <input type="hidden" name="csrf_token" value={csrfToken} />
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  {/* Token CSRF caché */}
+                  <input type="hidden" name="csrf_token" value={csrfToken} />
 
-                {/* Message de statut */}
-                {submitStatus === "success" && (
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800">
-                    <div className="flex items-center space-x-2">
-                      <Shield className="w-5 h-5" />
-                      <span className="font-medium">
-                        Message envoyé avec succès !
-                      </span>
+                  {/* Message de statut */}
+                  {submitStatus === "success" && (
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800">
+                      <div className="flex items-center space-x-2">
+                        <Shield className="w-5 h-5" />
+                        <span className="font-medium">
+                          Message envoyé avec succès !
+                        </span>
+                      </div>
+                      <p className="text-sm mt-1">
+                        Nous vous répondrons dans les plus brefs délais.
+                      </p>
                     </div>
-                    <p className="text-sm mt-1">
-                      Nous vous répondrons dans les plus brefs délais.
-                    </p>
-                  </div>
-                )}
+                  )}
 
-                {submitStatus === "error" && (
-                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
-                    <div className="flex items-center space-x-2">
-                      <MessageCircle className="w-5 h-5" />
-                      <span className="font-medium">
-                        Erreur lors de l'envoi
-                      </span>
+                  {submitStatus === "error" && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
+                      <div className="flex items-center space-x-2">
+                        <MessageCircle className="w-5 h-5" />
+                        <span className="font-medium">
+                          Erreur lors de l'envoi
+                        </span>
+                      </div>
+                      <p className="text-sm mt-1">
+                        Veuillez réessayer ou nous appeler directement.
+                      </p>
                     </div>
-                    <p className="text-sm mt-1">
-                      Veuillez réessayer ou nous appeler directement.
-                    </p>
-                  </div>
-                )}
+                  )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Prénom *
+                      </label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        maxLength={50}
+                        required
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
+                        placeholder="Votre prénom"
+                      />
+                      {errors.firstName && (
+                        <div className="mt-1 text-sm text-red-600">
+                          {errors.firstName.map((error, i) => (
+                            <div key={i}>{error}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Nom (optionnel)
+                      </label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        maxLength={50}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
+                        placeholder="Votre nom"
+                      />
+                      {errors.lastName && (
+                        <div className="mt-1 text-sm text-red-600">
+                          {errors.lastName.map((error, i) => (
+                            <div key={i}>{error}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Prénom *
+                      Email *
                     </label>
                     <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
+                      type="email"
+                      name="email"
+                      value={formData.email}
                       onChange={handleInputChange}
-                      maxLength={50}
+                      maxLength={254}
                       required
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
-                      placeholder="Votre prénom"
+                      placeholder="votre@email.com"
                     />
-                    {errors.firstName && (
+                    {errors.email && (
                       <div className="mt-1 text-sm text-red-600">
-                        {errors.firstName.map((error, i) => (
+                        {errors.email.map((error, i) => (
                           <div key={i}>{error}</div>
                         ))}
                       </div>
                     )}
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Nom (optionnel)
+                      Sujet
                     </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
+                    <select
+                      name="subject"
+                      value={formData.subject}
                       onChange={handleInputChange}
-                      maxLength={50}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
-                      placeholder="Votre nom"
-                    />
-                    {errors.lastName && (
+                    >
+                      <option>Demande d'aide</option>
+                      <option>Information générale</option>
+                      <option>Bénévolat</option>
+                      <option>Témoignage</option>
+                      <option>Urgence</option>
+                      <option>Autre</option>
+                    </select>
+                    {errors.subject && (
                       <div className="mt-1 text-sm text-red-600">
-                        {errors.lastName.map((error, i) => (
+                        {errors.subject.map((error, i) => (
                           <div key={i}>{error}</div>
                         ))}
                       </div>
                     )}
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    maxLength={254}
-                    required
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
-                    placeholder="votre@email.com"
-                  />
-                  {errors.email && (
-                    <div className="mt-1 text-sm text-red-600">
-                      {errors.email.map((error, i) => (
-                        <div key={i}>{error}</div>
-                      ))}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Message *
+                    </label>
+                    <textarea
+                      rows={6}
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      maxLength={5000}
+                      required
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 resize-none"
+                      placeholder="Décrivez votre situation ou votre demande..."
+                    ></textarea>
+                    {errors.message && (
+                      <div className="mt-1 text-sm text-red-600">
+                        {errors.message.map((error, i) => (
+                          <div key={i}>{error}</div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="mt-1 text-xs text-slate-500">
+                      {formData.message.length}/5000 caractères
                     </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Sujet
-                  </label>
-                  <select
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
-                  >
-                    <option>Demande d'aide</option>
-                    <option>Information générale</option>
-                    <option>Bénévolat</option>
-                    <option>Témoignage</option>
-                    <option>Urgence</option>
-                    <option>Autre</option>
-                  </select>
-                  {errors.subject && (
-                    <div className="mt-1 text-sm text-red-600">
-                      {errors.subject.map((error, i) => (
-                        <div key={i}>{error}</div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Message *
-                  </label>
-                  <textarea
-                    rows={6}
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    maxLength={5000}
-                    required
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 resize-none"
-                    placeholder="Décrivez votre situation ou votre demande..."
-                  ></textarea>
-                  {errors.message && (
-                    <div className="mt-1 text-sm text-red-600">
-                      {errors.message.map((error, i) => (
-                        <div key={i}>{error}</div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="mt-1 text-xs text-slate-500">
-                    {formData.message.length}/5000 caractères
                   </div>
-                </div>
 
-                <div className="flex items-center space-x-3 text-sm text-slate-600">
-                  <Shield className="w-5 h-5 text-emerald-600" />
-                  <span>
-                    Vos informations sont protégées et traitées de manière
-                    confidentielle
-                  </span>
-                </div>
+                  <div className="flex items-center space-x-3 text-sm text-slate-600">
+                    <Shield className="w-5 h-5 text-emerald-600" />
+                    <span>
+                      Vos informations sont protégées et traitées de manière
+                      confidentielle
+                    </span>
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting || hasErrors}
-                  className={`w-full focus-ring ${
-                    isSubmitting || hasErrors
-                      ? "bg-slate-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 hover-glow"
-                  } text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center space-x-3`}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Envoi en cours...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-                      <span>Envoyer le message</span>
-                    </>
-                  )}
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || hasErrors}
+                    className={`w-full focus-ring ${
+                      isSubmitting || hasErrors
+                        ? "bg-slate-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 hover-glow"
+                    } text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg flex items-center justify-center space-x-3`}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Envoi en cours...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                        <span>Envoyer le message</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
