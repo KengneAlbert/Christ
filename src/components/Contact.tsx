@@ -3,7 +3,6 @@ import { useState } from "react";
 import {
   Phone,
   Mail,
-  MapPin,
   Clock,
   MessageCircle,
   Shield,
@@ -132,7 +131,7 @@ const Contact: React.FC = () => {
     {
       icon: Mail,
       title: "Email",
-      info: "pokasuzy99@gmail.com",
+      info: "lebonberger025@gmail.com",
       description: "Réponse garantie sous 24h",
       color: "from-purple-500 to-pink-600",
     },
@@ -232,29 +231,10 @@ const Contact: React.FC = () => {
                 </div>
               ))}
             </div>
+        </div>
 
-            <div className="mt-8 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100">
-              <div className="flex items-center space-x-3 mb-4">
-                <MapPin className="w-5 h-5 text-emerald-600" />
-                <h4 className="font-semibold text-slate-800">
-                  Informations pratiques
-                </h4>
-              </div>
-              <div className="space-y-2 text-sm text-slate-600">
-                <p>
-                  <strong>Adresse :</strong> Paris, France
-                </p>
-                <p>
-                  <strong>Horaires :</strong> Lun-Ven: 9h-18h, Sam: 9h-12h
-                </p>
-                <p>
-                  <strong>Rendez-vous :</strong> Sur demande uniquement
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Form */}
+        {/* Contact Form */}
+        <div>
           <div>
             <h3 className="text-3xl font-bold text-slate-800 mb-8">
               Envoyez-nous un message

@@ -35,14 +35,11 @@ const LegalMentionsPage: React.FC = () => {
             </h2>
             <div className="text-slate-700 leading-relaxed">
               <p className="font-semibold">Association Christ Le Bon Berger</p>
-              <p>
-                Adresse: 29 rue du docteur Fleming, Aulnay-sous-bois, France
-              </p>
               <p>SIREN / RNA (si applicable): N/A</p>
               <div className="mt-3 space-y-1">
                 <p className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-emerald-600" /> Email:
-                  pokasuzy99@gmail.com
+                  lebonberger025@gmail.com
                 </p>
                 <p className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-emerald-600" /> Téléphone: +33

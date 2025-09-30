@@ -96,7 +96,7 @@ export const sendContactEmail = async (formData: ContactFormData): Promise<boole
         htmlContent,
         textContent: `Contact de: ${sanitizedData.firstName} ${sanitizedData.lastName || ''} <${sanitizedData.email}>\n\n${sanitizedData.message}`,
         recipients: [{ 
-          email: 'contact@christ-le-bon-berger.com',
+          email: 'lebonberger025@gmail.com',
           name: 'Équipe Contact'
         }],
         senderName: 'Christ Le Bon Berger - Contact'

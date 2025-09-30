@@ -35,13 +35,12 @@ const PrivacyPolicyPage: React.FC = () => {
               1. Responsable du traitement
             </h2>
             <p className="text-slate-700 leading-relaxed">
-              Association Christ Le Bon Berger – 29 rue du docteur Fleming,
-              Aulnay-sous-bois, France. Contact:{" "}
+              Association Christ Le Bon Berger. Contact:{" "}
               <a
                 className="text-emerald-600 hover:underline"
-                href="mailto:pokasuzy99@gmail.com"
+                href="mailto:lebonberger025@gmail.com"
               >
-                pokasuzy99@gmail.com
+                lebonberger025@gmail.com
               </a>
             </p>
           </div>
@@ -110,7 +109,7 @@ const PrivacyPolicyPage: React.FC = () => {
               droits:{" "}
               <a
                 className="text-emerald-600 hover:underline"
-                href="mailto:pokasuzy99@gmail.com"
+                href="mailto:lebonberger025@gmail.com"
               >
                 nous contacter
               </a>

@@ -210,10 +210,10 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
                     <p className="text-xs mt-2 opacity-75">
                       💬 Besoin d'aide ? Contactez-nous à{" "}
                       <a
-                        href="mailto:contact@christ-le-bon-berger.com"
+                        href="mailto:lebonberger025@gmail.com"
                         className="underline hover:no-underline"
                       >
-                        contact@christ-le-bon-berger.com
+                        lebonberger025@gmail.com
                       </a>
                     </p>
                   )}

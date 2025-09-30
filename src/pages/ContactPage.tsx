@@ -3,7 +3,6 @@ import { useState } from "react";
 import {
   Phone,
   Mail,
-  MapPin,
   Clock,
   MessageCircle,
   Shield,
@@ -153,16 +152,9 @@ const ContactPage: React.FC = () => {
     {
       icon: Mail,
       title: "Email",
-      info: "pokasuzy99@gmail.com",
+      info: "lebonberger025@gmail.com",
       description: "Réponse garantie sous 24h",
       color: "from-blue-500 to-indigo-600",
-    },
-    {
-      icon: MapPin,
-      title: "Adresse",
-      info: "Paris, France",
-      description: "Rendez-vous sur demande uniquement",
-      color: "from-purple-500 to-pink-600",
     },
   ];
 

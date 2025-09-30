@@ -162,15 +162,9 @@ class SEOService {
       contactPoint: {
         '@type': 'ContactPoint',
         telephone: '+33781324474',
-        email: 'pokasuzy99@gmail.com',
+        email: 'lebonberger025@gmail.com',
         contactType: 'customer service',
         availableLanguage: 'French'
-      },
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: '29 rue du docteur Fleming',
-        addressLocality: 'Aulnay-sous-bois',
-        addressCountry: 'FR'
       },
       foundingDate: '2024',
       knowsAbout: [
@@ -282,13 +276,9 @@ class SEOService {
         : 'https://schema.org/OfflineEventAttendanceMode',
       eventStatus: 'https://schema.org/EventScheduled',
       location: event.location ? {
-        '@type': 'Place',
-        name: event.location,
-        address: {
-          '@type': 'PostalAddress',
-          addressLocality: 'Aulnay-sous-bois',
-          addressCountry: 'FR'
-        }
+        '@type': 'VirtualLocation',
+        url: this.baseUrl,
+        name: event.location
       } : {
         '@type': 'VirtualLocation',
         url: this.baseUrl

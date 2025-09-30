@@ -2,7 +2,6 @@ import React from "react";
 import {
   Phone,
   Mail,
-  MapPin,
   Facebook,
   Instagram,
   Heart,
@@ -198,15 +197,7 @@ const Footer: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-3 text-slate-300">
                   <Mail className="w-4 h-4 text-emerald-400" />
-                  <span>pokasuzy99@gmail.com</span>
-                </div>
-                <div className="flex items-start space-x-3 text-slate-300">
-                  <MapPin className="w-4 h-4 text-emerald-400 mt-1" />
-                  <span>
-                    29 rue du docteur Fleming
-                    <br />
-                    Aulnay-sous-bois, France
-                  </span>
+                  <span>lebonberger025@gmail.com</span>
                 </div>
               </div>
             </div>
