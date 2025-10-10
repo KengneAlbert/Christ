@@ -43,21 +43,21 @@ const TrustBanner: React.FC = () => {
       author: "Gladys",
       location: "",
       image:
-        "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png",
     },
     {
       text: "L'écoute bienveillante m'a permis de sortir de l'isolement.",
       author: "Sophie, 28 ans",
       location: "Lyon",
       image:
-        "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "https://cdn.pixabay.com/photo/2014/03/25/16/54/user-297566_1280.png",
     },
     {
       text: "Un accompagnement professionnel qui m'a sauvé la vie.",
       author: "Claire, 41 ans",
       location: "Marseille",
       image:
-        "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=400",
+        "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png",
     },
   ];
 
