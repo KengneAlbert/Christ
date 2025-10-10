@@ -14,7 +14,7 @@ const TrustBanner: React.FC = () => {
     {
       icon: Users,
       title: "Communauté bienveillante",
-      description: "Plus de 500 personnes accompagnées avec succès",
+      description: "De nombreuses personnes accompagnées avec succès",
       color: "from-blue-500 to-indigo-600",
       image:
         "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=400",
@@ -39,9 +39,9 @@ const TrustBanner: React.FC = () => {
 
   const testimonials = [
     {
-      text: "Grâce à cette association, j'ai retrouvé confiance en moi et ma liberté.",
-      author: "Marie, 34 ans",
-      location: "Paris",
+      text: "J'ai beaucoup douté, j'ai beaucoup pleuré, j'ai voulu me taire pour ne plus subir. Mais un jour, j'ai compris que ma voix avait le pouvoir de me guérir. Alors je te la tends aujourd'hui, pour que tu saches que tu n'es pas seule. Tu peux te relever, tu as encore cette force en toi. Je prie pour que le seigneur soit ta lumière et ta force. Tu es une reine",
+      author: "Gladys",
+      location: "",
       image:
         "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400",
     },

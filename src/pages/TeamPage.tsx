@@ -59,7 +59,7 @@ const TeamPage: React.FC = () => {
     },
     {
       name: "Patricia SANDANASSAMY",
-      role: "Responsable de la communication",
+      role: "Community Manager",
       description:
         "Coordonne les communications et la sensibilisation de l'association, elle développe les stratégies de communication pour mieux servir notre mission.",
       expertise: ["Communication", "Sensibilisation", "Relations publiques"],
