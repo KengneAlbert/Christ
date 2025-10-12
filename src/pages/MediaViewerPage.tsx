@@ -346,14 +346,21 @@ const MediaViewerPage: React.FC = () => {
             {media.file_url ? (
               <div className="bg-slate-50 rounded-2xl p-6 shadow-xl">
                 <div className="bg-white rounded-xl overflow-hidden shadow-lg">
-                  <iframe
-                    src={`/api/pdf-proxy?url=${encodeURIComponent(
-                      media.file_url
-                    )}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`}
-                    title={media.title}
-                    className="w-full h-[600px] border-0"
-                    frameBorder="0"
-                  />
+                  {(() => {
+                    const useProxy = import.meta.env.VITE_PDF_PROXY === 'true';
+                    const base = media.file_url || '';
+                    const pdfSrc = useProxy
+                      ? `/api/pdf-proxy?url=${encodeURIComponent(base)}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`
+                      : `${base}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`;
+                    return (
+                      <iframe
+                        src={pdfSrc}
+                        title={media.title}
+                        className="w-full h-[600px] border-0"
+                        frameBorder="0"
+                      />
+                    );
+                  })()}
                 </div>
                 <div className="mt-6 flex justify-center">
                   <button
