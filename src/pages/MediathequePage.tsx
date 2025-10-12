@@ -1,42 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { Play, Download, FileText, Image, Video, Music, Search, Filter, Calendar, Eye, ExternalLink } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import React, { useState, useEffect } from "react";
+import {
+  Play,
+  Download,
+  FileText,
+  Image,
+  Video,
+  Music,
+  Search,
+  Filter,
+  Calendar,
+  Eye,
+  ExternalLink,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
+import type { MediaItem } from "../types/media";
 
-interface MediaItem {
-  id: string;
-  type: 'video' | 'document' | 'audio' | 'image';
-  title: string;
-  description: string;
-  thumbnail_url: string | null;
-  file_url: string | null;
-  youtube_id: string | null;
-  file_name: string | null;
-  file_size: number | null;
-  duration: string | null;
-  pages: number | null;
-  created_at: string;
-  updated_at: string;
-  is_published: boolean;
-  views_count: number;
-  downloads_count: number;
-  category: string;
-}
+// Utilise l'interface partagée MediaItem
 
 const MediathequePage: React.FC = () => {
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const categories = [
-    { id: 'all', name: 'Tout', icon: Filter },
-    { id: 'video', name: 'Vidéos', icon: Video },
-    { id: 'document', name: 'Documents', icon: FileText },
-    { id: 'audio', name: 'Audio', icon: Music },
-    { id: 'image', name: 'Images', icon: Image }
+    { id: "all", name: "Tout", icon: Filter },
+    { id: "video", name: "Vidéos", icon: Video },
+    { id: "document", name: "Documents", icon: FileText },
+    { id: "audio", name: "Audio", icon: Music },
+    { id: "image", name: "Images", icon: Image },
   ];
 
   // Charger les données depuis Supabase
@@ -50,49 +45,60 @@ const MediathequePage: React.FC = () => {
       setError(null);
 
       const { data, error: fetchError } = await supabase
-        .from('media_items')
-        .select('*')
-        .eq('is_published', true)
-        .order('created_at', { ascending: false });
+        .from("media_items")
+        .select("*")
+        .eq("is_published", true)
+        .order("created_at", { ascending: false });
 
       if (fetchError) {
         throw fetchError;
       }
 
       setMediaItems(data || []);
-    } catch (err: any) {
-      console.error('Erreur chargement médiathèque:', err);
-      setError('Erreur lors du chargement des médias. Veuillez réessayer.');
+    } catch (err: unknown) {
+      console.error("Erreur chargement médiathèque:", err);
+      setError("Erreur lors du chargement des médias. Veuillez réessayer.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filteredItems = mediaItems.filter(item => {
-    const matchesFilter = activeFilter === 'all' || item.type === activeFilter;
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.category.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredItems = mediaItems.filter((item) => {
+    const matchesFilter = activeFilter === "all" || item.type === activeFilter;
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'video': return Video;
-      case 'document': return FileText;
-      case 'audio': return Music;
-      case 'image': return Image;
-      default: return FileText;
+      case "video":
+        return Video;
+      case "document":
+        return FileText;
+      case "audio":
+        return Music;
+      case "image":
+        return Image;
+      default:
+        return FileText;
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'video': return 'from-red-500 to-red-600';
-      case 'document': return 'from-blue-500 to-blue-600';
-      case 'audio': return 'from-purple-500 to-purple-600';
-      case 'image': return 'from-green-500 to-green-600';
-      default: return 'from-slate-500 to-slate-600';
+      case "video":
+        return "from-red-500 to-red-600";
+      case "document":
+        return "from-blue-500 to-blue-600";
+      case "audio":
+        return "from-purple-500 to-purple-600";
+      case "image":
+        return "from-green-500 to-green-600";
+      default:
+        return "from-slate-500 to-slate-600";
     }
   };
 
@@ -100,13 +106,13 @@ const MediathequePage: React.FC = () => {
     // Incrémenter les vues
     try {
       await supabase
-        .from('media_items')
+        .from("media_items")
         .update({ views_count: item.views_count + 1 })
-        .eq('id', item.id);
+        .eq("id", item.id);
     } catch (error) {
-      console.error('Erreur mise à jour vues:', error);
+      console.error("Erreur mise à jour vues:", error);
     }
-    
+
     // Naviguer vers la page de consultation
     navigate(`/mediatheque/${item.id}`);
   };
@@ -116,18 +122,26 @@ const MediathequePage: React.FC = () => {
       // Incrémenter les téléchargements
       try {
         await supabase
-          .from('media_items')
+          .from("media_items")
           .update({ downloads_count: item.downloads_count + 1 })
-          .eq('id', item.id);
+          .eq("id", item.id);
       } catch (error) {
-        console.error('Erreur mise à jour téléchargements:', error);
+        console.error("Erreur mise à jour téléchargements:", error);
       }
 
       // Créer un lien de téléchargement
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = item.file_url;
-      link.download = item.file_name || `${item.title}.${item.type === 'document' ? 'pdf' : item.type === 'audio' ? 'mp3' : 'jpg'}`;
-      link.target = '_blank';
+      link.download =
+        item.file_name ||
+        `${item.title}.${
+          item.type === "document"
+            ? "pdf"
+            : item.type === "audio"
+            ? "mp3"
+            : "jpg"
+        }`;
+      link.target = "_blank";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -136,17 +150,23 @@ const MediathequePage: React.FC = () => {
 
   const getDefaultThumbnail = (type: string) => {
     const defaultThumbnails = {
-      video: 'https://images.pexels.com/photos/7176026/pexels-photo-7176026.jpeg?auto=compress&cs=tinysrgb&w=400',
-      document: 'https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=400',
-      audio: 'https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400',
-      image: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpg?auto=compress&cs=tinysrgb&w=400'
+      video:
+        "https://images.pexels.com/photos/7176026/pexels-photo-7176026.jpeg?auto=compress&cs=tinysrgb&w=400",
+      document:
+        "https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=400",
+      audio:
+        "https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400",
+      image:
+        "https://images.pexels.com/photos/590022/pexels-photo-590022.jpg?auto=compress&cs=tinysrgb&w=400",
     };
     return defaultThumbnails[type as keyof typeof defaultThumbnails];
   };
 
   const getThumbnailUrl = (item: MediaItem) => {
+    // Use explicit thumbnail_url (cover) when available
     if (item.thumbnail_url) return item.thumbnail_url;
-    if (item.youtube_id) return `https://img.youtube.com/vi/${item.youtube_id}/maxresdefault.jpg`;
+    if (item.youtube_id)
+      return `https://img.youtube.com/vi/${item.youtube_id}/maxresdefault.jpg`;
     return getDefaultThumbnail(item.type);
   };
 
@@ -155,7 +175,9 @@ const MediathequePage: React.FC = () => {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 text-lg">Chargement de la médiathèque...</p>
+          <p className="text-slate-600 text-lg">
+            Chargement de la médiathèque...
+          </p>
         </div>
       </div>
     );
@@ -168,7 +190,9 @@ const MediathequePage: React.FC = () => {
           <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <ExternalLink className="w-12 h-12 text-red-500" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-4">Erreur de chargement</h1>
+          <h1 className="text-2xl font-bold text-slate-800 mb-4">
+            Erreur de chargement
+          </h1>
           <p className="text-slate-600 mb-8">{error}</p>
           <button
             onClick={loadMediaItems}
@@ -184,10 +208,11 @@ const MediathequePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section 
+      <section
         className="relative min-h-[400px] bg-cover bg-center bg-no-repeat flex items-center justify-center"
         style={{
-          backgroundImage: 'url(https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1)'
+          backgroundImage:
+            "url(https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1)",
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-slate-800/80"></div>
@@ -225,10 +250,12 @@ const MediathequePage: React.FC = () => {
                   <button
                     key={category.id}
                     onClick={() => setActiveFilter(category.id)}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 animate-scale-in delay-${index * 100} ${
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 animate-scale-in delay-${
+                      index * 100
+                    } ${
                       activeFilter === category.id
-                        ? 'bg-emerald-500 text-white shadow-lg hover-glow'
-                        : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 hover-lift'
+                        ? "bg-emerald-500 text-white shadow-lg hover-glow"
+                        : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 hover-lift"
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -242,7 +269,9 @@ const MediathequePage: React.FC = () => {
           {/* Results Count */}
           <div className="mt-6 text-center">
             <p className="text-slate-600">
-              {filteredItems.length} ressource{filteredItems.length > 1 ? 's' : ''} trouvée{filteredItems.length > 1 ? 's' : ''}
+              {filteredItems.length} ressource
+              {filteredItems.length > 1 ? "s" : ""} trouvée
+              {filteredItems.length > 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -255,22 +284,30 @@ const MediathequePage: React.FC = () => {
             {filteredItems.map((item, index) => {
               const TypeIcon = getTypeIcon(item.type);
               return (
-                <div 
+                <div
                   key={item.id}
-                  className={`group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105 border border-slate-100 overflow-hidden cursor-pointer hover-lift animate-scale-in delay-${index * 100}`}
+                  className={`group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105 border border-slate-100 overflow-hidden cursor-pointer hover-lift animate-scale-in delay-${
+                    index * 100
+                  }`}
                   onClick={() => handleMediaClick(item)}
                 >
                   {/* Thumbnail */}
                   <div className="relative h-48 overflow-hidden">
-                    <img 
+                    <img
                       src={getThumbnailUrl(item)}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                    
+
                     {/* Type Badge */}
-                    <div className={`absolute top-3 left-3 w-10 h-10 bg-gradient-to-r ${getTypeColor(item.type)} rounded-xl flex items-center justify-center shadow-lg animate-bounce-gentle delay-${index * 200}`}>
+                    <div
+                      className={`absolute top-3 left-3 w-10 h-10 bg-gradient-to-r ${getTypeColor(
+                        item.type
+                      )} rounded-xl flex items-center justify-center shadow-lg animate-bounce-gentle delay-${
+                        index * 200
+                      }`}
+                    >
                       <TypeIcon className="w-5 h-5 text-white" />
                     </div>
 
@@ -284,7 +321,7 @@ const MediathequePage: React.FC = () => {
                     {/* Play Button Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300 animate-bounce-in">
-                        {item.type === 'document' ? (
+                        {item.type === "document" || item.type === "image" ? (
                           <Eye className="w-8 h-8 text-slate-800 ml-1" />
                         ) : (
                           <Play className="w-8 h-8 text-slate-800 ml-1" />
@@ -301,7 +338,11 @@ const MediathequePage: React.FC = () => {
                       </span>
                       <div className="flex items-center space-x-1 text-sm text-slate-500">
                         <Calendar className="w-4 h-4" />
-                        <span>{new Date(item.created_at).toLocaleDateString('fr-FR')}</span>
+                        <span>
+                          {new Date(item.created_at).toLocaleDateString(
+                            "fr-FR"
+                          )}
+                        </span>
                       </div>
                     </div>
 
@@ -331,17 +372,22 @@ const MediathequePage: React.FC = () => {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2">
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleMediaClick(item);
                         }}
                         className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2 hover-glow"
                       >
-                        {item.type === 'document' ? (
+                        {item.type === "document" ? (
                           <>
                             <Eye className="w-4 h-4" />
                             <span>Consulter</span>
+                          </>
+                        ) : item.type === "image" ? (
+                          <>
+                            <Eye className="w-4 h-4" />
+                            <span>Voir</span>
                           </>
                         ) : (
                           <>
@@ -350,18 +396,21 @@ const MediathequePage: React.FC = () => {
                           </>
                         )}
                       </button>
-                      
-                      {(item.type === 'document' || item.type === 'image' || item.type === 'audio') && item.file_url && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownload(item);
-                          }}
-                          className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center hover-lift"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                      )}
+
+                      {(item.type === "document" ||
+                        item.type === "image" ||
+                        item.type === "audio") &&
+                        item.file_url && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(item);
+                            }}
+                            className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center hover-lift"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -374,17 +423,19 @@ const MediathequePage: React.FC = () => {
               <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-gentle">
                 <Search className="w-12 h-12 text-slate-400" />
               </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-3">Aucune ressource trouvée</h3>
+              <h3 className="text-xl font-bold text-slate-800 mb-3">
+                Aucune ressource trouvée
+              </h3>
               <p className="text-slate-600 mb-6">
-                {searchTerm || activeFilter !== 'all' 
-                  ? 'Essayez de modifier vos critères de recherche' 
-                  : 'Aucune ressource n\'est encore disponible'}
+                {searchTerm || activeFilter !== "all"
+                  ? "Essayez de modifier vos critères de recherche"
+                  : "Aucune ressource n'est encore disponible"}
               </p>
-              {(searchTerm || activeFilter !== 'all') && (
-                <button 
+              {(searchTerm || activeFilter !== "all") && (
+                <button
                   onClick={() => {
-                    setActiveFilter('all');
-                    setSearchTerm('');
+                    setActiveFilter("all");
+                    setSearchTerm("");
                   }}
                   className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover-glow"
                 >
@@ -400,7 +451,9 @@ const MediathequePage: React.FC = () => {
       <section className="py-20 bg-gradient-to-br from-slate-50 to-emerald-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-800 mb-6 animate-slide-up">Ressources recommandées</h2>
+            <h2 className="text-4xl font-bold text-slate-800 mb-6 animate-slide-up">
+              Ressources recommandées
+            </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto animate-slide-up delay-200">
               Nos contenus les plus utiles pour vous accompagner
             </p>
@@ -413,15 +466,20 @@ const MediathequePage: React.FC = () => {
                   <Video className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-slate-800">Témoignages vidéo</h3>
-                  <p className="text-slate-600">Histoires de reconstruction et d'espoir</p>
+                  <h3 className="text-2xl font-bold text-slate-800">
+                    Témoignages vidéo
+                  </h3>
+                  <p className="text-slate-600">
+                    Histoires de reconstruction et d'espoir
+                  </p>
                 </div>
               </div>
               <p className="text-slate-600 mb-6 leading-relaxed">
-                Découvrez les témoignages inspirants de femmes qui ont surmonté les violences conjugales et retrouvé leur liberté.
+                Découvrez les témoignages inspirants de femmes qui ont surmonté
+                les violences conjugales et retrouvé leur liberté.
               </p>
-              <button 
-                onClick={() => setActiveFilter('video')}
+              <button
+                onClick={() => setActiveFilter("video")}
                 className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover-glow"
               >
                 Voir les témoignages
@@ -434,15 +492,18 @@ const MediathequePage: React.FC = () => {
                   <FileText className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-slate-800">Guides pratiques</h3>
+                  <h3 className="text-2xl font-bold text-slate-800">
+                    Guides pratiques
+                  </h3>
                   <p className="text-slate-600">Outils et conseils concrets</p>
                 </div>
               </div>
               <p className="text-slate-600 mb-6 leading-relaxed">
-                Téléchargez nos guides complets pour comprendre vos droits et les démarches à entreprendre.
+                Téléchargez nos guides complets pour comprendre vos droits et
+                les démarches à entreprendre.
               </p>
-              <button 
-                onClick={() => setActiveFilter('document')}
+              <button
+                onClick={() => setActiveFilter("document")}
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover-glow"
               >
                 Télécharger les guides
@@ -459,16 +520,17 @@ const MediathequePage: React.FC = () => {
             Besoin d'aide personnalisée ?
           </h2>
           <p className="text-xl text-white/90 mb-8 leading-relaxed animate-slide-up delay-200">
-            Notre équipe est disponible pour vous accompagner et répondre à vos questions
+            Notre équipe est disponible pour vous accompagner et répondre à vos
+            questions
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a 
+            <a
               href="/contact"
               className="bg-white text-emerald-600 px-8 py-4 rounded-xl font-semibold hover:bg-slate-50 transition-all duration-300 transform hover:scale-105 shadow-lg hover-lift animate-slide-in-left delay-400"
             >
               Nous contacter
             </a>
-            <a 
+            <a
               href="tel:0781324474"
               className="border-2 border-white text-white hover:bg-white hover:text-emerald-600 px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover-lift animate-slide-in-right delay-500"
             >

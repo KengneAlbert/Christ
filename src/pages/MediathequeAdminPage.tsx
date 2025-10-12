@@ -4,15 +4,11 @@ import {
   Edit,
   Trash2,
   Eye,
-  Video,
   FileText,
-  Image,
-  Music,
   Search,
   BarChart3,
   Download,
   ExternalLink,
-  File,
   AlertCircle,
   CheckCircle,
   RefreshCw,
@@ -28,27 +24,9 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import { BulkActionBar } from "../components/BulkActionBar";
 import CustomDropdown from "../components/CustomDropdown";
 import { ButtonLoader } from "../components/Loader";
+import type { MediaItem } from "../types/media";
 
-interface MediaItem {
-  id: string;
-  type: "video" | "document" | "audio" | "image";
-  title: string;
-  description: string;
-  category: string;
-  thumbnail_url?: string;
-  file_url?: string;
-  youtube_id?: string;
-  file_name?: string;
-  file_size?: number;
-  duration?: string;
-  pages?: number;
-  created_at: string;
-  updated_at: string;
-  is_published: boolean;
-  views_count: number;
-  downloads_count: number;
-  created_by: string;
-}
+// Utilise l'interface partagée MediaItem
 
 const MediathequeAdminContent: React.FC = () => {
   const { user, initialized } = useAuth();
@@ -349,20 +327,21 @@ const MediathequeAdminContent: React.FC = () => {
     return defaultThumbnails[type as keyof typeof defaultThumbnails];
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "video":
-        return Video;
-      case "document":
-        return FileText;
-      case "audio":
-        return Music;
-      case "image":
-        return Image;
-      default:
-        return File;
-    }
-  };
+  // Type icons used elsewhere were removed; keep function commented if needed in the future
+  // const getTypeIcon = (type: string) => {
+  //   switch (type) {
+  //     case "video":
+  //       return Video;
+  //     case "document":
+  //       return FileText;
+  //     case "audio":
+  //       return Music;
+  //     case "image":
+  //       return Image;
+  //     default:
+  //       return File;
+  //   }
+  // };
 
   return (
     <>
@@ -515,7 +494,16 @@ const MediathequeAdminContent: React.FC = () => {
                           { value: "image", label: "Images" },
                         ]}
                         value={filterType}
-                        onChange={setFilterType}
+                        onChange={(v) =>
+                          setFilterType(
+                            v as
+                              | "all"
+                              | "video"
+                              | "document"
+                              | "audio"
+                              | "image"
+                          )
+                        }
                         placeholder="Tous les types"
                         width="w-56"
                       />
@@ -526,7 +514,7 @@ const MediathequeAdminContent: React.FC = () => {
                           { value: "unpublished", label: "Brouillons" },
                         ]}
                         value={publishStatus}
-                        onChange={setPublishStatus}
+                        onChange={(v) => setPublishStatus(v)}
                         placeholder="Tout statut"
                         width="w-56"
                       />
@@ -555,8 +543,7 @@ const MediathequeAdminContent: React.FC = () => {
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {mediaItems.map((item, index) => {
-                    const TypeIcon = getTypeIcon(item.type);
+                  {mediaItems.map((item) => {
                     const isSelected = selectedItems.has(item.id);
                     return (
                       <div
@@ -570,6 +557,7 @@ const MediathequeAdminContent: React.FC = () => {
                         <div className="relative h-48 group">
                           <img
                             src={
+                              // Prefer explicit thumbnail (cover) when available
                               item.thumbnail_url ||
                               generateThumbnail(
                                 item.type,

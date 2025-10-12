@@ -15,28 +15,11 @@ import {
   Clock,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import type { MediaItem } from "../types/media";
 import SEOHead from "../components/SEOHead";
 import { seoService } from "../services/seoService";
 
-interface MediaItem {
-  id: string;
-  type: "video" | "document" | "audio" | "image";
-  title: string;
-  description: string;
-  thumbnail_url: string | null;
-  file_url: string | null;
-  youtube_id: string | null;
-  file_name: string | null;
-  file_size: number | null;
-  duration: string | null;
-  pages: number | null;
-  created_at: string;
-  updated_at: string;
-  is_published: boolean;
-  views_count: number;
-  downloads_count: number;
-  category: string;
-}
+// Utilise l'interface partagée MediaItem
 
 const MediaViewerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,6 +30,15 @@ const MediaViewerPage: React.FC = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [similarItems, setSimilarItems] = useState<MediaItem[]>([]);
   const [isSimilarLoading, setIsSimilarLoading] = useState(false);
+  const [gallery, setGallery] = useState<
+    Array<{
+      id: string;
+      image_url: string;
+      thumbnail_url: string | null;
+      is_cover: boolean;
+    }>
+  >([]);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const loadMedia = useCallback(async () => {
     if (!id) {
@@ -125,6 +117,28 @@ const MediaViewerPage: React.FC = () => {
         setSimilarItems([]);
       } finally {
         setIsSimilarLoading(false);
+      }
+
+      // Charger la galerie si c'est un type image
+      if (data.type === "image") {
+        const { data: imgs } = await supabase
+          .from("media_images")
+          .select("id, image_url, thumbnail_url, is_cover")
+          .eq("media_id", data.id)
+          .order("is_cover", { ascending: false })
+          .order("created_at", { ascending: true });
+        const list = (imgs || []) as Array<{
+          id: string;
+          image_url: string;
+          thumbnail_url: string | null;
+          is_cover: boolean;
+        }>;
+        setGallery(list);
+        const coverIdx = list.findIndex((im) => im.is_cover);
+        setActiveImageIndex(coverIdx >= 0 ? coverIdx : 0);
+      } else {
+        setGallery([]);
+        setActiveImageIndex(0);
       }
     } catch (err) {
       console.error("Erreur chargement média:", err);
@@ -333,7 +347,9 @@ const MediaViewerPage: React.FC = () => {
               <div className="bg-slate-50 rounded-2xl p-6 shadow-xl">
                 <div className="bg-white rounded-xl overflow-hidden shadow-lg">
                   <iframe
-                    src={`${media.file_url}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`}
+                    src={`/api/pdf-proxy?url=${encodeURIComponent(
+                      media.file_url
+                    )}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`}
                     title={media.title}
                     className="w-full h-[600px] border-0"
                     frameBorder="0"
@@ -367,7 +383,12 @@ const MediaViewerPage: React.FC = () => {
           <div className="w-full mb-8">
             <div className="relative bg-slate-50 rounded-2xl p-6 shadow-xl">
               <img
-                src={media.file_url || media.thumbnail_url || ""}
+                src={
+                  gallery[activeImageIndex]?.image_url ||
+                  media.file_url ||
+                  media.thumbnail_url ||
+                  ""
+                }
                 alt={media.title}
                 className="w-full max-h-[600px] object-contain rounded-xl shadow-lg bg-white"
               />
@@ -378,6 +399,34 @@ const MediaViewerPage: React.FC = () => {
                 <Download className="w-6 h-6" />
               </button>
             </div>
+
+            {gallery.length > 1 && (
+              <div className="mt-4 grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                {gallery.map((img, idx) => (
+                  <button
+                    type="button"
+                    key={img.id}
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`relative rounded-xl overflow-hidden border ${
+                      idx === activeImageIndex
+                        ? "border-emerald-500 ring-2 ring-emerald-300"
+                        : "border-slate-200"
+                    } hover:scale-105 transition-transform duration-200`}
+                  >
+                    <img
+                      src={img.thumbnail_url || img.image_url}
+                      alt="miniature"
+                      className="w-full h-20 object-cover"
+                    />
+                    {img.is_cover && (
+                      <span className="absolute top-1 left-1 bg-black/70 text-white text-[10px] px-1 rounded">
+                        Couverture
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         );
 

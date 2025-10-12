@@ -98,6 +98,35 @@ export interface Database {
           created_by?: string;
         };
       };
+      media_images: {
+        Row: {
+          id: string;
+          media_id: string;
+          image_url: string;
+          thumbnail_url: string | null;
+          is_cover: boolean;
+          position: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          media_id: string;
+          image_url: string;
+          thumbnail_url?: string | null;
+          is_cover?: boolean;
+          position?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          media_id?: string;
+          image_url?: string;
+          thumbnail_url?: string | null;
+          is_cover?: boolean;
+          position?: number | null;
+          created_at?: string;
+        };
+      };
       newsletter_subscribers: {
         Row: {
           id: string;
