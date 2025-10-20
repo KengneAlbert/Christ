@@ -117,7 +117,7 @@ const TrustBanner: React.FC = () => {
         </div>
 
         {/* Testimonials */}
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-8 md:p-12 border border-emerald-100 animate-slide-up delay-400">
+        {/* <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-8 md:p-12 border border-emerald-100 animate-slide-up delay-400">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-slate-800 mb-4">
               Témoignages anonymes
@@ -165,7 +165,7 @@ const TrustBanner: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Safety Reminder */}
         <div className="mt-16 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-8 border border-red-100 animate-slide-up delay-600 hover:shadow-lg transition-shadow duration-300">
