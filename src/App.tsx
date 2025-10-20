@@ -8,7 +8,7 @@ import { useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
-import TrustBanner from "./components/TrustBanner";
+// import TrustBanner from "./components/TrustBanner";
 import Statistics from "./components/Statistics";
 import Actions from "./components/Actions";
 import Team from "./components/Team";
@@ -39,7 +39,7 @@ const HomePage = () => {
     <>
       <SEOHead seo={homeSEO} />
       <Hero />
-      <TrustBanner />
+      {/* <TrustBanner /> */}
       <Statistics />
       <Actions />
       <Team />
