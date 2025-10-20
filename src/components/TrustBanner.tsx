@@ -39,8 +39,8 @@ const TrustBanner: React.FC = () => {
 
   const testimonials = [
     {
-      text: "J'ai beaucoup douté, j'ai beaucoup pleuré, j'ai voulu me taire pour ne plus subir. Mais un jour, j'ai compris que ma voix avait le pouvoir de me guérir. Alors je te la tends aujourd'hui, pour que tu saches que tu n'es pas seule. Tu peux te relever, tu as encore cette force en toi. Je prie pour que le seigneur soit ta lumière et ta force. Tu es une reine",
-      author: "Gladys",
+      text: "Grâce à l'accompagnement reçu, j'ai retrouvé ma force et ma dignité. Il y a toujours de l'espoir.",
+      author: "Marie",
       location: "",
       image:
         "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png",
