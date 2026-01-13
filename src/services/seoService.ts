@@ -28,7 +28,7 @@ export interface MediaSEO {
 }
 
 class SEOService {
-  private baseUrl = import.meta.env.VITE_SITE_URL || 'https://christ-le-bon-berger.com';
+  private baseUrl = import.meta.env.VITE_SITE_URL || 'https://www.christ-le-bon-berger.com';
   
   // Meta descriptions par défaut pour chaque page
   private defaultMeta = {
@@ -75,6 +75,7 @@ class SEOService {
       keywords: defaults.keywords,
       ogTitle: defaults.title,
       ogDescription: defaults.description,
+      ogImage: `${this.baseUrl}/logo.png`,
       ogType: 'website',
       canonicalUrl: `${this.baseUrl}/${pageKey === 'home' ? '' : pageKey}`,
       ...customData
@@ -126,7 +127,7 @@ class SEOService {
       keywords,
       ogTitle: media.title,
       ogDescription: description,
-      ogImage: media.thumbnail_url || `${this.baseUrl}/assets/LogoChrist.png`,
+      ogImage: media.thumbnail_url || `${this.baseUrl}/logo.png`,
       ogType: media.type === 'video' ? 'video.other' : 'article',
       canonicalUrl: `${this.baseUrl}/mediatheque/${media.id}`,
       structuredData: {

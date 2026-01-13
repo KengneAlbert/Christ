@@ -1,9 +1,10 @@
 import React from "react";
+import SEOHead from "../components/SEOHead";
+import { seoService } from "../services/seoService";
 import { useState } from "react";
 import {
   Phone,
   Mail,
-  Clock,
   MessageCircle,
   Shield,
   AlertTriangle,
@@ -18,8 +19,9 @@ import {
 } from "../services/validationService";
 
 const ContactPage: React.FC = () => {
+  const seo = seoService.generatePageSEO("contact");
   const { token: csrfToken } = useCSRF();
-  const { errors, validateField, clearErrors, hasErrors } = useValidation();
+  const { errors, validateField, hasErrors } = useValidation();
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: "",
     lastName: "",
@@ -160,6 +162,7 @@ const ContactPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead seo={seo} />
       {/* Hero Section */}
       <section
         className="relative min-h-[400px] bg-cover bg-center bg-no-repeat flex items-center justify-center"

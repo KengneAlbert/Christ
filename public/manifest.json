@@ -1,0 +1,17 @@
+{
+  "name": "Christ Le Bon Berger",
+  "short_name": "Christ",
+  "description": "Association dédiée à la lutte contre les violences conjugales",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8B5CF6",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

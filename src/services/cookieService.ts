@@ -30,7 +30,8 @@ export class CookieService {
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + this.EXPIRY_DAYS);
       
-      document.cookie = `${this.CONSENT_KEY}=${JSON.stringify(preferences)}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
+      const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : '';
+      document.cookie = `${this.CONSENT_KEY}=${JSON.stringify(preferences)}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict${secure}`;
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des préférences cookies:', error);
     }
@@ -68,8 +69,9 @@ export class CookieService {
 
   // Supprimer un cookie spécifique
   static deleteCookie(name: string): void {
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
+    const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${secure}`;
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}${secure}`;
   }
 
   // Supprimer tous les cookies non nécessaires
@@ -119,10 +121,11 @@ export class CookieService {
 
   private static initializeGoogleAnalytics(): void {
     // Initialiser Google Analytics si autorisé
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('consent', 'update', {
-        analytics_storage: 'granted'
-      });
+    if (typeof window !== 'undefined') {
+      const w = window as Window & { gtag?: (...args: unknown[]) => void };
+      if (typeof w.gtag === 'function') {
+        w.gtag('consent', 'update', { analytics_storage: 'granted' });
+      }
     }
   }
 

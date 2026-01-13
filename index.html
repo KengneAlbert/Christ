@@ -1,26 +1,72 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Christ Le Bon Berger - Association contre les violences conjugales</title>
-    <meta name="description" content="Association dédiée à la lutte contre les violences conjugales, offrant soutien, écoute et accompagnement aux victimes." />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo.png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://www.christ-le-bon-berger.com/" />
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://cdn.voiceflow.com" />
+    <link rel="preconnect" href="https://general-runtime.voiceflow.com" />
+    <link rel="preconnect" href="https://runtime-api.voiceflow.com" />
+    <!-- Note: Supabase host varies by env; omit static preconnect -->
+
+    <!-- SEO Meta Tags -->
+    <title>
+      Christ Le Bon Berger - Association contre les violences conjugales
+    </title>
+    <meta
+      name="description"
+      content="Association dédiée à la lutte contre les violences conjugales, offrant soutien, écoute et accompagnement aux victimes."
+    />
+    <meta
+      name="keywords"
+      content="violences conjugales, aide victimes, association, soutien, accompagnement"
+    />
+    <meta name="author" content="Christ Le Bon Berger" />
+
+    <!-- Open Graph and Twitter are managed dynamically via SEOHead -->
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#8B5CF6" />
     <script type="text/javascript">
-      (function(d, t) {
-          var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
-          v.onload = function() {
-            window.voiceflow.chat.load({
-              verify: { projectID: '68b959e86c224a1549037c87' },
-              url: 'https://general-runtime.voiceflow.com',
-              versionID: 'production',
-              voice: {
-                url: "https://runtime-api.voiceflow.com"
-              }
-            });
-          }
-          v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
-      })(document, 'script');
+      // Lazy-load Voiceflow widget to improve performance
+      (function () {
+        function loadVF() {
+          var d = document;
+          var v = d.createElement("script");
+          var s = d.getElementsByTagName("script")[0];
+          v.onload = function () {
+            if (window.voiceflow && window.voiceflow.chat) {
+              window.voiceflow.chat.load({
+                verify: { projectID: "68b959e86c224a1549037c87" },
+                url: "https://general-runtime.voiceflow.com",
+                versionID: "production",
+                voice: { url: "https://runtime-api.voiceflow.com" },
+              });
+            }
+          };
+          v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs";
+          v.type = "text/javascript";
+          s.parentNode.insertBefore(v, s);
+        }
+
+        if ("requestIdleCallback" in window) {
+          requestIdleCallback(loadVF, { timeout: 2000 });
+        } else {
+          window.addEventListener("load", function () {
+            setTimeout(loadVF, 1500);
+          });
+        }
+      })();
     </script>
   </head>
   <body>

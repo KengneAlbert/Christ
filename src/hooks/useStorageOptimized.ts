@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { StorageService, UploadResult, UploadProgress } from '../services/storageService';
+import { supabase } from '../lib/supabase';
 
 interface UseStorageOptimizedOptions {
   autoCleanup?: boolean;
@@ -17,9 +18,10 @@ export const useStorageOptimized = (options: UseStorageOptimizedOptions = {}) =>
     try {
       const stats = await StorageService.getStorageUsage();
       setStorageStats(stats);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erreur chargement stats stockage:', err);
-      setError(err.message);
+      const msg = err instanceof Error ? err.message : 'Erreur chargement stats stockage';
+      setError(msg);
     }
   }, []);
 
@@ -62,8 +64,8 @@ export const useStorageOptimized = (options: UseStorageOptimizedOptions = {}) =>
             await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
           }
         }
-      } catch (err: any) {
-        lastError = err.message;
+      } catch (err: unknown) {
+        lastError = err instanceof Error ? err.message : 'Erreur inconnue';
         if (attempt < maxRetries) {
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
         }
@@ -87,8 +89,9 @@ export const useStorageOptimized = (options: UseStorageOptimizedOptions = {}) =>
         loadStorageStats(); // Recharger les stats
       }
       return success;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erreur suppression fichier';
+      setError(msg);
       return false;
     }
   }, [loadStorageStats]);
@@ -99,8 +102,9 @@ export const useStorageOptimized = (options: UseStorageOptimizedOptions = {}) =>
       const deletedCount = await StorageService.cleanupOrphanedFiles();
       loadStorageStats(); // Recharger les stats
       return deletedCount;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erreur nettoyage fichiers orphelins';
+      setError(msg);
       return 0;
     }
   }, [loadStorageStats]);
@@ -239,10 +243,11 @@ export const useMediaUpload = () => {
         return { success: true, media: newMedia };
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erreur lors de la création du média';
       return { 
         success: false, 
-        error: error.message || 'Erreur lors de la création du média' 
+        error: msg 
       };
     }
   }, [storage]);

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import SEOHead from "../components/SEOHead";
+import { seoService } from "../services/seoService";
 import {
   Play,
   Download,
@@ -19,6 +21,7 @@ import type { MediaItem } from "../types/media";
 // Utilise l'interface partagée MediaItem
 
 const MediathequePage: React.FC = () => {
+  const seo = seoService.generatePageSEO("mediatheque");
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
@@ -207,6 +210,7 @@ const MediathequePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead seo={seo} />
       {/* Hero Section */}
       <section
         className="relative min-h-[400px] bg-cover bg-center bg-no-repeat flex items-center justify-center"

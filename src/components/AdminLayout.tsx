@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { LogOut, Mail, FileText, User, Shield, Users } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useInactivityTimeout } from "../hooks/useInactivityTimeout";
 import Logo from "../assets/LogoChrist.png";
-import ConfirmationModal from "./ConfirmationModal"; // Importer le composant de modal
+import ConfirmationModal from "./ConfirmationModal";
+import InactivityWarningModal from "./InactivityWarningModal";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -14,15 +16,24 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Gestion du timeout d'inactivité
+  const handleInactivityTimeout = async () => {
+    await signOut();
+    window.location.replace("/admin");
+  };
+
+  const { showWarning, remainingTime, extendSession } = useInactivityTimeout({
+    onTimeout: handleInactivityTimeout,
+    timeout: 15 * 60 * 1000, // 15 minutes d'inactivité
+    warningTime: 2 * 60 * 1000, // Avertissement 2 minutes avant
+  });
+
   const handleSignOut = () => {
-    setIsModalOpen(true); // Ouvre simplement la modal
+    setIsModalOpen(true);
   };
 
   const confirmSignOut = async () => {
     await signOut();
-    // Après la déconnexion, le hook useAuth mettra à jour l'état.
-    // Le composant AdminDashboard affichera alors automatiquement la page de connexion.
-    // Nous forçons un rechargement de la page pour garantir un état propre.
     window.location.replace("/admin");
   };
 
@@ -174,6 +185,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         title="Confirmer la déconnexion"
         message="Êtes-vous sûr de vouloir vous déconnecter du tableau de bord ?"
         confirmText="Se déconnecter"
+      />
+
+      {/* Modal d'avertissement d'inactivité */}
+      <InactivityWarningModal
+        isOpen={showWarning}
+        remainingTime={remainingTime}
+        onExtend={extendSession}
+        onLogout={confirmSignOut}
       />
     </div>
   );

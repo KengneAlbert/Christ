@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Menu, X, Shield, Phone } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 import Logo from "../assets/LogoChrist.png";
 
 const Header: React.FC = () => {

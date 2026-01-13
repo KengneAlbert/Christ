@@ -10,7 +10,7 @@ export default async function handler(req: Request) {
   }
 
   try {
-    const baseUrl = process.env.VITE_SITE_URL || 'https://christ-le-bon-berger.com';
+    const baseUrl = process.env.VITE_SITE_URL || 'https://www.christ-le-bon-berger.com';
     
     // Pages statiques
     const staticPages = [

@@ -34,7 +34,7 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
     feedback: string[];
   }>({ score: 0, feedback: [] });
 
-  const { signUp, signIn, resetPassword } = useAuth();
+  const { signUp, resetPassword } = useAuth();
 
   const validatePassword = (
     password: string
@@ -100,7 +100,7 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
         if (password !== confirmPassword) {
           throw new Error("Les mots de passe ne correspondent pas");
         }
-        const { data, error } = await signUp(email, password);
+        const { error } = await signUp(email, password);
         if (error) {
           throw error;
         }
@@ -109,7 +109,7 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
           text: "Compte créé ! Vérifiez votre email pour confirmer votre inscription.",
         });
       } else if (mode === "forgot") {
-        const { data, error } = await resetPassword(email);
+        const { error } = await resetPassword(email);
         if (error) {
           throw error;
         }
@@ -118,33 +118,32 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
           text: "Email de réinitialisation envoyé ! Vérifiez votre boîte mail.",
         });
       }
-    } catch (error: any) {
+    } catch (err: unknown) {
       let errorMessage = "Une erreur est survenue.";
       let errorDetails = "";
+      const msg = (err as { message?: string }).message;
+      const det = (err as { details?: string }).details;
 
       // Gestion spécifique des erreurs d'autorisation
-      if (
-        error.message === "Accès non autorisé" ||
-        error.message === "Accès restreint"
-      ) {
+      if (msg === "Accès non autorisé" || msg === "Accès restreint") {
         errorMessage = "🚫 Accès non autorisé";
         errorDetails =
           "Cette adresse email n'est pas dans notre liste d'administrateurs autorisés. Seuls les membres de l'équipe Christ Le Bon Berger peuvent accéder à cette section.";
-      } else if (error.message === "Invalid login credentials") {
+      } else if (msg === "Invalid login credentials") {
         errorMessage = "🔑 Identifiants incorrects";
         errorDetails = "Vérifiez votre adresse email et votre mot de passe.";
-      } else if (error.message === "Email not confirmed") {
+      } else if (msg === "Email not confirmed") {
         errorMessage = "📧 Email non confirmé";
         errorDetails =
           "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte mail.";
-      } else if (error.message?.includes("autorisée")) {
+      } else if (msg?.includes("autorisée")) {
         errorMessage = "🚫 Email non autorisé";
         errorDetails =
           "Cette adresse email n'est pas autorisée à créer un compte administrateur. Contactez l'équipe si vous pensez qu'il s'agit d'une erreur.";
-      } else if (error.message) {
-        errorMessage = `⚠️ ${error.message}`;
-        if (error.details) {
-          errorDetails = error.details;
+      } else if (msg) {
+        errorMessage = `⚠️ ${msg}`;
+        if (det) {
+          errorDetails = det;
         }
       }
 
@@ -444,16 +443,12 @@ const AdminAuth: React.FC<AdminAuthProps> = ({ onSuccess }) => {
             )}
           </div>
           <div className="mt-4 bg-blue-50 rounded-xl p-4 border border-blue-200">
-            <div className="text-xs text-blue-800 space-y-1">
-              <div>• La sécurité est désormais gérée côté serveur.</div>
-              <div>• Session sécurisée avec timeout automatique</div>
-              {mode === "register" && (
-                <div>
-                  • Mot de passe: min 12 caractères, majuscules, minuscules,
-                  chiffres et caractères spéciaux
-                </div>
-              )}
-            </div>
+            {mode === "register" && (
+              <div className="text-xs text-blue-800 space-y-1">
+                • Mot de passe: min 12 caractères, majuscules, minuscules,
+                chiffres et caractères spéciaux
+              </div>
+            )}
           </div>
         </div>
       </div>

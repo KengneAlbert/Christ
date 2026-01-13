@@ -75,12 +75,14 @@ export const useAuth = () => {
     };
   }, []);
 
+  type AuthAttempt = { email: string; timestamp: number; success: boolean };
+
   const signIn = async (email: string, password: string) => {
     try {
       if (typeof window !== 'undefined') {
-        const attempts = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
+        const attempts: AuthAttempt[] = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
         const hourAgo = Date.now() - (60 * 60 * 1000);
-        const recentFailures = attempts.filter((attempt: any) => 
+        const recentFailures = attempts.filter((attempt: AuthAttempt) => 
           attempt.email === email && 
           !attempt.success && 
           attempt.timestamp > hourAgo
@@ -98,7 +100,7 @@ export const useAuth = () => {
       
       if (error) {
         if (typeof window !== 'undefined') {
-          const attempts = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
+          const attempts: AuthAttempt[] = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
           attempts.push({ email, timestamp: Date.now(), success: false });
           localStorage.setItem('auth_attempts', JSON.stringify(attempts));
         }
@@ -113,7 +115,7 @@ export const useAuth = () => {
       }
       
       if (data?.user && typeof window !== 'undefined') {
-        const attempts = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
+        const attempts: AuthAttempt[] = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
         attempts.push({ email, timestamp: Date.now(), success: true });
         localStorage.setItem('auth_attempts', JSON.stringify(attempts));
         
@@ -132,8 +134,9 @@ export const useAuth = () => {
       }
       
       return { data, error: null };
-    } catch (error: any) {
-      return { data: null, error };
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error('Erreur de connexion');
+      return { data: null, error: err };
     }
   };
 
@@ -174,8 +177,9 @@ export const useAuth = () => {
       }
       
       return { data, error: null };
-    } catch (error: any) {
-      return { data: null, error };
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error('Erreur création compte');
+      return { data: null, error: err };
     }
   };
 

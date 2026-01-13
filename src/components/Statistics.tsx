@@ -91,7 +91,7 @@ const Statistics: React.FC = () => {
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-xl border border-emerald-100 max-w-4xl mx-auto hover-lift animate-slide-up delay-800">
             <p className="text-base md:text-lg text-slate-700 leading-relaxed">
               <strong className="text-slate-800">Chaque statistique représente une personne</strong> qui a besoin d'aide et de soutien. 
-              Notre association s'engage à être présente pour chacune d\'entre elles, sans exception.
+              Notre association s'engage à être présente pour chacune d'entre elles, sans exception.
             </p>
             <div className="mt-6 pt-4 border-t border-emerald-200">
               <p className="text-sm text-slate-600">

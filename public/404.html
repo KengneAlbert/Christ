@@ -1,23 +1,49 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="canonical" href="https://www.christ-le-bon-berger.com/" />
+
+    <!-- SEO Meta Tags -->
     <title>Christ Le Bon Berger - Redirection</title>
+    <meta
+      name="description"
+      content="Association dédiée à la lutte contre les violences conjugales, offrant soutien, écoute et accompagnement aux victimes."
+    />
+    <meta name="robots" content="noindex, nofollow" />
+
+    <!-- No OG/Twitter here; this page redirects and should not be indexed -->
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#8B5CF6" />
+
     <script>
-        // Redirection automatique pour les SPA
-        const path = window.location.pathname;
-        const search = window.location.search;
-        const hash = window.location.hash;
-        
-        // Rediriger vers index.html avec le chemin dans les paramètres
-        window.location.replace('/index.html' + (path === '/' ? '' : '?p=' + path) + search + hash);
+      // Redirection automatique pour les SPA
+      const path = window.location.pathname;
+      const search = window.location.search;
+      const hash = window.location.hash;
+
+      // Rediriger vers index.html avec le chemin dans les paramètres
+      window.location.replace(
+        "/index.html" + (path === "/" ? "" : "?p=" + path) + search + hash
+      );
     </script>
-</head>
-<body>
-    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-        <h1>Redirection en cours...</h1>
-        <p>Si vous n'êtes pas redirigé automatiquement, <a href="/">cliquez ici</a>.</p>
+  </head>
+  <body>
+    <div
+      style="text-align: center; padding: 50px; font-family: Arial, sans-serif"
+    >
+      <h1>Redirection en cours...</h1>
+      <p>
+        Si vous n'êtes pas redirigé automatiquement,
+        <a href="/">cliquez ici</a>.
+      </p>
     </div>
-</body>
+  </body>
 </html>

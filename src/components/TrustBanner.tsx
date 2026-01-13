@@ -1,5 +1,5 @@
 import React from "react";
-import { Shield, Users, Award, CheckCircle, Lock } from "lucide-react";
+import { Shield, Users, Award, Lock } from "lucide-react";
 
 const TrustBanner: React.FC = () => {
   const trustElements = [
@@ -37,29 +37,7 @@ const TrustBanner: React.FC = () => {
     },
   ];
 
-  const testimonials = [
-    {
-      text: "Grâce à l'accompagnement reçu, j'ai retrouvé ma force et ma dignité. Il y a toujours de l'espoir.",
-      author: "Marie",
-      location: "",
-      image:
-        "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png",
-    },
-    {
-      text: "L'écoute bienveillante m'a permis de sortir de l'isolement.",
-      author: "Sophie, 28 ans",
-      location: "Lyon",
-      image:
-        "https://cdn.pixabay.com/photo/2014/03/25/16/54/user-297566_1280.png",
-    },
-    {
-      text: "Un accompagnement professionnel qui m'a sauvé la vie.",
-      author: "Claire, 41 ans",
-      location: "Marseille",
-      image:
-        "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png",
-    },
-  ];
+  // Témoignages désactivés pour l'instant (section commentée plus bas)
 
   return (
     <section className="py-20 bg-white relative overflow-hidden">

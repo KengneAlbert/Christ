@@ -97,7 +97,7 @@ export class StorageService {
       }
 
       // Upload vers Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from(this.BUCKET_NAME)
         .upload(fileName, file, {
           cacheControl: '3600',
@@ -136,11 +136,12 @@ export class StorageService {
         }
       };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erreur upload:', error);
+      const message = error instanceof Error ? error.message : 'Erreur lors de l\'upload';
       return { 
         success: false, 
-        error: error.message || 'Erreur lors de l\'upload' 
+        error: message 
       };
     }
   }

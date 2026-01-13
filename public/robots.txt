@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://christ-le-bon-berger.com/api/sitemap.xml
+Sitemap: https://www.christ-le-bon-berger.com/api/sitemap.xml
 
 # Disallow admin pages
 Disallow: /admin/

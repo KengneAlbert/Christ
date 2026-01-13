@@ -71,7 +71,7 @@ const NewsletterSubscription: React.FC<NewsletterSubscriptionProps> = ({
       }
 
       // Insérer le nouvel abonné
-      const { data, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from("newsletter_subscribers")
         .insert({
           email: email.toLowerCase().trim(),

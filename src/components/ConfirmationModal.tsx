@@ -10,7 +10,6 @@ interface ConfirmationModalProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  type?: "delete" | "warning" | "info";
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -21,7 +20,6 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   message,
   confirmText = "Confirmer",
   cancelText = "Annuler",
-  type = "warning",
 }) => {
   const [isLoading, setIsLoading] = useState(false);
 

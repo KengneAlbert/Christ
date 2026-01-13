@@ -1,18 +1,11 @@
 import React from "react";
-import {
-  User,
-  Mail,
-  Phone,
-  Heart,
-  Shield,
-  Users,
-  Award,
-  Calendar,
-  MapPin,
-} from "lucide-react";
+import SEOHead from "../components/SEOHead";
+import { seoService } from "../services/seoService";
+import { User, Mail, Phone, Heart, Shield, Users } from "lucide-react";
 import Fondatrice from "../assets/fondatrice.jpg";
 
 const TeamPage: React.FC = () => {
+  const seo = seoService.generatePageSEO("team");
   const teamMembers = [
     {
       name: "Suzy POKA",
@@ -92,6 +85,7 @@ const TeamPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead seo={seo} />
       {/* Hero Section */}
       <section
         className="relative min-h-[500px] bg-cover bg-center bg-no-repeat flex items-center justify-center"

@@ -168,10 +168,19 @@ export class HistoryService {
       try {
         // Test pour Chrome/Safari
         if ('webkitRequestFileSystem' in window) {
-          (window as any).webkitRequestFileSystem(
-            0, 1,
+          type WebkitWindow = Window & {
+            webkitRequestFileSystem?: (
+              type: number,
+              size: number,
+              successCallback: () => void,
+              errorCallback: () => void
+            ) => void;
+          };
+          (window as WebkitWindow).webkitRequestFileSystem?.(
+            0,
+            1,
             () => resolve(false), // Pas en mode privé
-            () => resolve(true)   // Mode privé
+            () => resolve(true) // Mode privé
           );
         }
         // Test pour Firefox
