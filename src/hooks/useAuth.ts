@@ -31,10 +31,10 @@ export const useAuth = () => {
       } catch (error) {
         console.error('Erreur initialisation auth:', error);
         if (mounted) {
-          setAuthState(prev => ({ 
-            ...prev, 
-            loading: false, 
-            initialized: true 
+          setAuthState(prev => ({
+            ...prev,
+            loading: false,
+            initialized: true,
           }));
         }
       }
@@ -53,18 +53,17 @@ export const useAuth = () => {
         }
 
         if (event === 'SIGNED_IN' && session?.user) {
-          try {
-            supabase
-              .from('admin_users')
-              .upsert({
-                id: session.user.id,
-                email: session.user.email,
-                last_login: new Date().toISOString(),
-                is_active: true
-              }, { onConflict: 'id' });
-          } catch (error) {
-            console.error('Error updating last_login:', error);
-          }
+          supabase
+            .from('admin_users')
+            .upsert({
+              id: session.user.id,
+              email: session.user.email,
+              last_login: new Date().toISOString(),
+              is_active: true,
+            }, { onConflict: 'id' })
+            .then(({ error }) => {
+              if (error) console.warn('Erreur mise à jour last_login:', error);
+            });
         }
       }
     );
@@ -75,36 +74,21 @@ export const useAuth = () => {
     };
   }, []);
 
-  type AuthAttempt = { email: string; timestamp: number; success: boolean };
-
   const signIn = async (email: string, password: string) => {
     try {
-      if (typeof window !== 'undefined') {
-        const attempts: AuthAttempt[] = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
-        const hourAgo = Date.now() - (60 * 60 * 1000);
-        const recentFailures = attempts.filter((attempt: AuthAttempt) => 
-          attempt.email === email && 
-          !attempt.success && 
-          attempt.timestamp > hourAgo
-        );
-        
-        if (recentFailures.length >= 5) {
-          throw new Error('Trop de tentatives de connexion. Veuillez patienter 1 heure.');
-        }
+      // Rate limiting côté serveur (remplace localStorage)
+      const { data: isBlocked, error: rlError } = await supabase
+        .rpc('check_login_rate_limit', { p_email: email });
+
+      if (!rlError && isBlocked) {
+        throw new Error('Trop de tentatives de connexion. Veuillez patienter 1 heure.');
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
       if (error) {
-        if (typeof window !== 'undefined') {
-          const attempts: AuthAttempt[] = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
-          attempts.push({ email, timestamp: Date.now(), success: false });
-          localStorage.setItem('auth_attempts', JSON.stringify(attempts));
-        }
-        
+        await supabase.rpc('record_login_attempt', { p_email: email, p_success: false });
+
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Email ou mot de passe incorrect');
         } else if (error.message.includes('Email not confirmed')) {
@@ -113,26 +97,23 @@ export const useAuth = () => {
           throw new Error('Erreur de connexion. Vérifiez votre configuration Supabase');
         }
       }
-      
-      if (data?.user && typeof window !== 'undefined') {
-        const attempts: AuthAttempt[] = JSON.parse(localStorage.getItem('auth_attempts') || '[]');
-        attempts.push({ email, timestamp: Date.now(), success: true });
-        localStorage.setItem('auth_attempts', JSON.stringify(attempts));
-        
-        try {
-          await supabase
-            .from('admin_users')
-            .upsert({
-              id: data.user.id,
-              email: data.user.email,
-              last_login: new Date().toISOString(),
-              is_active: true
-            }, { onConflict: 'id' });
-        } catch (dbError) {
-          console.warn('Erreur base de données admin:', dbError);
-        }
+
+      if (data?.user) {
+        await supabase.rpc('record_login_attempt', { p_email: email, p_success: true });
+
+        await supabase
+          .from('admin_users')
+          .upsert({
+            id: data.user.id,
+            email: data.user.email,
+            last_login: new Date().toISOString(),
+            is_active: true,
+          }, { onConflict: 'id' })
+          .then(({ error: dbErr }) => {
+            if (dbErr) console.warn('Erreur base de données admin:', dbErr);
+          });
       }
-      
+
       return { data, error: null };
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error('Erreur de connexion');
@@ -142,10 +123,16 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string) => {
     try {
-      if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password) || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      if (
+        password.length < 12 ||
+        !/[A-Z]/.test(password) ||
+        !/[a-z]/.test(password) ||
+        !/\d/.test(password) ||
+        !/[!@#$%^&*(),.?":{}|<>]/.test(password)
+      ) {
         throw new Error('Le mot de passe ne respecte pas les critères de sécurité.');
       }
-      
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -153,7 +140,7 @@ export const useAuth = () => {
           emailRedirectTo: `${window.location.origin}/admin`,
         },
       });
-      
+
       if (error) {
         if (error.message.includes('User already registered')) {
           throw new Error('Un compte existe déjà avec cette adresse email');
@@ -161,21 +148,16 @@ export const useAuth = () => {
           throw new Error('Erreur lors de la création du compte.');
         }
       }
-      
+
       if (data?.user) {
-        try {
-          await supabase
-            .from('admin_users')
-            .insert({
-              id: data.user.id,
-              email: data.user.email,
-              is_active: true
-            });
-        } catch (dbError) {
-          console.warn('Erreur création admin_users:', dbError);
-        }
+        await supabase
+          .from('admin_users')
+          .insert({ id: data.user.id, email: data.user.email, is_active: true })
+          .then(({ error: dbErr }) => {
+            if (dbErr) console.warn('Erreur création admin_users:', dbErr);
+          });
       }
-      
+
       return { data, error: null };
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error('Erreur création compte');
@@ -185,18 +167,33 @@ export const useAuth = () => {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Error signing out:', error);
-    }
+    if (error) console.error('Erreur déconnexion:', error);
     return { error };
   };
 
   const resetPassword = async (email: string) => {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    return supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/admin`,
     });
-    return { data, error };
   };
+
+  // ── MFA ────────────────────────────────────────────────────
+  const listMFAFactors = async () => {
+    return supabase.auth.mfa.listFactors();
+  };
+
+  const enrollMFA = async () => {
+    return supabase.auth.mfa.enroll({ factorType: 'totp' });
+  };
+
+  const verifyMFA = async (factorId: string, code: string) => {
+    return supabase.auth.mfa.challengeAndVerify({ factorId, code });
+  };
+
+  const unenrollMFA = async (factorId: string) => {
+    return supabase.auth.mfa.unenroll({ factorId });
+  };
+  // ───────────────────────────────────────────────────────────
 
   return {
     user: authState.user,
@@ -206,5 +203,9 @@ export const useAuth = () => {
     signUp,
     signOut,
     resetPassword,
+    listMFAFactors,
+    enrollMFA,
+    verifyMFA,
+    unenrollMFA,
   };
 };

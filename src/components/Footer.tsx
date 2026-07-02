@@ -136,6 +136,29 @@ const Footer: React.FC = () => {
               >
                 <Youtube className="w-5 h-5" />
               </a>
+              <a
+                href="https://www.youtube.com/@suzynganso7914"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center hover:bg-red-600 transition-colors duration-300 shadow-lg"
+              >
+                <Youtube className="w-5 h-5" />
+              </a>
+              <a
+                href="https://vm.tiktok.com/ZNRgHvKCu/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center hover:bg-black transition-colors duration-300 shadow-lg"
+              >
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.75a8.18 8.18 0 004.79 1.54V6.84a4.85 4.85 0 01-1.02-.15z" />
+                </svg>
+              </a>
             </div>
           </div>
 

@@ -158,7 +158,9 @@ class SEOService {
         'https://www.facebook.com/permalink.php?story_fbid=pfbid025go4Kiaq1MYgqX8omSdCtNBcgy54NgdjefomAkfP4bpfGXdS4uJwh5AVRD8MjorWl&id=61573609049917',
         'https://www.linkedin.com/company/christ-le-bon-berger',
         'https://www.instagram.com/clbb.association/?igsh=bWx5dnBzazBqdWdu#',
-        'https://www.youtube.com/@clbb-association-l-amour-gagne'
+        'https://www.youtube.com/@clbb-association-l-amour-gagne',
+        'https://www.youtube.com/@suzynganso7914',
+        'https://vm.tiktok.com/ZNRgHvKCu/'
       ],
       contactPoint: {
         '@type': 'ContactPoint',
